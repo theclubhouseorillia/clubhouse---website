@@ -51,10 +51,10 @@ You'll create free or low-cost accounts with four services. Keep a text file ope
 2. When the project is ready, open **SQL Editor → New query**.
 3. Open `supabase/schema.sql` from this project, copy everything, paste it in, and click **Run**. You should see "Success".
 4. Do the same with `supabase/seed.sql`. This loads your pricing, packages, hours and starter content.
-5. Go to **Project Settings → API** (sometimes labelled **API Keys**) and copy three things:
+5. Go to **Project Settings → API** (sometimes labelled **API Keys**) and copy two things:
    - **Project URL**
    - **anon / publishable key**
-   - **service_role / secret key** (keep this one private, as it can bypass all security)
+6. In the SQL Editor, run `select value from private.app_config where key = 'form_secret';` and copy the result. This is your **form secret**: it lets the website save form submissions. Keep it private.
 
 ### Step 2: Lock down logins and create your admin account
 
@@ -91,7 +91,7 @@ You'll choose which inbox *receives* the emails later, in **Admin → Business s
    | `NEXT_PUBLIC_SITE_URL` | Your website address, e.g. `https://www.yourdomain.ca` |
    | `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon / publishable key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service_role / secret key |
+   | `FORM_SECRET` | The form secret from Step 1 (mark it **Sensitive**) |
    | `RESEND_API_KEY` | Resend API key |
    | `EMAIL_FROM` | e.g. `Website <inquiries@yourdomain.ca>` |
    | `IP_HASH_SALT` | Any long random text (mash the keyboard for 40+ characters) |
@@ -162,7 +162,7 @@ npm run typecheck
 - Node 20 or newer.
 - Public pages are statically rendered and revalidated every 5 minutes. Admin saves call `revalidatePath("/", "layout")`, so changes appear instantly.
 - Every admin screen, form and server-side validator is generated from `lib/resources.ts`. Add a column in Supabase, then add the field there.
-- Database access: the public site reads with the anon key under row-level security. Admin writes use the signed-in user's session, also checked by RLS (`public.is_admin()`). The service-role key is used only on the server, for storing form submissions and rate limiting.
+- Database access: the public site reads with the anon key under row-level security. Admin writes use the signed-in user's session, also checked by RLS (`public.is_admin()`). Form submissions are saved through the `submit_inquiry` database function, which only runs when the server sends `FORM_SECRET` and also enforces the rate limit. No Supabase service-role key is needed anywhere.
 - Colours and fonts live in `app/globals.css` (`@theme`) and `app/layout.tsx`.
 - Photos are stored in the public `media` bucket in Supabase Storage.
 
@@ -188,6 +188,7 @@ supabase/            schema.sql (tables + security) and seed.sql (starting conte
 | Site shows `[Business Name]` | Fill in Business settings in the dashboard. |
 | Can't sign in | Check the user exists and is confirmed in Supabase → Authentication → Users, and that you ran the `admin_users` insert for that email. |
 | "This account isn't set up as an admin" | Run the `admin_users` insert from Step 2 for that email. |
+| Forms say "couldn't send your message" | Check `FORM_SECRET` in Vercel matches the value in `private.app_config`, then redeploy. |
 | Forms say they sent but no email arrives | Check the inquiry email in Business settings, the Resend domain verification, and your spam folder. Submissions are always in Admin → Inquiries. |
 | Photo upload fails | Make sure `schema.sql` ran fully (it creates the `media` bucket), and the file is a JPG, PNG or WebP under 10 MB. |
 | Password reset link doesn't work | Add the `/admin/auth/callback` redirect URLs in Supabase (Step 5), and open the link in the same browser you requested it from. |

@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { escapeHtml, sendEmail } from "@/lib/email";
 import { formatLongDate, todayISO } from "@/lib/format";
 import { hashIp, verifyTurnstile } from "@/lib/spam";
-import { getServiceClient } from "@/lib/supabase/service";
+import { getPublicClient } from "@/lib/supabase/public";
 
 export interface InquiryState {
   status: "idle" | "success" | "error";
@@ -15,8 +15,6 @@ export interface InquiryState {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_FILL_MS = 3000;
-const RATE_LIMIT = 3; // submissions
-const RATE_WINDOW_MIN = 10; // minutes
 
 function str(formData: FormData, key: string, max: number): string {
   const v = formData.get(key);
@@ -87,50 +85,44 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
   if (!human) return fail("We couldn't verify you're human. Please try again.");
 
   const ipHash = ip ? hashIp(ip) : null;
-  const db = getServiceClient();
 
-  if (db && ipHash) {
-    const since = new Date(Date.now() - RATE_WINDOW_MIN * 60_000).toISOString();
-    const { count } = await db
-      .from("inquiries")
-      .select("id", { count: "exact", head: true })
-      .eq("ip_hash", ipHash)
-      .gte("created_at", since);
-    if ((count ?? 0) >= RATE_LIMIT) {
-      return fail("You've sent a few messages already. Please wait a few minutes or give us a call.");
-    }
-  }
-
-  // 4. Save to the database so nothing is lost, even if email fails.
+  // 3b. Save to the database so nothing is lost, even if email fails. The
+  // database applies the rate limit (3 per visitor per 10 minutes) and tells
+  // us where to send the notification. FORM_SECRET proves the request came
+  // from this website.
+  const db = getPublicClient();
+  const formSecret = process.env.FORM_SECRET;
   let savedId: string | null = null;
-  if (db) {
-    const { data, error } = await db
-      .from("inquiries")
-      .insert({
-        kind,
-        name,
-        email,
-        phone: phone || null,
-        preferred_date: kind === "event" && preferredDate ? preferredDate : null,
-        guest_count: guestCount,
-        package: kind === "event" && pkg ? pkg : null,
-        message: message || null,
-        ip_hash: ipHash,
-      })
-      .select("id")
-      .single();
-    if (error) console.error("[inquiry] save failed:", error.message);
-    else savedId = (data as { id: string }).id;
-  }
-
-  // 5. Email the business.
   let recipient = process.env.INQUIRY_EMAIL || "";
-  if (db) {
-    const { data } = await db.from("site_settings").select("inquiry_email, business_name").eq("id", 1).maybeSingle();
-    const settings = data as { inquiry_email: string | null; business_name: string } | null;
-    if (settings?.inquiry_email) recipient = settings.inquiry_email;
+
+  if (db && formSecret) {
+    const { data, error } = await db.rpc("submit_inquiry", {
+      p_secret: formSecret,
+      p_kind: kind,
+      p_name: name,
+      p_email: email,
+      p_phone: phone || null,
+      p_preferred_date: kind === "event" && preferredDate ? preferredDate : null,
+      p_guest_count: guestCount,
+      p_package: kind === "event" && pkg ? pkg : null,
+      p_message: message || null,
+      p_ip_hash: ipHash,
+    });
+    if (error) {
+      console.error("[inquiry] save failed:", error.message);
+    } else {
+      const result = (data ?? {}) as { status?: string; id?: string; recipient?: string | null };
+      if (result.status === "rate_limited") {
+        return fail("You've sent a few messages already. Please wait a few minutes or give us a call.");
+      }
+      savedId = result.id ?? null;
+      if (result.recipient) recipient = result.recipient;
+    }
+  } else {
+    console.warn("[inquiry] FORM_SECRET is not set, so submissions can't be saved.");
   }
 
+  // 4. Email the business.
   let emailed = false;
   if (recipient) {
     const rows: [string, string][] = [
@@ -167,8 +159,9 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
     console.warn("[inquiry] No inquiry email set (Admin → Settings) and no INQUIRY_EMAIL env var.");
   }
 
-  if (savedId && emailed && db) {
-    await db.from("inquiries").update({ email_sent: true }).eq("id", savedId);
+  if (savedId && emailed && db && formSecret) {
+    const { error } = await db.rpc("mark_inquiry_emailed", { p_secret: formSecret, p_id: savedId });
+    if (error) console.error("[inquiry] couldn't mark as emailed:", error.message);
   }
 
   if (!savedId && !emailed) {

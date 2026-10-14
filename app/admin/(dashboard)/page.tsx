@@ -135,10 +135,15 @@ export default async function AdminOverview() {
         </section>
       )}
 
-      {(!emailConfigured() || !turnstileEnabled()) && (
+      {(!emailConfigured() || !turnstileEnabled() || !process.env.FORM_SECRET) && (
         <section className="card p-6 text-sm text-mist">
           <h2 className="mb-2 font-semibold text-cream">Technical setup notes</h2>
           <ul className="list-disc space-y-1 pl-5">
+            {!process.env.FORM_SECRET && (
+              <li>
+                Form submissions can&apos;t be saved yet. Add FORM_SECRET in Vercel (see README, Step 1).
+              </li>
+            )}
             {!emailConfigured() && (
               <li>
                 Email sending isn&apos;t configured on the server yet, so form submissions are only saved here under

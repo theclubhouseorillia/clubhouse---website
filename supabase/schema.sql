@@ -317,3 +317,84 @@ create policy "Admins can update media" on storage.objects
 drop policy if exists "Admins can delete media" on storage.objects;
 create policy "Admins can delete media" on storage.objects
   for delete to authenticated using (bucket_id = 'media' and public.is_admin());
+
+-- =============================================================================
+-- Form submissions: saved through a function that only the website server can
+-- call (it must send the secret stored below, which you copy into Vercel as
+-- FORM_SECRET). Also applies the spam rate limit: 3 per visitor per 10 minutes.
+-- =============================================================================
+
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+create table if not exists private.app_config (
+  key   text primary key,
+  value text not null
+);
+insert into private.app_config (key, value)
+values ('form_secret', encode(gen_random_bytes(24), 'hex'))
+on conflict (key) do nothing;
+
+create or replace function public.submit_inquiry(
+  p_secret text,
+  p_kind text,
+  p_name text,
+  p_email text,
+  p_phone text default null,
+  p_preferred_date date default null,
+  p_guest_count int default null,
+  p_package text default null,
+  p_message text default null,
+  p_ip_hash text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_expected  text;
+  v_recent    int;
+  v_id        uuid;
+  v_recipient text;
+begin
+  select value into v_expected from private.app_config where key = 'form_secret';
+  if v_expected is null or p_secret is distinct from v_expected then
+    raise exception 'Not allowed' using errcode = '42501';
+  end if;
+
+  if p_ip_hash is not null then
+    select count(*) into v_recent
+    from public.inquiries
+    where ip_hash = p_ip_hash and created_at > now() - interval '10 minutes';
+    if v_recent >= 3 then
+      return json_build_object('status', 'rate_limited');
+    end if;
+  end if;
+
+  insert into public.inquiries (kind, name, email, phone, preferred_date, guest_count, package, message, ip_hash)
+  values (p_kind, p_name, p_email, p_phone, p_preferred_date, p_guest_count, p_package, p_message, p_ip_hash)
+  returning id into v_id;
+
+  select inquiry_email into v_recipient from public.site_settings where id = 1;
+  return json_build_object('status', 'ok', 'id', v_id, 'recipient', v_recipient);
+end;
+$$;
+
+create or replace function public.mark_inquiry_emailed(p_secret text, p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  if p_secret is distinct from (select value from private.app_config where key = 'form_secret') then
+    raise exception 'Not allowed' using errcode = '42501';
+  end if;
+  update public.inquiries set email_sent = true where id = p_id;
+end;
+$$;
+
+revoke all on function public.submit_inquiry(text, text, text, text, text, date, int, text, text, text) from public;
+grant execute on function public.submit_inquiry(text, text, text, text, text, date, int, text, text, text) to anon, authenticated;
+revoke all on function public.mark_inquiry_emailed(text, uuid) from public;
+grant execute on function public.mark_inquiry_emailed(text, uuid) to anon, authenticated;
