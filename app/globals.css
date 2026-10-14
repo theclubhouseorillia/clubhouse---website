@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens: black & charcoal grounds, deep forest green, gold highlights.
+   Change a colour here and it updates across the whole site.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-ink: #0a0b0a;
+  --color-coal: #121413;
+  --color-coal-2: #1a1d1b;
+  --color-coal-3: #222623;
+  --color-line: #2b302d;
+  --color-forest: #143628;
+  --color-forest-2: #1d4a37;
+  --color-gold: #c9a45c;
+  --color-gold-2: #dfc286;
+  --color-cream: #f3eee3;
+  --color-mist: #b8b5ab;
+  --color-danger: #f0a294;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-fade-in: fade-in 0.6s var(--ease-out-expo) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-display-face), "Times New Roman", serif;
+  --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container-site {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-site {
+      padding-inline: 2rem;
+    }
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .rule-gold {
+    display: block;
+    width: 3rem;
+    height: 1px;
+    background: var(--color-gold);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3.25rem;
+    padding: 0 1.6rem;
+    border-radius: 2px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-align: center;
+    transition:
+      background-color 0.3s var(--ease-out-expo),
+      color 0.3s var(--ease-out-expo),
+      border-color 0.3s var(--ease-out-expo),
+      transform 0.3s var(--ease-out-expo);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-gold {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+  .btn-gold:hover {
+    background: var(--color-gold-2);
+  }
+  .btn-outline {
+    border: 1px solid rgb(243 238 227 / 0.4);
+    color: var(--color-cream);
+  }
+  .btn-outline:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold-2);
+  }
+  .btn-dark {
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+  .btn-dark:hover {
+    background: var(--color-coal-3);
+  }
+
+  .link-gold {
+    color: var(--color-gold);
+    font-weight: 600;
+    text-underline-offset: 4px;
+  }
+  .link-gold:hover {
+    color: var(--color-gold-2);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--color-coal);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+  }
+
+  /* Dotted "golf ball" texture used behind image placeholders. */
+  .dimples {
+    background-color: var(--color-coal-2);
+    background-image: radial-gradient(rgb(201 164 92 / 0.14) 1px, transparent 1.6px);
+    background-size: 16px 16px;
+  }
+
+  /* Form fields */
+  .field-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-cream);
+  }
+  .field {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 3px;
+    border: 1px solid var(--color-line);
+    background: var(--color-ink);
+    color: var(--color-cream);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  .field::placeholder {
+    color: #8a877f;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgb(201 164 92 / 0.25);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  select.field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23c9a45c' stroke-width='1.6'%3E%3Cpath d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    padding-right: 2.4rem;
+  }
+  input[type="date"].field,
+  input[type="time"].field,
+  input[type="datetime-local"].field {
+    color-scheme: dark;
+  }
+  .field-error {
+    margin-top: 0.4rem;
+    font-size: 0.8125rem;
+    color: var(--color-danger);
+  }
+}
+
+/* Scroll-reveal animation. Only applies when JavaScript is running, so content
+   is never hidden if scripts fail. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.9s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo);
+}
+.js [data-reveal][data-visible] {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}

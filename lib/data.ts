@@ -1,0 +1,159 @@
+import "server-only";
+import { cache } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getPublicClient } from "./supabase/public";
+import {
+  DEFAULT_BAY_TYPES,
+  DEFAULT_HOURS,
+  DEFAULT_MENU,
+  DEFAULT_PACKAGES,
+  DEFAULT_RATES,
+  DEFAULT_SETTINGS,
+} from "./defaults";
+import { todayISO } from "./format";
+import type {
+  Announcement,
+  BayType,
+  EventPackage,
+  EventRow,
+  GalleryImage,
+  HoursRow,
+  MenuCategory,
+  MenuItem,
+  Rate,
+  Settings,
+  SpecialHours,
+} from "./types";
+
+type QueryResult = { data: unknown; error: { message: string } | null };
+
+/** Runs a query; on any failure logs it and returns the fallback so pages still render. */
+async function safeQuery<T>(
+  label: string,
+  fallback: T,
+  run: (sb: SupabaseClient) => PromiseLike<QueryResult>,
+): Promise<T> {
+  const sb = getPublicClient();
+  if (!sb) return fallback;
+  try {
+    const { data, error } = await run(sb);
+    if (error) {
+      console.error(`[data] ${label}: ${error.message}`);
+      return fallback;
+    }
+    return (data ?? fallback) as T;
+  } catch (err) {
+    console.error(`[data] ${label}:`, err);
+    return fallback;
+  }
+}
+
+function toNumber(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Every settings column the public site may read. The private inquiry email is
+// deliberately left out (see schema.sql: visitors can't read that column).
+const PUBLIC_SETTINGS_COLUMNS = [
+  "business_name", "logo_url", "hero_headline", "hero_subheadline", "slogan", "show_slogan",
+  "hero_image_url", "bar_heading", "bar_text", "highlights", "packages_note", "street_address",
+  "city", "province", "postal_code", "phone", "public_email", "website_url", "booking_url",
+  "facebook_url", "instagram_url", "tiktok_url", "seo_description", "pricing_season_label",
+  "pricing_note", "hours_season_label",
+].join(",");
+
+export const getSettings = cache(async (): Promise<Settings> => {
+  const row = await safeQuery<Partial<Settings> | null>("settings", null, (sb) =>
+    sb.from("site_settings").select(PUBLIC_SETTINGS_COLUMNS).eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_SETTINGS;
+  return {
+    ...DEFAULT_SETTINGS,
+    ...row,
+    business_name: row.business_name || DEFAULT_SETTINGS.business_name,
+    show_slogan: row.show_slogan ?? true,
+    highlights: Array.isArray(row.highlights) ? row.highlights : [],
+  };
+});
+
+/** Enabled announcements that haven't expired (the banner re-checks times in the browser). */
+export const getAnnouncements = cache(async (): Promise<Announcement[]> => {
+  const rows = await safeQuery<Announcement[]>("announcements", [], (sb) =>
+    sb.from("announcements").select("*").eq("enabled", true).order("sort_order").order("created_at"),
+  );
+  const now = Date.now();
+  return rows.filter(
+    (a) =>
+      (!a.starts_at || new Date(a.starts_at).getTime() <= now) &&
+      (!a.ends_at || new Date(a.ends_at).getTime() > now),
+  );
+});
+
+export const getEvents = cache(async (): Promise<EventRow[]> => {
+  return safeQuery<EventRow[]>("events", [], (sb) =>
+    sb.from("events").select("*").eq("published", true).order("event_date"),
+  );
+});
+
+export const getBayTypes = cache(async (): Promise<BayType[]> => {
+  const rows = await safeQuery<BayType[]>("bay types", DEFAULT_BAY_TYPES, (sb) =>
+    sb.from("bay_types").select("*").order("sort_order"),
+  );
+  return rows.map((r) => ({ ...r, details: Array.isArray(r.details) ? r.details : [] }));
+});
+
+export const getRates = cache(async (): Promise<Rate[]> => {
+  const rows = await safeQuery<Rate[]>("pricing", DEFAULT_RATES, (sb) =>
+    sb.from("pricing_rates").select("*").order("sort_order"),
+  );
+  return rows.map((r) => ({
+    ...r,
+    open_bay: toNumber(r.open_bay),
+    semi_private: toNumber(r.semi_private),
+    private_bay: toNumber(r.private_bay),
+  }));
+});
+
+export const getPackages = cache(async (): Promise<EventPackage[]> => {
+  const rows = await safeQuery<EventPackage[]>("packages", DEFAULT_PACKAGES, (sb) =>
+    sb.from("event_packages").select("*").order("sort_order"),
+  );
+  return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [] }));
+});
+
+export const getMenu = cache(async (): Promise<MenuCategory[]> => {
+  type Row = Omit<MenuCategory, "items"> & { menu_items: MenuItem[] | null };
+  const rows = await safeQuery<Row[] | null>("menu", null, (sb) =>
+    sb.from("menu_categories").select("*, menu_items(*)").order("sort_order"),
+  );
+  if (!rows) return DEFAULT_MENU;
+  return rows.map(({ menu_items, ...category }) => ({
+    ...category,
+    items: (menu_items ?? [])
+      .filter((item) => item.available)
+      .map((item) => ({ ...item, price: toNumber(item.price) }))
+      .sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name)),
+  }));
+});
+
+export const getHours = cache(async (): Promise<HoursRow[]> => {
+  const rows = await safeQuery<HoursRow[]>("hours", DEFAULT_HOURS, (sb) =>
+    sb.from("business_hours").select("*").order("id"),
+  );
+  return rows.length ? rows : DEFAULT_HOURS;
+});
+
+/** Holiday / special hours from today onward. */
+export const getSpecialHours = cache(async (): Promise<SpecialHours[]> => {
+  return safeQuery<SpecialHours[]>("special hours", [], (sb) =>
+    sb.from("special_hours").select("*").gte("date", todayISO()).order("date").limit(10),
+  );
+});
+
+export const getGallery = cache(async (): Promise<GalleryImage[]> => {
+  return safeQuery<GalleryImage[]>("gallery", [], (sb) =>
+    sb.from("gallery_images").select("*").order("sort_order").order("created_at", { ascending: false }),
+  );
+});
