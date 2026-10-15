@@ -33,6 +33,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Winter golf league page: details, pricing and the sign-up email
 - Pool table: photos, hourly price and its own booking button
 - Meet the Owners: your story, one group photo and each owner's name and title, at the bottom of the homepage
+- Google reviews: your star rating, the reviews you pick, and "Leave us a review" / "Read all reviews on Google" buttons
 - Private event packages
 - Menu categories and items (with photos)
 - Weekly hours, plus holiday and special hours

@@ -134,3 +134,10 @@ export function formatPriceRange(values: (number | null | undefined)[]): string 
   const max = Math.max(...nums);
   return min === max ? formatPrice(min) : `${formatPrice(min)} – ${formatPrice(max)}`;
 }
+
+/** "March 2026" */
+export function formatMonthYear(iso: string): string {
+  const d = parseDateOnly(iso);
+  if (!d) return iso;
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", month: "long", year: "numeric" }).format(d);
+}

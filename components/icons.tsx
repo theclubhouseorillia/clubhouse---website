@@ -119,3 +119,9 @@ export const ImageIcon = (p: IconProps) => (
     <path d="m21 15-5-5L5 21" />
   </Base>
 );
+
+export const StarIcon = (p: IconProps) => (
+  <Base strokeWidth="1.2" {...p}>
+    <path d="m12 2.8 2.78 5.64 6.22.9-4.5 4.39 1.06 6.2L12 17.02l-5.56 2.92 1.06-6.2L3 9.35l6.22-.9z" />
+  </Base>
+);

@@ -13,6 +13,8 @@ import type {
   OwnersSection,
   PoolTable,
   Rate,
+  Review,
+  ReviewsSection,
   Settings,
 } from "./types";
 
@@ -245,3 +247,14 @@ export const DEFAULT_OWNERS_SECTION: OwnersSection = {
 };
 
 export const DEFAULT_OWNERS: Owner[] = [];
+
+export const DEFAULT_REVIEWS_SECTION: ReviewsSection = {
+  enabled: true,
+  heading: "What our guests are saying",
+  rating: null,
+  review_count: null,
+  google_url: null,
+  write_review_url: null,
+};
+
+export const DEFAULT_REVIEWS: Review[] = [];

@@ -180,6 +180,25 @@ export interface OwnersSection {
   photo_url: string | null;
 }
 
+export interface ReviewsSection {
+  enabled: boolean;
+  heading: string;
+  /** Overall Google star rating, e.g. 4.9 (entered by the owner). */
+  rating: number | null;
+  review_count: number | null;
+  google_url: string | null;
+  write_review_url: string | null;
+}
+
+export interface Review {
+  id: string;
+  author: string;
+  rating: number;
+  quote: string;
+  review_date: string | null;
+  sort_order: number;
+}
+
 export interface Owner {
   id: string;
   name: string;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, CheckIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
+import { ArrowRightIcon, CalendarIcon, CheckIcon, ExternalIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
 import { PhotoCarousel } from "@/components/site/PhotoCarousel";
 import { BayPriceRange } from "@/components/site/BayPriceRange";
 import { EventCard } from "@/components/site/EventCard";
@@ -13,6 +13,7 @@ import { PoolTableFeature } from "@/components/site/PoolTableFeature";
 import { Reveal } from "@/components/site/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
+import { Stars } from "@/components/site/Stars";
 import {
   getBayTypes,
   getEvents,
@@ -25,11 +26,13 @@ import {
   getPackages,
   getPoolTable,
   getRates,
+  getReviews,
+  getReviewsSection,
   getSettings,
   getSpecialHours,
 } from "@/lib/data";
 import { homepageEvents } from "@/lib/events";
-import { real, telHref } from "@/lib/format";
+import { formatMonthYear, real, telHref } from "@/lib/format";
 import { addressLines, bookingLink, directionsUrl, leagueEmailHref } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -51,6 +54,8 @@ export default async function HomePage() {
     rates,
     ownersSection,
     owners,
+    reviewsSection,
+    reviews,
   ] = await Promise.all([
     getSettings(),
     getBayTypes(),
@@ -65,6 +70,8 @@ export default async function HomePage() {
     getRates(),
     getOwnersSection(),
     getOwners(),
+    getReviewsSection(),
+    getReviews(),
   ]);
 
   const booking = bookingLink(settings);
@@ -86,6 +93,7 @@ export default async function HomePage() {
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
   const leagueHref = leagueEmailHref(league.email, league.email_subject);
+  const showReviews = reviewsSection.enabled && (reviews.length > 0 || reviewsSection.rating !== null);
   const ownersIntro = real(ownersSection.intro);
   const ownersHaveBios = owners.some((o) => real(o.bio));
   const ownerNames = owners.map((o) => o.name);
@@ -384,6 +392,69 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* GOOGLE REVIEWS */}
+      {showReviews && (
+        <section aria-labelledby="reviews-title" className="border-t border-line py-24 sm:py-28">
+          <div className="container-site">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <Reveal>
+                <SectionHeading id="reviews-title" eyebrow="Google reviews" title={reviewsSection.heading} />
+              </Reveal>
+              {reviewsSection.rating !== null && (
+                <Reveal delay={100} className="flex items-center gap-5">
+                  <span className="font-display text-6xl leading-none text-cream">{reviewsSection.rating.toFixed(1)}</span>
+                  <span className="flex flex-col gap-2">
+                    <Stars rating={reviewsSection.rating} size={22} />
+                    <span className="text-sm text-mist">
+                      {reviewsSection.review_count
+                        ? `from ${reviewsSection.review_count.toLocaleString("en-CA")} Google review${reviewsSection.review_count === 1 ? "" : "s"}`
+                        : "on Google"}
+                    </span>
+                  </span>
+                </Reveal>
+              )}
+            </div>
+
+            {reviews.length > 0 && (
+              <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {reviews.map((review, i) => (
+                  <Reveal key={review.id} delay={(i % 3) * 90} className="card h-full">
+                    <figure className="flex h-full flex-col gap-5 p-7">
+                      <Stars rating={review.rating} />
+                      <blockquote className="flex-1 leading-relaxed whitespace-pre-line text-cream/90">
+                        <p>&ldquo;{review.quote}&rdquo;</p>
+                      </blockquote>
+                      <figcaption className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
+                        <span className="font-semibold text-cream">{review.author}</span>
+                        <span className="text-xs uppercase tracking-[0.14em] text-mist">
+                          Google review{review.review_date ? ` · ${formatMonthYear(review.review_date)}` : ""}
+                        </span>
+                      </figcaption>
+                    </figure>
+                  </Reveal>
+                ))}
+              </div>
+            )}
+
+            {(reviewsSection.write_review_url || reviewsSection.google_url) && (
+              <div className="mt-10 flex flex-wrap gap-3">
+                {reviewsSection.write_review_url && (
+                  <a href={reviewsSection.write_review_url} target="_blank" rel="noopener noreferrer" className="btn btn-gold">
+                    Leave us a review
+                  </a>
+                )}
+                {reviewsSection.google_url && (
+                  <a href={reviewsSection.google_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+                    Read all reviews on Google
+                    <ExternalIcon width={16} height={16} />
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* VISIT */}
       <section aria-labelledby="visit-title" className="border-t border-line bg-coal py-24 sm:py-28">

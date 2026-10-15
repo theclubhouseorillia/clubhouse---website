@@ -549,3 +549,50 @@ end $$;
 insert into public.owners_section (id) values (1) on conflict (id) do nothing;
 -- (earlier versions had a "photos" list here; the group photo now lives in photo_url)
 alter table public.owners_section add column if not exists photo_url text;
+
+-- =============================================================================
+-- Google reviews: rating + buttons (one row) and the reviews you choose to show
+-- =============================================================================
+
+create table if not exists public.reviews_section (
+  id               int primary key default 1 check (id = 1),
+  enabled          boolean not null default true,
+  heading          text not null default 'What our guests are saying',
+  rating           numeric(2,1) check (rating is null or (rating >= 1 and rating <= 5)),
+  review_count     int check (review_count is null or review_count >= 0),
+  google_url       text,       -- "Read all reviews on Google" button
+  write_review_url text,       -- "Leave us a review" button
+  updated_at       timestamptz not null default now()
+);
+
+create table if not exists public.reviews (
+  id          uuid primary key default gen_random_uuid(),
+  author      text not null,
+  rating      int not null default 5 check (rating between 1 and 5),
+  quote       text not null,
+  review_date date,
+  sort_order  int not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['reviews_section', 'reviews'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists "Public read" on public.%I', t);
+    execute format('create policy "Public read" on public.%I for select to anon, authenticated using (true)', t);
+    execute format('drop policy if exists "Admins manage" on public.%I', t);
+    execute format(
+      'create policy "Admins manage" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())',
+      t
+    );
+    execute format('grant select on public.%I to anon, authenticated', t);
+    execute format('grant insert, update, delete on public.%I to authenticated', t);
+  end loop;
+end $$;
+insert into public.reviews_section (id) values (1) on conflict (id) do nothing;
+-- Tip: in the dashboard, set the two links using your Google place ID:
+--   https://www.google.com/maps/place/?q=place_id:YOUR_PLACE_ID
+--   https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID

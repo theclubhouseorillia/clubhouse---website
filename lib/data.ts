@@ -14,6 +14,8 @@ import {
   DEFAULT_PACKAGES,
   DEFAULT_POOL_TABLE,
   DEFAULT_RATES,
+  DEFAULT_REVIEWS,
+  DEFAULT_REVIEWS_SECTION,
   DEFAULT_SETTINGS,
 } from "./defaults";
 import { todayISO } from "./format";
@@ -31,6 +33,8 @@ import type {
   MenuItem,
   Owner,
   OwnersSection,
+  Review,
+  ReviewsSection,
   PoolTable,
   Rate,
   Settings,
@@ -253,4 +257,32 @@ export const getOwners = cache(async (): Promise<Owner[]> => {
   return safeQuery<Owner[]>("owners", DEFAULT_OWNERS, (sb) =>
     sb.from("owners").select("*").order("sort_order").order("name"),
   );
+});
+
+function numberOrNull(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+export const getReviewsSection = cache(async (): Promise<ReviewsSection> => {
+  const row = await safeQuery<Partial<ReviewsSection> | null>("reviews section", null, (sb) =>
+    sb.from("reviews_section").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_REVIEWS_SECTION;
+  return {
+    enabled: row.enabled ?? true,
+    heading: row.heading || DEFAULT_REVIEWS_SECTION.heading,
+    rating: numberOrNull(row.rating),
+    review_count: numberOrNull(row.review_count),
+    google_url: row.google_url || null,
+    write_review_url: row.write_review_url || null,
+  };
+});
+
+export const getReviews = cache(async (): Promise<Review[]> => {
+  const rows = await safeQuery<Review[]>("reviews", DEFAULT_REVIEWS, (sb) =>
+    sb.from("reviews").select("*").order("sort_order").order("created_at", { ascending: false }),
+  );
+  return rows.map((r) => ({ ...r, rating: Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5))) }));
 });
