@@ -373,9 +373,14 @@ export default async function HomePage() {
               />
             </Reveal>
             <Reveal delay={100} className="lg:justify-self-end">
-              <Link href="/events" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
-                All events <ArrowRightIcon width={16} height={16} />
-              </Link>
+              <div className="flex flex-wrap gap-x-8 gap-y-3">
+                <Link href="/calendar" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                  Calendar <ArrowRightIcon width={16} height={16} />
+                </Link>
+                <Link href="/events" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                  All events <ArrowRightIcon width={16} height={16} />
+                </Link>
+              </div>
             </Reveal>
           </div>
           {upcoming.length > 0 ? (

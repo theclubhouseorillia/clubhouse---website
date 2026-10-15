@@ -73,6 +73,7 @@ export const NAV_LINKS: readonly NavLink[] = [
   { href: "/pricing", label: "Simulators & Pricing", short: "Pricing", desktop: true },
   { href: "/league", label: "Winter League", short: "League", desktop: true },
   { href: "/events", label: "Events", short: "Events", desktop: true },
+  { href: "/calendar", label: "Calendar", short: "Calendar", desktop: true },
   { href: "/private-events", label: "Private Events", short: "Private Events", desktop: true },
   { href: "/menu", label: "Food & Drink", short: "Menu", desktop: true },
   { href: "/gallery", label: "Gallery", short: "Gallery", desktop: true },

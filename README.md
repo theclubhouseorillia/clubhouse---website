@@ -36,6 +36,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Google reviews: your star rating, the reviews you pick, and "Leave us a review" / "Read all reviews on Google" buttons
 - Gift Cards page (call or email to order), with a homepage band and banner message
 - FAQ page: questions whose answer is still in [square brackets] stay hidden until you fill them in
+- Calendar page: a month view plus day-by-day list of every event and weekly special (from Admin → Events), with holiday hours
 - Privacy policy page, linked in the footer and under every form (a plain-language starting point, not legal advice)
 - Anonymous visitor stats with Vercel Web Analytics (turn it on in Vercel → your project → Analytics)
 - Private event packages

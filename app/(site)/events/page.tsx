@@ -31,7 +31,12 @@ export default async function EventsPage() {
       {weekly.length > 0 && (
         <section aria-labelledby="weekly-title" className="py-20 sm:py-24">
           <div className="container-site">
-            <SectionHeading id="weekly-title" eyebrow="Every week" title="Weekly nights" />
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <SectionHeading id="weekly-title" eyebrow="Every week" title="Weekly specials & nights" />
+              <Link href="/calendar" className="btn btn-outline self-start sm:self-auto">
+                View the calendar
+              </Link>
+            </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {weekly.map((event, i) => (
                 <Reveal key={event.id} delay={(i % 3) * 90}>

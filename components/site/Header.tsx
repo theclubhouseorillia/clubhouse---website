@@ -78,7 +78,7 @@ export function Header({
           )}
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-5 min-[1360px]:flex">
+        <nav aria-label="Main" className="hidden items-center gap-4 min-[1440px]:flex">
           {desktopLinks.map((link) => (
             <Link
               key={link.href}
@@ -100,7 +100,7 @@ export function Header({
           <button
             ref={toggleRef}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-sm border border-line text-cream min-[1360px]:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-sm border border-line text-cream min-[1440px]:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -114,7 +114,7 @@ export function Header({
       <div
         id="mobile-menu"
         hidden={!open}
-        className="max-h-[calc(100svh-4.5rem)] overflow-y-auto border-t border-line bg-ink min-[1360px]:hidden"
+        className="max-h-[calc(100svh-4.5rem)] overflow-y-auto border-t border-line bg-ink min-[1440px]:hidden"
       >
         <nav aria-label="Mobile" className="container-site flex flex-col py-4">
           <Link
