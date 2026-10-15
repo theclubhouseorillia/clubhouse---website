@@ -55,6 +55,11 @@ select * from (values
 ) as v(name, summary, details, sort_order)
 where not exists (select 1 from public.bay_types);
 
+-- Link each bay to its pricing column (shows "$50 – $65 per hour" on its card)
+update public.bay_types set price_column = 'open_bay'     where price_column is null and name ilike 'open%';
+update public.bay_types set price_column = 'semi_private' where price_column is null and name ilike 'semi%';
+update public.bay_types set price_column = 'private_bay'  where price_column is null and name ilike 'private%';
+
 -- Simulator pricing ----------------------------------------------------------
 insert into public.pricing_rates (label, open_bay, semi_private, private_bay, sort_order)
 select * from (values

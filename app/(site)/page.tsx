@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon, CalendarIcon, CheckIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
 import { PhotoCarousel } from "@/components/site/PhotoCarousel";
+import { BayPriceRange } from "@/components/site/BayPriceRange";
 import { EventCard } from "@/components/site/EventCard";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
@@ -20,6 +21,7 @@ import {
   getLeagueSettings,
   getPackages,
   getPoolTable,
+  getRates,
   getSettings,
   getSpecialHours,
 } from "@/lib/data";
@@ -32,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [settings, bays, events, packages, hours, special, gallery, league, photos, pool] = await Promise.all([
+  const [settings, bays, events, packages, hours, special, gallery, league, photos, pool, rates] = await Promise.all([
     getSettings(),
     getBayTypes(),
     getEvents(),
@@ -43,6 +45,7 @@ export default async function HomePage() {
     getLeagueSettings(),
     getHomepagePhotos(),
     getPoolTable(),
+    getRates(),
   ]);
 
   const booking = bookingLink(settings);
@@ -154,7 +157,10 @@ export default async function HomePage() {
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col gap-4 p-7 sm:p-8">
-                    <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
+                    <div className="flex flex-col gap-2">
+                      <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
+                      <BayPriceRange bay={bay} rates={rates} />
+                    </div>
                     {bay.summary && <p className="leading-relaxed text-mist">{bay.summary}</p>}
                     {bay.details.length > 0 && (
                       <ul className="mt-auto flex flex-col gap-2.5 border-t border-line pt-5">

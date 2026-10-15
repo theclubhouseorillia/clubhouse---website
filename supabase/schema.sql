@@ -502,3 +502,7 @@ create policy "Admins manage" on public.pool_table
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 grant select on public.pool_table to anon, authenticated;
 grant insert, update, delete on public.pool_table to authenticated;
+
+-- Which pricing column each bay's price range comes from
+alter table public.bay_types add column if not exists price_column text
+  check (price_column in ('open_bay', 'semi_private', 'private_bay'));

@@ -117,10 +117,12 @@ export const getBayTypes = cache(async (): Promise<BayType[]> => {
   );
   return rows.map(({ image_url, ...r }) => {
     const photos = photoList(r.photos);
+    const column = ["open_bay", "semi_private", "private_bay"].includes(r.price_column ?? "") ? r.price_column : null;
     return {
       ...r,
       details: Array.isArray(r.details) ? r.details : [],
       photos: photos.length ? photos : image_url ? [image_url] : [],
+      price_column: column,
     };
   });
 });

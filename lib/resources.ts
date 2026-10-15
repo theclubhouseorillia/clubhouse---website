@@ -300,6 +300,17 @@ export const RESOURCES: ResourceDef[] = [
         wide: true,
         help: "Visitors can swipe through these on the homepage and pricing page. Landscape photos work best; use the arrows to choose which shows first.",
       },
+      {
+        name: "price_column",
+        label: "Show price range from",
+        type: "select",
+        options: [
+          { value: "open_bay", label: "Open Bay column" },
+          { value: "semi_private", label: "Semi-Private column" },
+          { value: "private_bay", label: "Private column" },
+        ],
+        help: "The card shows this bay's lowest to highest hourly price from Simulator pricing. Choose “—” to hide it.",
+      },
       { name: "summary", label: "Short description", type: "textarea", max: 400, wide: true, short: "" },
       { name: "details", label: "Key features", type: "list", wide: true, help: "One per line." },
     ],

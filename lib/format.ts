@@ -125,3 +125,12 @@ export function telHref(phone: string | null | undefined): string | null {
   const digits = phone.replace(/[^\d+]/g, "");
   return digits.length >= 7 ? `tel:${digits}` : null;
 }
+
+/** "$50 – $65" from a list of prices (or "$50" if they're all the same). */
+export function formatPriceRange(values: (number | null | undefined)[]): string | null {
+  const nums = values.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+  if (!nums.length) return null;
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  return min === max ? formatPrice(min) : `${formatPrice(min)} – ${formatPrice(max)}`;
+}

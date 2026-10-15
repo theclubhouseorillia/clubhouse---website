@@ -66,6 +66,8 @@ export interface BayType {
   summary: string | null;
   details: string[];
   photos: string[];
+  /** Which column of the pricing table this bay's price range comes from. */
+  price_column: "open_bay" | "semi_private" | "private_bay" | null;
   sort_order: number;
 }
 

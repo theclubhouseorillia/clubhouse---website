@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckIcon } from "@/components/icons";
+import { BayPriceRange } from "@/components/site/BayPriceRange";
 import { PhotoCarousel } from "@/components/site/PhotoCarousel";
 import { PoolTableFeature } from "@/components/site/PoolTableFeature";
 import { PricingTable } from "@/components/site/PricingTable";
@@ -64,6 +65,7 @@ export default async function PricingPage() {
                   <PhotoCarousel photos={bay.photos} label={`${bay.name} golf simulator`} />
                   <div className="flex flex-1 flex-col gap-4 p-7 sm:p-8">
                   <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
+                  <BayPriceRange bay={bay} rates={rates} />
                   {bay.summary && <p className="leading-relaxed text-mist">{bay.summary}</p>}
                   {bay.details.length > 0 && (
                     <ul className="flex flex-col gap-2.5 pt-2">
