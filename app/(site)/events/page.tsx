@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { EventCard } from "@/components/site/EventCard";
+import { Gallery } from "@/components/site/Gallery";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
-import { getEvents } from "@/lib/data";
+import { getEvents, getGallery } from "@/lib/data";
 import { splitEvents } from "@/lib/events";
 import { formatShortDate } from "@/lib/format";
 
@@ -13,8 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default async function EventsPage() {
-  const events = await getEvents();
+  const [events, gallery] = await Promise.all([getEvents(), getGallery()]);
   const { upcoming, weekly, past } = splitEvents(events);
+  const highlightCategories = ["Live entertainment", "Private parties"];
+  const highlights = gallery.filter((g) => highlightCategories.includes(g.category)).slice(0, 12);
 
   return (
     <>
@@ -60,6 +64,25 @@ export default async function EventsPage() {
           )}
         </div>
       </section>
+
+      {highlights.length > 0 && (
+        <section aria-labelledby="highlights-title" className="border-t border-line py-20 sm:py-24">
+          <div className="container-site">
+            <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+              <SectionHeading
+                id="highlights-title"
+                eyebrow="Past events"
+                title="Event highlights"
+                intro="A look at some of the nights we've hosted."
+              />
+              <Link href="/gallery" className="link-gold text-sm uppercase tracking-[0.16em]">
+                See all photos
+              </Link>
+            </div>
+            <Gallery images={highlights} categories={highlightCategories} />
+          </div>
+        </section>
+      )}
 
       {past.length > 0 && (
         <section aria-labelledby="past-title" className="border-t border-line py-20">

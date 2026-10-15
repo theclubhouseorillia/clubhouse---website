@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { MailIcon, PhoneIcon } from "@/components/icons";
+import { Gallery } from "@/components/site/Gallery";
 import { InquiryForm } from "@/components/site/InquiryForm";
 import { PackageCard } from "@/components/site/PackageCard";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
-import { getPackages, getSettings } from "@/lib/data";
+import { getGallery, getPackages, getSettings } from "@/lib/data";
 import { real, telHref } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -23,7 +25,8 @@ const OCCASIONS = [
 ];
 
 export default async function PrivateEventsPage() {
-  const [settings, packages] = await Promise.all([getSettings(), getPackages()]);
+  const [settings, packages, gallery] = await Promise.all([getSettings(), getPackages(), getGallery()]);
+  const partyPhotos = gallery.filter((g) => g.category === "Private parties").slice(0, 9);
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const email = real(settings.public_email);
@@ -67,6 +70,25 @@ export default async function PrivateEventsPage() {
           {real(settings.packages_note) && <p className="mt-8 text-sm text-mist">{settings.packages_note}</p>}
         </div>
       </section>
+
+      {partyPhotos.length > 0 && (
+        <section aria-labelledby="past-parties-title" className="border-t border-line py-20 sm:py-24">
+          <div className="container-site">
+            <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+              <SectionHeading
+                id="past-parties-title"
+                eyebrow="Past events"
+                title="Parties we've hosted"
+                intro="Birthdays, holiday parties and corporate nights at the venue."
+              />
+              <Link href="/gallery" className="link-gold text-sm uppercase tracking-[0.16em]">
+                See all photos
+              </Link>
+            </div>
+            <Gallery images={partyPhotos} categories={["Private parties"]} />
+          </div>
+        </section>
+      )}
 
       <section id="inquire" aria-labelledby="inquire-title" className="scroll-mt-24 border-t border-line bg-coal py-20 sm:py-28">
         <div className="container-site grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-20">

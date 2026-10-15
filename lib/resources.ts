@@ -164,7 +164,8 @@ export const RESOURCES: ResourceDef[] = [
     table: "gallery_images",
     title: "Photo gallery",
     singular: "Photo",
-    description: "Photos on the gallery page. The first “Bar & lounge” photo also appears on the homepage.",
+    description:
+      "Photos on the gallery page. “Live entertainment” and “Private parties” photos also show as past-event highlights on the Events and Private Events pages.",
     group: "Website",
     orderBy: [{ column: "sort_order" }, { column: "created_at", ascending: false }],
     titleField: "alt_text",
