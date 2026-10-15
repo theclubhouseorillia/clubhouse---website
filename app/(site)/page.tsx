@@ -324,14 +324,15 @@ export default async function HomePage() {
 
       {/* SPORTS BAR */}
       <section aria-labelledby="bar-title" className="border-y border-line bg-coal py-24 sm:py-32">
-        <div className="container-site grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          <Reveal className="order-2 lg:order-1">
+        <div className="container-site grid items-center gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+          {/* Landscape (4:3) so a typical bar photo shows in full; nudged slightly left on wide screens. */}
+          <Reveal className="order-2 lg:order-1 lg:-ml-4 xl:-ml-8">
             <div className="overflow-hidden rounded-[4px] border border-line">
               <PhotoCarousel
                 photos={barPhotos}
                 label="Bar & lounge"
-                className="aspect-[4/5]"
-                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="aspect-[4/3]"
+                sizes="(min-width: 1024px) 55vw, 100vw"
               />
             </div>
           </Reveal>
