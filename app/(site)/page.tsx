@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRightIcon, CheckIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
+import { ArrowRightIcon, CalendarIcon, CheckIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
 import { EventCard } from "@/components/site/EventCard";
 import { HoursList } from "@/components/site/HoursList";
 import { OpenToday } from "@/components/site/OpenToday";
@@ -15,20 +15,21 @@ import {
   getEvents,
   getGallery,
   getHours,
+  getLeagueSettings,
   getPackages,
   getSettings,
   getSpecialHours,
 } from "@/lib/data";
 import { homepageEvents } from "@/lib/events";
 import { real, telHref } from "@/lib/format";
-import { addressLines, bookingLink, directionsUrl } from "@/lib/site";
+import { addressLines, bookingLink, directionsUrl, leagueEmailHref } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
 export default async function HomePage() {
-  const [settings, bays, events, packages, hours, special, gallery] = await Promise.all([
+  const [settings, bays, events, packages, hours, special, gallery, league] = await Promise.all([
     getSettings(),
     getBayTypes(),
     getEvents(),
@@ -36,6 +37,7 @@ export default async function HomePage() {
     getHours(),
     getSpecialHours(),
     getGallery(),
+    getLeagueSettings(),
   ]);
 
   const booking = bookingLink(settings);
@@ -49,6 +51,7 @@ export default async function HomePage() {
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
+  const leagueHref = leagueEmailHref(league.email, league.email_subject);
 
   return (
     <>
@@ -237,6 +240,35 @@ export default async function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      {/* WINTER LEAGUE */}
+      {league.enabled && (
+        <section aria-labelledby="league-title" className="border-b border-line py-20 sm:py-24">
+          <div className="container-site">
+            <Reveal className="grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
+              <div className="flex flex-col gap-5">
+                <SectionHeading id="league-title" eyebrow="Leagues" title={league.title} intro={league.intro} />
+                {real(league.season) && (
+                  <p className="flex items-center gap-2 text-cream/90">
+                    <CalendarIcon width={18} height={18} className="text-gold" />
+                    {league.season}
+                    {real(league.schedule) ? ` · ${league.schedule}` : ""}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+                <Link href="/league" className="btn btn-gold">
+                  League details &amp; pricing
+                </Link>
+                <SmartLink href={leagueHref} className="btn btn-outline">
+                  <MailIcon width={16} height={16} />
+                  {leagueHref.startsWith("mailto:") ? "Email us to join" : "Contact us to join"}
+                </SmartLink>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* ENTERTAINMENT */}
       <section aria-labelledby="ent-title" className="py-24 sm:py-32">

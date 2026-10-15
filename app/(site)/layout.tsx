@@ -4,7 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { BusinessJsonLd } from "@/components/site/JsonLd";
 import { MobileBookBar } from "@/components/site/MobileBookBar";
-import { getAnnouncements, getHours, getSettings } from "@/lib/data";
+import { getAnnouncements, getHours, getLeagueSettings, getSettings } from "@/lib/data";
 import { real, telHref } from "@/lib/format";
 import { bookingLink } from "@/lib/site";
 
@@ -13,7 +13,12 @@ import { bookingLink } from "@/lib/site";
 export const revalidate = 300;
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  const [settings, announcements, hours] = await Promise.all([getSettings(), getAnnouncements(), getHours()]);
+  const [settings, announcements, hours, league] = await Promise.all([
+    getSettings(),
+    getAnnouncements(),
+    getHours(),
+    getLeagueSettings(),
+  ]);
   const booking = bookingLink(settings);
   const phoneHref = telHref(settings.phone);
 
@@ -32,11 +37,12 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         booking={booking}
         phoneHref={phoneHref}
         phoneLabel={real(settings.phone)}
+        showLeague={league.enabled}
       />
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>
-      <Footer settings={settings} hours={hours} />
+      <Footer settings={settings} hours={hours} showLeague={league.enabled} />
       <MobileBookBar booking={booking} phoneHref={phoneHref} />
       <BusinessJsonLd settings={settings} hours={hours} />
     </>

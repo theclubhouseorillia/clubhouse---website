@@ -5,6 +5,8 @@ import { getPublicClient } from "./supabase/public";
 import {
   DEFAULT_BAY_TYPES,
   DEFAULT_HOURS,
+  DEFAULT_LEAGUE_OPTIONS,
+  DEFAULT_LEAGUE_SETTINGS,
   DEFAULT_MENU,
   DEFAULT_PACKAGES,
   DEFAULT_RATES,
@@ -18,6 +20,8 @@ import type {
   EventRow,
   GalleryImage,
   HoursRow,
+  LeagueOption,
+  LeagueSettings,
   MenuCategory,
   MenuItem,
   Rate,
@@ -156,4 +160,25 @@ export const getGallery = cache(async (): Promise<GalleryImage[]> => {
   return safeQuery<GalleryImage[]>("gallery", [], (sb) =>
     sb.from("gallery_images").select("*").order("sort_order").order("created_at", { ascending: false }),
   );
+});
+
+export const getLeagueSettings = cache(async (): Promise<LeagueSettings> => {
+  const row = await safeQuery<Partial<LeagueSettings> | null>("league settings", null, (sb) =>
+    sb.from("league_settings").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_LEAGUE_SETTINGS;
+  return {
+    ...DEFAULT_LEAGUE_SETTINGS,
+    ...row,
+    enabled: row.enabled ?? true,
+    title: row.title || DEFAULT_LEAGUE_SETTINGS.title,
+    highlights: Array.isArray(row.highlights) ? row.highlights : [],
+  };
+});
+
+export const getLeagueOptions = cache(async (): Promise<LeagueOption[]> => {
+  const rows = await safeQuery<LeagueOption[]>("league options", DEFAULT_LEAGUE_OPTIONS, (sb) =>
+    sb.from("league_options").select("*").order("sort_order"),
+  );
+  return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [] }));
 });

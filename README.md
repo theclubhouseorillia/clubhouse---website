@@ -14,6 +14,7 @@ A fast, mobile-friendly website with a password-protected admin dashboard. Once 
 |---|---|
 | Home | Hero with your headline and slogan, booking / private event / pricing buttons, simulator bays, sports bar, event packages, upcoming entertainment, hours and location |
 | Simulators & Pricing (`/pricing`) | Your rate table (a table on computers, cards on phones), bay descriptions, booking buttons |
+| Winter League (`/league`) | League details, season and schedule, pricing options and an "Email us to join" button. Can be switched off in the dashboard |
 | Events (`/events`) | Weekly nights, upcoming one-off events and past events. Past events move to the bottom automatically |
 | Private Events (`/private-events`) | Packages and an inquiry form (name, email, phone, date, guests, package, details) |
 | Food & Drink (`/menu`) | Menu by category with prices, descriptions and optional photos |
@@ -28,6 +29,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Announcement banner: add, edit, delete, switch on/off, and schedule start and end times
 - Events: one-off or **weekly repeating**, flyers, times, admission, ticket/booking links, feature on the homepage
 - Simulator pricing and bay descriptions
+- Winter golf league page: details, pricing and the sign-up email
 - Private event packages
 - Menu categories and items (with photos)
 - Weekly hours, plus holiday and special hours

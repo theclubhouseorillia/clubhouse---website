@@ -398,3 +398,50 @@ revoke all on function public.submit_inquiry(text, text, text, text, text, date,
 grant execute on function public.submit_inquiry(text, text, text, text, text, date, int, text, text, text) to anon, authenticated;
 revoke all on function public.mark_inquiry_emailed(text, uuid) from public;
 grant execute on function public.mark_inquiry_emailed(text, uuid) to anon, authenticated;
+
+-- =============================================================================
+-- Winter golf league page: settings (one row) and pricing options
+-- =============================================================================
+
+create table if not exists public.league_settings (
+  id            int primary key default 1 check (id = 1),
+  enabled       boolean not null default true,
+  title         text not null default 'Winter Golf League',
+  intro         text,
+  season        text,
+  schedule      text,
+  highlights    text[] not null default '{}',
+  email         text,
+  email_subject text default 'Winter Golf League inquiry',
+  note          text,
+  updated_at    timestamptz not null default now()
+);
+
+create table if not exists public.league_options (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  price_label text not null,
+  price_note  text,
+  description text,
+  features    text[] not null default '{}',
+  featured    boolean not null default false,
+  sort_order  int not null default 0
+);
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['league_settings', 'league_options'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists "Public read" on public.%I', t);
+    execute format('create policy "Public read" on public.%I for select to anon, authenticated using (true)', t);
+    execute format('drop policy if exists "Admins manage" on public.%I', t);
+    execute format(
+      'create policy "Admins manage" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())',
+      t
+    );
+    execute format('grant select on public.%I to anon, authenticated', t);
+    execute format('grant insert, update, delete on public.%I to authenticated', t);
+  end loop;
+end $$;

@@ -152,6 +152,32 @@ select '[Sample] Karaoke Night',
        current_date, '21:00'::time, '01:00'::time, true, 'Free entry', false
 where not exists (select 1 from public.events);
 
+-- Winter golf league page (fill in the [placeholders] in Admin → Winter league) --
+insert into public.league_settings (id, title, intro, season, schedule, highlights, note)
+values (
+  1,
+  'Winter Golf League',
+  'Keep your game sharp all winter. Play weekly rounds on our Trackman iO simulators, compete on the leaderboard and enjoy the bar with your league mates.',
+  '[Season dates, e.g. January to March]',
+  '[League night and time, e.g. Tuesdays at 7 PM]',
+  array[
+    '[Format, e.g. 9 holes per week on world-famous courses]',
+    '[What''s included, e.g. weekly prizes and an end-of-season party]',
+    'All skill levels welcome'
+  ],
+  'Spots are limited. Email us to reserve yours.'
+)
+on conflict (id) do nothing;
+
+insert into public.league_options (name, price_label, price_note, description, features, featured, sort_order)
+select * from (values
+  ('[League option, e.g. Individual]', '[Price]', '[e.g. per player, per season]',
+   '[Short description]', array['[What''s included]'], false, 1),
+  ('[League option, e.g. Two-person team]', '[Price]', '[e.g. per team, per season]',
+   '[Short description]', array['[What''s included]'], true, 2)
+) as v(name, price_label, price_note, description, features, featured, sort_order)
+where not exists (select 1 from public.league_options);
+
 -- =============================================================================
 -- MAKE YOURSELF AN ADMIN
 -- 1. Supabase → Authentication → Users → Add user → Create new user

@@ -1,7 +1,7 @@
 // Fallback content used before the database is connected (or if it is
 // temporarily unreachable), so the site never shows a blank page.
 // It mirrors supabase/seed.sql.
-import type { BayType, EventPackage, HoursRow, MenuCategory, Rate, Settings } from "./types";
+import type { BayType, EventPackage, HoursRow, LeagueOption, LeagueSettings, MenuCategory, Rate, Settings } from "./types";
 
 export const GALLERY_CATEGORIES = [
   "Golf simulator bays",
@@ -175,3 +175,22 @@ export const DEFAULT_MENU: MenuCategory[] = MENU_DEFAULTS.map(([name, placeholde
     },
   ],
 }));
+
+export const DEFAULT_LEAGUE_SETTINGS: LeagueSettings = {
+  enabled: true,
+  title: "Winter Golf League",
+  intro:
+    "Keep your game sharp all winter. Play weekly rounds on our Trackman iO simulators, compete on the leaderboard and enjoy the bar with your league mates.",
+  season: "[Season dates, e.g. January to March]",
+  schedule: "[League night and time, e.g. Tuesdays at 7 PM]",
+  highlights: [
+    "[Format, e.g. 9 holes per week on world-famous courses]",
+    "[What's included, e.g. weekly prizes and an end-of-season party]",
+    "All skill levels welcome",
+  ],
+  email: null,
+  email_subject: "Winter Golf League inquiry",
+  note: "Spots are limited. Email us to reserve yours.",
+};
+
+export const DEFAULT_LEAGUE_OPTIONS: LeagueOption[] = [];

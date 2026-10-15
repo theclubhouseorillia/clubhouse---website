@@ -132,3 +132,18 @@ export interface GalleryImage {
   category: string;
   sort_order: number;
 }
+
+export interface LeagueSettings {
+  enabled: boolean;
+  title: string;
+  intro: string | null;
+  season: string | null;
+  schedule: string | null;
+  highlights: string[];
+  email: string | null;
+  email_subject: string | null;
+  note: string | null;
+}
+
+/** League pricing options share the package card layout. */
+export type LeagueOption = EventPackage;

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon, PhoneIcon } from "@/components/icons";
-import { NAV_LINKS, type LinkTarget } from "@/lib/site";
+import { navLinks, type LinkTarget } from "@/lib/site";
 import { SmartLink } from "./SmartLink";
 
 export function Header({
@@ -13,14 +13,17 @@ export function Header({
   booking,
   phoneHref,
   phoneLabel,
+  showLeague,
 }: {
   businessName: string;
   logoUrl: string | null;
   booking: LinkTarget;
   phoneHref: string | null;
   phoneLabel: string | null;
+  showLeague: boolean;
 }) {
   const pathname = usePathname();
+  const links = navLinks(showLeague);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -74,8 +77,8 @@ export function Header({
           )}
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-7 xl:flex">
-          {NAV_LINKS.map((link) => (
+        <nav aria-label="Main" className="hidden items-center gap-6 xl:flex">
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -120,7 +123,7 @@ export function Header({
           >
             Home
           </Link>
-          {NAV_LINKS.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}

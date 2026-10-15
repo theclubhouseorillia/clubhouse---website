@@ -61,9 +61,23 @@ export function siteUrl(): string {
 
 export const NAV_LINKS = [
   { href: "/pricing", label: "Simulators & Pricing" },
+  { href: "/league", label: "Winter League" },
   { href: "/events", label: "Events" },
   { href: "/private-events", label: "Private Events" },
   { href: "/menu", label: "Food & Drink" },
   { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact" },
 ] as const;
+
+/** Menu links, leaving out the league page when it's switched off. */
+export function navLinks(showLeague: boolean) {
+  return NAV_LINKS.filter((l) => showLeague || l.href !== "/league");
+}
+
+/** "Email us to join" link for the league, with the subject and a few prompts filled in. */
+export function leagueEmailHref(email: string | null, subject: string | null): string {
+  const address = real(email);
+  if (!address) return "/contact";
+  const body = "Name:\nPhone:\nPlaying as (individual or team):\nQuestions:\n";
+  return `mailto:${address}?subject=${encodeURIComponent(subject || "Winter Golf League inquiry")}&body=${encodeURIComponent(body)}`;
+}

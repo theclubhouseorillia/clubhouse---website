@@ -2,10 +2,18 @@ import Link from "next/link";
 import { ClockIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
 import { real, telHref } from "@/lib/format";
 import { groupHours } from "@/lib/hours";
-import { NAV_LINKS, addressLines, directionsUrl, socialLinks } from "@/lib/site";
+import { addressLines, directionsUrl, navLinks, socialLinks } from "@/lib/site";
 import type { HoursRow, Settings } from "@/lib/types";
 
-export function Footer({ settings, hours }: { settings: Settings; hours: HoursRow[] }) {
+export function Footer({
+  settings,
+  hours,
+  showLeague,
+}: {
+  settings: Settings;
+  hours: HoursRow[];
+  showLeague: boolean;
+}) {
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const email = real(settings.public_email);
@@ -88,7 +96,7 @@ export function Footer({ settings, hours }: { settings: Settings; hours: HoursRo
         <nav aria-label="Footer">
           <h2 className="eyebrow mb-5">Explore</h2>
           <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
+            {navLinks(showLeague).map((link) => (
               <li key={link.href}>
                 <Link href={link.href} className="inline-block py-1.5 text-mist transition hover:text-gold-2">
                   {link.label}
