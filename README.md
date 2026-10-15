@@ -153,7 +153,7 @@ Bookmark `/admin`. There's deliberately no admin link on the public website.
 - **Saving** updates the live website immediately.
 - **Announcement banner:** keep messages short so they fit on phones. Link to a page on the site (like `/events`) or to a full web address. Use *Start showing* / *Stop showing* to schedule promos ahead of time.
 - **Weekly events** (karaoke, DJ nights): set the first date, tick *Repeats every week*, and optionally an end date. The site always shows the next date.
-- **Feature on the homepage:** featured events show first in the homepage's entertainment section.
+- **Feature on the homepage:** featured events show first in the homepage's "What's on" section, right under the top banner (above the golf simulators).
 - **Photos:** upload straight from your phone or computer. Large photos are shrunk automatically. Add a short description to every gallery photo; it helps visitors using screen readers and helps Google.
 - **Booking buttons:** every *Book a Simulator* button uses the booking link in Business settings. If it's empty, the buttons call your phone number.
 - **Hours:** edit your regular week under *Weekly hours*. Add holidays under *Holiday & special hours*; they show automatically until the date passes.

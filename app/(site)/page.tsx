@@ -162,8 +162,49 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* WHAT'S ON: upcoming events, shown right under the hero */}
+      <section aria-labelledby="ent-title" className="py-24 sm:py-32">
+        <div className="container-site">
+          <div className="grid items-end gap-8 lg:grid-cols-[1.2fr_1fr]">
+            <Reveal>
+              <SectionHeading
+                id="ent-title"
+                eyebrow="What's on"
+                title="Karaoke, live DJs & live music"
+                intro="Big games on the big screens, weekly entertainment and special events all year."
+              />
+            </Reveal>
+            <Reveal delay={100} className="lg:justify-self-end">
+              <div className="flex flex-wrap gap-x-8 gap-y-3">
+                <Link href="/calendar" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                  Calendar <ArrowRightIcon width={16} height={16} />
+                </Link>
+                <Link href="/events" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                  All events <ArrowRightIcon width={16} height={16} />
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+          {upcoming.length > 0 ? (
+            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {upcoming.map((event, i) => (
+                <Reveal key={event.id} delay={i * 90}>
+                  <EventCard event={event} compact />
+                </Reveal>
+              ))}
+            </div>
+          ) : (
+            <Reveal className="mt-14">
+              <p className="card p-8 text-mist">
+                New events are posted here regularly. Check back soon, or follow us on social media for announcements.
+              </p>
+            </Reveal>
+          )}
+        </div>
+      </section>
+
       {/* SIMULATORS */}
-      <section aria-labelledby="sims-title" className="py-24 sm:py-32">
+      <section aria-labelledby="sims-title" className="border-t border-line py-24 sm:py-32">
         <div className="container-site">
           <div className="grid items-end gap-10 lg:grid-cols-[1.1fr_1fr]">
             <Reveal>
@@ -316,7 +357,7 @@ export default async function HomePage() {
 
       {/* WINTER LEAGUE */}
       {league.enabled && (
-        <section aria-labelledby="league-title" className="border-b border-line py-20 sm:py-24">
+        <section aria-labelledby="league-title" className="py-20 sm:py-24">
           <div className="container-site">
             <Reveal className="grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
               <div className="flex flex-col gap-5">
@@ -359,47 +400,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* ENTERTAINMENT */}
-      <section aria-labelledby="ent-title" className="py-24 sm:py-32">
-        <div className="container-site">
-          <div className="grid items-end gap-8 lg:grid-cols-[1.2fr_1fr]">
-            <Reveal>
-              <SectionHeading
-                id="ent-title"
-                eyebrow="What's on"
-                title="Karaoke, live DJs & live music"
-                intro="Big games on the big screens, weekly entertainment and special events all year."
-              />
-            </Reveal>
-            <Reveal delay={100} className="lg:justify-self-end">
-              <div className="flex flex-wrap gap-x-8 gap-y-3">
-                <Link href="/calendar" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
-                  Calendar <ArrowRightIcon width={16} height={16} />
-                </Link>
-                <Link href="/events" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
-                  All events <ArrowRightIcon width={16} height={16} />
-                </Link>
-              </div>
-            </Reveal>
-          </div>
-          {upcoming.length > 0 ? (
-            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {upcoming.map((event, i) => (
-                <Reveal key={event.id} delay={i * 90}>
-                  <EventCard event={event} compact />
-                </Reveal>
-              ))}
-            </div>
-          ) : (
-            <Reveal className="mt-14">
-              <p className="card p-8 text-mist">
-                New events are posted here regularly. Check back soon, or follow us on social media for announcements.
-              </p>
-            </Reveal>
-          )}
-        </div>
-      </section>
 
       {/* GIFT CARDS */}
       {giftCards.enabled && (
