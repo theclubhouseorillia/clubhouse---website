@@ -174,6 +174,16 @@ export default async function HomePage() {
                   Join the Winter League
                 </Link>
               )}
+              {giftCards.enabled &&
+                (giftCards.buy_url ? (
+                  <a href={giftCards.buy_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+                    Buy a Gift Card
+                  </a>
+                ) : (
+                  <Link href="/gift-cards" className="btn btn-outline">
+                    Buy a Gift Card
+                  </Link>
+                ))}
             </div>
             <div className="flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm text-mist">
               <OpenToday hours={hours} special={special} />
