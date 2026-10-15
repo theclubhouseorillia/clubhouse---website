@@ -148,6 +148,8 @@ export interface LeagueSettings {
   email_subject: string | null;
   /** Online sign-up page (e.g. Trackman). When set, the league page's join buttons open it. */
   signup_url: string | null;
+  /** Longer description under "How it works": "## " starts a heading, "- " a bullet. */
+  details: string | null;
   note: string | null;
 }
 

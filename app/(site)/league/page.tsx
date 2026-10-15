@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { CalendarIcon, CheckIcon, ClockIcon, ExternalIcon, MailIcon, PhoneIcon } from "@/components/icons";
 import { PackageCard } from "@/components/site/PackageCard";
@@ -7,6 +8,7 @@ import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
 import { getLeagueOptions, getLeagueSettings, getLeagueSteps, getSettings } from "@/lib/data";
 import { real, telHref } from "@/lib/format";
+import { toBlocks } from "@/lib/richText";
 import { leagueEmailHref } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,6 +39,7 @@ export default async function LeaguePage() {
   const ctaLabel = hasSignup ? "Sign up now" : hasEmail ? "Email us to join" : "Contact us to join";
   const CtaIcon = hasSignup ? ExternalIcon : MailIcon;
   const tel = telHref(settings.phone);
+  const details = toBlocks(real(league.details) ?? "");
 
   return (
     <>
@@ -66,7 +69,26 @@ export default async function LeaguePage() {
                 </div>
               )}
             </dl>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            {details.length > 0 && (
+              <div className="flex flex-col gap-4 text-lg leading-relaxed text-mist">
+                {details.map((block, i) => (
+                  <Fragment key={i}>
+                    {block.kind === "heading" && (
+                      <h3 className="mt-5 font-display text-2xl font-semibold text-cream">{block.text}</h3>
+                    )}
+                    {block.kind === "list" && (
+                      <ul className="flex list-disc flex-col gap-1.5 pl-6 marker:text-gold">
+                        {block.items.map((item, j) => (
+                          <li key={j}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {block.kind === "paragraph" && <p className="whitespace-pre-line">{block.text}</p>}
+                  </Fragment>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
               <SmartLink href={joinHref} className="btn btn-gold">
                 <CtaIcon width={18} height={18} />
                 {ctaLabel}
@@ -81,15 +103,18 @@ export default async function LeaguePage() {
           </Reveal>
 
           {league.highlights.length > 0 && (
-            <Reveal delay={100}>
-              <ul className="card flex flex-col gap-4 p-7 sm:p-9">
-                {league.highlights.map((h) => (
-                  <li key={h} className="flex gap-3 text-lg text-cream/90">
-                    <CheckIcon width={20} height={20} className="mt-1 shrink-0 text-gold" />
-                    {h}
-                  </li>
-                ))}
-              </ul>
+            <Reveal delay={100} className="lg:self-start">
+              <div className="card flex flex-col gap-5 p-7 sm:p-9">
+                <h3 className="font-display text-2xl font-semibold text-cream">League details</h3>
+                <ul className="flex flex-col gap-4">
+                  {league.highlights.map((h) => (
+                    <li key={h} className="flex gap-3 text-lg text-cream/90">
+                      <CheckIcon width={20} height={20} className="mt-1 shrink-0 text-gold" />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </Reveal>
           )}
         </div>
@@ -98,7 +123,7 @@ export default async function LeaguePage() {
       {options.length > 0 && (
         <section aria-labelledby="league-pricing-title" className="border-t border-line bg-coal py-20 sm:py-28">
           <div className="container-site">
-            <SectionHeading id="league-pricing-title" eyebrow="Pricing" title="Join the league" />
+            <SectionHeading id="league-pricing-title" eyebrow="Pricing" title="League fee" />
             <div
               className={`mt-14 grid gap-6 ${
                 options.length >= 3 ? "lg:grid-cols-3" : options.length === 2 ? "md:grid-cols-2" : "max-w-xl"

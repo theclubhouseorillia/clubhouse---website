@@ -220,6 +220,7 @@ export const DEFAULT_LEAGUE_SETTINGS: LeagueSettings = {
   email: null,
   email_subject: "Winter Golf League inquiry",
   signup_url: null,
+  details: null,
   note: "Spots are limited. Email us to reserve yours.",
 };
 

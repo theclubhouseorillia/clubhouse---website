@@ -692,3 +692,5 @@ create policy "Admins manage" on public.league_steps for all to authenticated us
 grant select on public.league_steps to anon, authenticated;
 grant insert, update, delete on public.league_steps to authenticated;
 
+-- Longer league description (format, tee times, rules, registration) under "How it works".
+alter table public.league_settings add column if not exists details text;
