@@ -237,7 +237,7 @@ export const getPoolTable = cache(async (): Promise<PoolTable> => {
 });
 
 export const getOwnersSection = cache(async (): Promise<OwnersSection> => {
-  const row = await safeQuery<Partial<OwnersSection> | null>("owners section", null, (sb) =>
+  const row = await safeQuery<(Partial<OwnersSection> & { photos?: unknown }) | null>("owners section", null, (sb) =>
     sb.from("owners_section").select("*").eq("id", 1).maybeSingle(),
   );
   if (!row) return DEFAULT_OWNERS_SECTION;
@@ -245,7 +245,7 @@ export const getOwnersSection = cache(async (): Promise<OwnersSection> => {
     enabled: row.enabled ?? true,
     heading: row.heading || DEFAULT_OWNERS_SECTION.heading,
     intro: row.intro ?? null,
-    photos: photoList(row.photos),
+    photo_url: row.photo_url || photoList(row.photos)[0] || null,
   };
 });
 

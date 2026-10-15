@@ -176,7 +176,8 @@ export interface OwnersSection {
   enabled: boolean;
   heading: string;
   intro: string | null;
-  photos: string[];
+  /** One group photo of the owners. */
+  photo_url: string | null;
 }
 
 export interface Owner {

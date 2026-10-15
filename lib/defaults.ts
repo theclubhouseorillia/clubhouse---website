@@ -241,7 +241,7 @@ export const DEFAULT_OWNERS_SECTION: OwnersSection = {
   enabled: true,
   heading: "Meet the Owners",
   intro: null,
-  photos: [],
+  photo_url: null,
 };
 
 export const DEFAULT_OWNERS: Owner[] = [];

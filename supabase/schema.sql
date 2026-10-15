@@ -516,7 +516,7 @@ create table if not exists public.owners_section (
   enabled    boolean not null default true,
   heading    text not null default 'Meet the Owners',
   intro      text,
-  photos     text[] not null default '{}',
+  photo_url  text,             -- one group photo of the owners
   updated_at timestamptz not null default now()
 );
 
@@ -547,3 +547,5 @@ begin
   end loop;
 end $$;
 insert into public.owners_section (id) values (1) on conflict (id) do nothing;
+-- (earlier versions had a "photos" list here; the group photo now lives in photo_url)
+alter table public.owners_section add column if not exists photo_url text;

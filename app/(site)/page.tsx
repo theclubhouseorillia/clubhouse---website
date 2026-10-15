@@ -87,8 +87,13 @@ export default async function HomePage() {
   const directions = directionsUrl(settings);
   const leagueHref = leagueEmailHref(league.email, league.email_subject);
   const ownersIntro = real(ownersSection.intro);
-  const ownerGrid =
-    owners.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : owners.length === 2 ? "sm:grid-cols-2 lg:max-w-4xl" : "max-w-md";
+  const ownersHaveBios = owners.some((o) => real(o.bio));
+  const ownerNames = owners.map((o) => o.name);
+  const ownersPhotoAlt = ownerNames.length
+    ? ownerNames.length > 1
+      ? `${ownerNames.slice(0, -1).join(", ")} and ${ownerNames[ownerNames.length - 1]}`
+      : ownerNames[0]
+    : `The owners of ${settings.business_name}`;
 
   return (
     <>
@@ -437,65 +442,54 @@ export default async function HomePage() {
       {/* MEET THE OWNERS (the "Meet the Owners" button in the top menu jumps here) */}
       {ownersSection.enabled && (
         <section id="owners" aria-labelledby="owners-title" className="scroll-mt-28 border-t border-line py-24 sm:py-28">
-          <div className="container-site flex flex-col gap-14">
-            <div
-              className={
-                ownersSection.photos.length > 0 ? "grid items-center gap-10 lg:grid-cols-2 lg:gap-16" : "max-w-3xl"
-              }
-            >
-              <Reveal>
-                <SectionHeading
-                  id="owners-title"
-                  eyebrow="Our story"
-                  title={ownersSection.heading}
-                  intro={ownersIntro ?? undefined}
-                />
-              </Reveal>
-              {ownersSection.photos.length > 0 && (
-                <Reveal delay={100} className="overflow-hidden rounded-[4px] border border-line">
-                  <PhotoCarousel
-                    photos={ownersSection.photos}
-                    label="The owners"
-                    className="aspect-[4/3]"
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                  />
-                </Reveal>
-              )}
-            </div>
-
-            {owners.length > 0 && (
-              <div className={`grid gap-6 ${ownerGrid}`}>
-                {owners.map((owner, i) => {
-                  const bio = real(owner.bio);
-                  const role = real(owner.role);
-                  return (
-                    <Reveal key={owner.id} delay={i * 80} className="card flex flex-col overflow-hidden">
-                      <PhotoSlot
-                        src={owner.photo_url}
-                        alt={owner.name}
-                        label={owner.name}
-                        className="aspect-[4/5] border-b border-line bg-coal"
-                        sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
-                      />
-                      <div className="flex flex-col gap-2 p-6">
-                        <h3 className="font-display text-2xl text-cream">{owner.name}</h3>
+          <div className="container-site grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+            <Reveal className="flex flex-col gap-10">
+              <SectionHeading
+                id="owners-title"
+                eyebrow="Our story"
+                title={ownersSection.heading}
+                intro={ownersIntro ?? undefined}
+              />
+              {owners.length > 0 && (
+                <ul
+                  className={
+                    ownersHaveBios
+                      ? "flex flex-col divide-y divide-line border-y border-line"
+                      : "grid gap-x-6 gap-y-5 border-t border-line pt-6 sm:grid-cols-3"
+                  }
+                >
+                  {owners.map((owner) => {
+                    const role = real(owner.role);
+                    const bio = real(owner.bio);
+                    return (
+                      <li key={owner.id} className={ownersHaveBios ? "py-5" : ""}>
+                        <p className="font-display text-xl text-cream">{owner.name}</p>
                         {role && (
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">{role}</p>
+                          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-gold">{role}</p>
                         )}
-                        {bio && <p className="mt-2 leading-relaxed whitespace-pre-line text-mist">{bio}</p>}
-                      </div>
-                    </Reveal>
-                  );
-                })}
-              </div>
-            )}
-
-            <div>
-              <a href="#top" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-mist transition hover:text-gold-2">
+                        {bio && <p className="mt-3 leading-relaxed whitespace-pre-line text-mist">{bio}</p>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <a
+                href="#top"
+                className="inline-flex items-center gap-2 self-start text-sm font-semibold uppercase tracking-[0.14em] text-mist transition hover:text-gold-2"
+              >
                 <ArrowRightIcon className="-rotate-90" width={16} height={16} />
                 Back to top
               </a>
-            </div>
+            </Reveal>
+            <Reveal delay={100} className="overflow-hidden rounded-[4px] border border-line">
+              <PhotoSlot
+                src={ownersSection.photo_url}
+                alt={ownersPhotoAlt}
+                label="The owners"
+                className="aspect-[4/3] bg-coal"
+                sizes="(min-width: 1280px) 600px, (min-width: 1024px) 50vw, 100vw"
+              />
+            </Reveal>
           </div>
         </section>
       )}
