@@ -13,7 +13,7 @@ export default async function AdminOverview() {
   const { supabase } = await requireAdmin();
   const today = todayISO();
 
-  const [settingsRes, announcementsRes, eventsRes, newInquiriesRes, recentRes, galleryRes, placeholderMenuRes] =
+  const [settingsRes, announcementsRes, eventsRes, newInquiriesRes, recentRes, galleryRes, placeholderMenuRes, homepageRes] =
     await Promise.all([
       supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),
       supabase.from("announcements").select("id", { count: "exact", head: true }).eq("enabled", true),
@@ -26,6 +26,7 @@ export default async function AdminOverview() {
       supabase.from("inquiries").select("id, kind, name, created_at, handled").order("created_at", { ascending: false }).limit(5),
       supabase.from("gallery_images").select("id", { count: "exact", head: true }),
       supabase.from("menu_items").select("id", { count: "exact", head: true }).like("name", "[%"),
+      supabase.from("homepage_photos").select("hero_photos").eq("id", 1).maybeSingle(),
     ]);
 
   const s = (settingsRes.data ?? {}) as Record<string, unknown>;
@@ -51,7 +52,14 @@ export default async function AdminOverview() {
       href: "/admin/settings",
       hint: "Business settings",
     },
-    { done: !!text("hero_image_url"), label: "Upload a homepage hero photo", href: "/admin/settings", hint: "Business settings" },
+    {
+      done:
+        !!text("hero_image_url") ||
+        ((homepageRes.data as { hero_photos?: string[] } | null)?.hero_photos?.length ?? 0) > 0,
+      label: "Upload photos for the top of your homepage",
+      href: "/admin/homepage-photos",
+      hint: "Homepage photos",
+    },
     { done: (galleryRes.count ?? 0) > 0, label: "Upload photos to the gallery", href: "/admin/gallery", hint: "Photo gallery" },
     {
       done: (placeholderMenuRes.count ?? 0) === 0,

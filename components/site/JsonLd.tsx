@@ -4,7 +4,15 @@ import { hasRealAddress, siteUrl, socialLinks } from "@/lib/site";
 import type { HoursRow, Settings } from "@/lib/types";
 
 /** Structured data so search engines understand the business, address and hours. */
-export function BusinessJsonLd({ settings, hours }: { settings: Settings; hours: HoursRow[] }) {
+export function BusinessJsonLd({
+  settings,
+  hours,
+  image,
+}: {
+  settings: Settings;
+  hours: HoursRow[];
+  image: string | null;
+}) {
   if (!real(settings.business_name)) return null;
 
   const data: Record<string, unknown> = {
@@ -14,7 +22,7 @@ export function BusinessJsonLd({ settings, hours }: { settings: Settings; hours:
     url: real(settings.website_url) ?? siteUrl(),
     description: real(settings.seo_description) ?? undefined,
     telephone: real(settings.phone) ?? undefined,
-    image: settings.hero_image_url ?? undefined,
+    image: image ?? settings.hero_image_url ?? undefined,
     priceRange: "$$",
     openingHoursSpecification: openingHoursSchema(hours),
     sameAs: socialLinks(settings).map((s) => s.href),

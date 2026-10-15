@@ -5,17 +5,24 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 import { PhotoSlot } from "./PhotoSlot";
 import { SmartImage } from "./SmartImage";
 
-/** A bay's photos: swipe on phones, arrows and dots on any screen. One photo shows on its own. */
-export function BayPhotos({
+/**
+ * A set of photos: swipe on phones, arrows and dots on any screen. One photo
+ * shows on its own. With no photos it shows a labelled placeholder, or nothing
+ * when `hideWhenEmpty` is set.
+ */
+export function PhotoCarousel({
   photos,
-  name,
+  label,
   sizes = "(min-width: 1024px) 33vw, 100vw",
   className = "aspect-[4/3]",
+  hideWhenEmpty = false,
 }: {
   photos: string[];
-  name: string;
+  /** What the photos show, e.g. "Private Bay". Used for descriptions and the placeholder. */
+  label: string;
   sizes?: string;
   className?: string;
+  hideWhenEmpty?: boolean;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -33,12 +40,14 @@ export function BayPhotos({
     setIndex(Math.round(track.scrollLeft / track.clientWidth));
   };
 
+  if (count === 0 && hideWhenEmpty) return null;
+
   if (count <= 1) {
     return (
       <PhotoSlot
         src={photos[0]}
-        alt={`${name} golf simulator`}
-        label={name}
+        alt={label}
+        label={label}
         className={className}
         imageClassName="object-cover"
         sizes={sizes}
@@ -50,7 +59,7 @@ export function BayPhotos({
     <div
       role="region"
       aria-roledescription="carousel"
-      aria-label={`${name} photos`}
+      aria-label={`${label} photos`}
       className={`group/photos relative overflow-hidden bg-coal-2 ${className}`}
     >
       <div
@@ -66,7 +75,7 @@ export function BayPhotos({
             aria-label={`${i + 1} of ${count}`}
             className="relative h-full w-full shrink-0 snap-center"
           >
-            <SmartImage src={src} alt={`${name} golf simulator, photo ${i + 1} of ${count}`} sizes={sizes} className="object-cover" />
+            <SmartImage src={src} alt={`${label}, photo ${i + 1} of ${count}`} sizes={sizes} className="object-cover" />
           </div>
         ))}
       </div>
@@ -76,7 +85,7 @@ export function BayPhotos({
         onClick={() => goTo(Math.max(0, index - 1))}
         disabled={index === 0}
         className="absolute left-2 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-ink/75 text-cream transition hover:text-gold-2 disabled:opacity-0"
-        aria-label={`Previous photo of ${name}`}
+        aria-label={`Previous photo: ${label}`}
       >
         <ChevronLeftIcon width={22} height={22} />
       </button>
@@ -85,7 +94,7 @@ export function BayPhotos({
         onClick={() => goTo(Math.min(count - 1, index + 1))}
         disabled={index >= count - 1}
         className="absolute right-2 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-ink/75 text-cream transition hover:text-gold-2 disabled:opacity-0"
-        aria-label={`Next photo of ${name}`}
+        aria-label={`Next photo: ${label}`}
       >
         <ChevronRightIcon width={22} height={22} />
       </button>

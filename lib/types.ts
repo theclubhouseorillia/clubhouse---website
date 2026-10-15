@@ -87,6 +87,7 @@ export interface EventPackage {
   features: string[];
   featured: boolean;
   sort_order: number;
+  photos: string[];
 }
 
 export interface MenuItem {
@@ -148,3 +149,12 @@ export interface LeagueSettings {
 
 /** League pricing options share the package card layout. */
 export type LeagueOption = EventPackage;
+
+/** Photo sets for each homepage section. */
+export interface HomepagePhotos {
+  hero_photos: string[];
+  bar_photos: string[];
+  events_photos: string[];
+  league_photos: string[];
+  visit_photos: string[];
+}

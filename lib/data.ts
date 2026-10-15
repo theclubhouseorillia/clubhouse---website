@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getPublicClient } from "./supabase/public";
 import {
   DEFAULT_BAY_TYPES,
+  DEFAULT_HOMEPAGE_PHOTOS,
   DEFAULT_HOURS,
   DEFAULT_LEAGUE_OPTIONS,
   DEFAULT_LEAGUE_SETTINGS,
@@ -19,6 +20,7 @@ import type {
   EventPackage,
   EventRow,
   GalleryImage,
+  HomepagePhotos,
   HoursRow,
   LeagueOption,
   LeagueSettings,
@@ -50,6 +52,11 @@ async function safeQuery<T>(
     console.error(`[data] ${label}:`, err);
     return fallback;
   }
+}
+
+/** Keeps only real photo addresses from a database array. */
+function photoList(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((p): p is string => typeof p === "string" && p.length > 0) : [];
 }
 
 function toNumber(v: unknown): number | null {
@@ -107,7 +114,7 @@ export const getBayTypes = cache(async (): Promise<BayType[]> => {
     sb.from("bay_types").select("*").order("sort_order"),
   );
   return rows.map(({ image_url, ...r }) => {
-    const photos = Array.isArray(r.photos) ? r.photos.filter((p) => typeof p === "string" && p) : [];
+    const photos = photoList(r.photos);
     return {
       ...r,
       details: Array.isArray(r.details) ? r.details : [],
@@ -132,7 +139,7 @@ export const getPackages = cache(async (): Promise<EventPackage[]> => {
   const rows = await safeQuery<EventPackage[]>("packages", DEFAULT_PACKAGES, (sb) =>
     sb.from("event_packages").select("*").order("sort_order"),
   );
-  return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [] }));
+  return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [], photos: photoList(r.photos) }));
 });
 
 export const getMenu = cache(async (): Promise<MenuCategory[]> => {
@@ -188,5 +195,19 @@ export const getLeagueOptions = cache(async (): Promise<LeagueOption[]> => {
   const rows = await safeQuery<LeagueOption[]>("league options", DEFAULT_LEAGUE_OPTIONS, (sb) =>
     sb.from("league_options").select("*").order("sort_order"),
   );
-  return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [] }));
+  return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [], photos: photoList(r.photos) }));
+});
+
+export const getHomepagePhotos = cache(async (): Promise<HomepagePhotos> => {
+  const row = await safeQuery<Partial<HomepagePhotos> | null>("homepage photos", null, (sb) =>
+    sb.from("homepage_photos").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_HOMEPAGE_PHOTOS;
+  return {
+    hero_photos: photoList(row.hero_photos),
+    bar_photos: photoList(row.bar_photos),
+    events_photos: photoList(row.events_photos),
+    league_photos: photoList(row.league_photos),
+    visit_photos: photoList(row.visit_photos),
+  };
 });

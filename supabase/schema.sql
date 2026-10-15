@@ -451,3 +451,29 @@ alter table public.bay_types add column if not exists image_url text;
 
 -- Several photos per simulator bay (swipeable on the homepage and pricing page)
 alter table public.bay_types add column if not exists photos text[] not null default '{}';
+
+-- =============================================================================
+-- Homepage photo sets (one row) and photos on packages / league options
+-- =============================================================================
+
+create table if not exists public.homepage_photos (
+  id            int primary key default 1 check (id = 1),
+  hero_photos   text[] not null default '{}',
+  bar_photos    text[] not null default '{}',
+  events_photos text[] not null default '{}',
+  league_photos text[] not null default '{}',
+  visit_photos  text[] not null default '{}',
+  updated_at    timestamptz not null default now()
+);
+alter table public.homepage_photos enable row level security;
+drop policy if exists "Public read" on public.homepage_photos;
+create policy "Public read" on public.homepage_photos for select to anon, authenticated using (true);
+drop policy if exists "Admins manage" on public.homepage_photos;
+create policy "Admins manage" on public.homepage_photos
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.homepage_photos to anon, authenticated;
+grant insert, update, delete on public.homepage_photos to authenticated;
+insert into public.homepage_photos (id) values (1) on conflict (id) do nothing;
+
+alter table public.event_packages add column if not exists photos text[] not null default '{}';
+alter table public.league_options add column if not exists photos text[] not null default '{}';

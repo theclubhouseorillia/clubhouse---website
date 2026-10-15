@@ -25,7 +25,8 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 
 **Admin dashboard (`/admin`)**
 
-- Business settings: name, logo, headlines, slogan, hero photo, address, phone, **booking link**, **where form emails go**, social links
+- Business settings: name, logo, headlines, slogan, address, phone, **booking link**, **where form emails go**, social links
+- Homepage photos: swipeable photo sets for the top of the page, sports bar, private events, winter league and visit sections
 - Announcement banner: add, edit, delete, switch on/off, and schedule start and end times
 - Events: one-off or **weekly repeating**, flyers, times, admission, ticket/booking links, feature on the homepage
 - Simulator pricing and bay descriptions

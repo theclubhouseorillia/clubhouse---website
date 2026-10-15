@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon, CalendarIcon, CheckIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
-import { BayPhotos } from "@/components/site/BayPhotos";
+import { PhotoCarousel } from "@/components/site/PhotoCarousel";
 import { EventCard } from "@/components/site/EventCard";
+import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
 import { OpenToday } from "@/components/site/OpenToday";
 import { PackageCard } from "@/components/site/PackageCard";
-import { PhotoSlot } from "@/components/site/PhotoSlot";
 import { Reveal } from "@/components/site/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { SmartImage } from "@/components/site/SmartImage";
 import { SmartLink } from "@/components/site/SmartLink";
 import {
   getBayTypes,
   getEvents,
   getGallery,
+  getHomepagePhotos,
   getHours,
   getLeagueSettings,
   getPackages,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [settings, bays, events, packages, hours, special, gallery, league] = await Promise.all([
+  const [settings, bays, events, packages, hours, special, gallery, league, photos] = await Promise.all([
     getSettings(),
     getBayTypes(),
     getEvents(),
@@ -39,14 +39,21 @@ export default async function HomePage() {
     getSpecialHours(),
     getGallery(),
     getLeagueSettings(),
+    getHomepagePhotos(),
   ]);
 
   const booking = bookingLink(settings);
   const headline = real(settings.hero_headline) ?? settings.business_name;
   const slogan = settings.show_slogan ? settings.slogan?.trim() || null : null;
   const upcoming = homepageEvents(events, 3);
-  const barPhoto =
+  const heroPhotos = photos.hero_photos.length
+    ? photos.hero_photos
+    : settings.hero_image_url
+      ? [settings.hero_image_url]
+      : [];
+  const galleryBarPhoto =
     gallery.find((g) => g.category === "Bar & lounge") ?? gallery.find((g) => g.category === "Food & drinks") ?? null;
+  const barPhotos = photos.bar_photos.length ? photos.bar_photos : galleryBarPhoto ? [galleryBarPhoto.image_url] : [];
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
@@ -57,15 +64,7 @@ export default async function HomePage() {
       {/* HERO */}
       <section aria-labelledby="hero-title" className="relative isolate overflow-hidden border-b border-line">
         <div className="absolute inset-0 -z-10">
-          {settings.hero_image_url ? (
-            <>
-              <SmartImage src={settings.hero_image_url} alt="" priority sizes="100vw" className="object-cover" />
-              <div className="absolute inset-0 bg-ink/65" />
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-ink to-transparent" />
-            </>
-          ) : (
-            <div className="dimples absolute inset-0 opacity-60" />
-          )}
+          <HeroBackground photos={heroPhotos} />
         </div>
 
         <div className="container-site flex min-h-[calc(100svh-7rem)] flex-col justify-center py-24 sm:py-32">
@@ -140,7 +139,7 @@ export default async function HomePage() {
               <Reveal key={bay.id} delay={i * 90}>
                 <article className="card group flex h-full flex-col overflow-hidden">
                   <div className="relative border-b border-line">
-                    <BayPhotos photos={bay.photos} name={bay.name} />
+                    <PhotoCarousel photos={bay.photos} label={`${bay.name} golf simulator`} />
                     <span
                       className="pointer-events-none absolute left-4 top-4 bg-ink/80 px-2.5 py-1 font-display text-2xl font-semibold leading-none text-gold"
                       aria-hidden="true"
@@ -177,14 +176,14 @@ export default async function HomePage() {
       <section aria-labelledby="bar-title" className="border-y border-line bg-coal py-24 sm:py-32">
         <div className="container-site grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <Reveal className="order-2 lg:order-1">
-            <PhotoSlot
-              src={barPhoto?.image_url}
-              alt={barPhoto?.alt_text ?? ""}
-              label="Bar & lounge"
-              className="aspect-[4/5] rounded-[4px] border border-line"
-              imageClassName="object-cover"
-              sizes="(min-width: 1024px) 50vw, 100vw"
-            />
+            <div className="overflow-hidden rounded-[4px] border border-line">
+              <PhotoCarousel
+                photos={barPhotos}
+                label="Bar & lounge"
+                className="aspect-[4/5]"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+              />
+            </div>
           </Reveal>
           <Reveal delay={100} className="order-1 flex flex-col gap-8 lg:order-2">
             <SectionHeading
@@ -227,6 +226,16 @@ export default async function HomePage() {
               intro="Birthdays, Christmas parties, team-building and celebrations. Book a private bay or take over the whole venue."
             />
           </Reveal>
+          {photos.events_photos.length > 0 && (
+            <Reveal className="mt-12 overflow-hidden rounded-[4px] border border-gold/30">
+              <PhotoCarousel
+                photos={photos.events_photos}
+                label="Private events"
+                className="aspect-[4/3] sm:aspect-[21/9]"
+                sizes="(min-width: 1280px) 1200px, 100vw"
+              />
+            </Reveal>
+          )}
           <div className="mt-14 grid gap-6 lg:grid-cols-3">
             {packages.map((pkg, i) => (
               <Reveal key={pkg.id} delay={i * 90}>
@@ -260,7 +269,23 @@ export default async function HomePage() {
                     {real(league.schedule) ? ` · ${league.schedule}` : ""}
                   </p>
                 )}
+                {photos.league_photos.length > 0 && (
+                  <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                    <Link href="/league" className="btn btn-gold">
+                      League details &amp; pricing
+                    </Link>
+                    <SmartLink href={leagueHref} className="btn btn-outline">
+                      <MailIcon width={16} height={16} />
+                      {leagueHref.startsWith("mailto:") ? "Email us to join" : "Contact us to join"}
+                    </SmartLink>
+                  </div>
+                )}
               </div>
+              {photos.league_photos.length > 0 ? (
+                <div className="overflow-hidden rounded-[4px] border border-line">
+                  <PhotoCarousel photos={photos.league_photos} label={league.title} sizes="(min-width: 1024px) 40vw, 100vw" />
+                </div>
+              ) : (
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
                 <Link href="/league" className="btn btn-gold">
                   League details &amp; pricing
@@ -270,6 +295,7 @@ export default async function HomePage() {
                   {leagueHref.startsWith("mailto:") ? "Email us to join" : "Contact us to join"}
                 </SmartLink>
               </div>
+              )}
             </Reveal>
           </div>
         </section>
@@ -351,6 +377,18 @@ export default async function HomePage() {
             <HoursList hours={hours} special={special} />
           </Reveal>
         </div>
+        {photos.visit_photos.length > 0 && (
+          <div className="container-site mt-14">
+            <Reveal className="overflow-hidden rounded-[4px] border border-line">
+              <PhotoCarousel
+                photos={photos.visit_photos}
+                label="The venue"
+                className="aspect-[4/3] sm:aspect-[21/8]"
+                sizes="(min-width: 1280px) 1200px, 100vw"
+              />
+            </Reveal>
+          </div>
+        )}
       </section>
     </>
   );

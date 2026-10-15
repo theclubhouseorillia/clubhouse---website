@@ -4,7 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { BusinessJsonLd } from "@/components/site/JsonLd";
 import { MobileBookBar } from "@/components/site/MobileBookBar";
-import { getAnnouncements, getHours, getLeagueSettings, getSettings } from "@/lib/data";
+import { getAnnouncements, getHomepagePhotos, getHours, getLeagueSettings, getSettings } from "@/lib/data";
 import { real, telHref } from "@/lib/format";
 import { bookingLink } from "@/lib/site";
 
@@ -13,11 +13,12 @@ import { bookingLink } from "@/lib/site";
 export const revalidate = 300;
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  const [settings, announcements, hours, league] = await Promise.all([
+  const [settings, announcements, hours, league, photos] = await Promise.all([
     getSettings(),
     getAnnouncements(),
     getHours(),
     getLeagueSettings(),
+    getHomepagePhotos(),
   ]);
   const booking = bookingLink(settings);
   const phoneHref = telHref(settings.phone);
@@ -44,7 +45,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       </main>
       <Footer settings={settings} hours={hours} showLeague={league.enabled} />
       <MobileBookBar booking={booking} phoneHref={phoneHref} />
-      <BusinessJsonLd settings={settings} hours={hours} />
+      <BusinessJsonLd settings={settings} hours={hours} image={photos.hero_photos[0] ?? null} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
-import { getSettings } from "@/lib/data";
+import { getHomepagePhotos, getSettings } from "@/lib/data";
 import { real } from "@/lib/format";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
@@ -25,8 +25,9 @@ export const viewport: Viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const [settings, photos] = await Promise.all([getSettings(), getHomepagePhotos()]);
   const name = settings.business_name;
+  const shareImage = photos.hero_photos[0] ?? settings.hero_image_url;
   const description =
     real(settings.seo_description) ??
     real(settings.hero_subheadline) ??
@@ -43,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: name,
       title: name,
       description,
-      images: settings.hero_image_url ? [{ url: settings.hero_image_url }] : undefined,
+      images: shareImage ? [{ url: shareImage }] : undefined,
     },
     twitter: { card: "summary_large_image", title: name, description },
   };

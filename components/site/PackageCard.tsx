@@ -1,5 +1,6 @@
 import { CheckIcon } from "@/components/icons";
 import type { EventPackage } from "@/lib/types";
+import { PhotoCarousel } from "./PhotoCarousel";
 import { SmartLink } from "./SmartLink";
 
 export function PackageCard({
@@ -18,15 +19,21 @@ export function PackageCard({
 
   return (
     <article
-      className={`relative flex h-full flex-col gap-6 rounded-[4px] border p-7 sm:p-8 ${
+      className={`relative flex h-full flex-col rounded-[4px] border ${
         pkg.featured ? "border-gold bg-forest" : "border-line bg-coal"
       }`}
     >
       {pkg.featured && (
-        <span className="absolute -top-3 left-7 bg-gold px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink">
+        <span className="absolute -top-3 left-7 z-10 bg-gold px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink">
           Most popular
         </span>
       )}
+      {pkg.photos.length > 0 && (
+        <div className="overflow-hidden rounded-t-[3px] border-b border-line/80">
+          <PhotoCarousel photos={pkg.photos} label={pkg.name} />
+        </div>
+      )}
+      <div className="flex flex-1 flex-col gap-6 p-7 sm:p-8">
       <div className="flex flex-col gap-2">
         <h3 className="font-display text-3xl font-semibold leading-tight text-cream">{pkg.name}</h3>
         {pkg.description && <p className="text-mist">{pkg.description}</p>}
@@ -59,6 +66,7 @@ export function PackageCard({
           </SmartLink>
         </div>
       )}
+      </div>
     </article>
   );
 }

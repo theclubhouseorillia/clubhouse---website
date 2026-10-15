@@ -1,7 +1,17 @@
 // Fallback content used before the database is connected (or if it is
 // temporarily unreachable), so the site never shows a blank page.
 // It mirrors supabase/seed.sql.
-import type { BayType, EventPackage, HoursRow, LeagueOption, LeagueSettings, MenuCategory, Rate, Settings } from "./types";
+import type {
+  BayType,
+  EventPackage,
+  HomepagePhotos,
+  HoursRow,
+  LeagueOption,
+  LeagueSettings,
+  MenuCategory,
+  Rate,
+  Settings,
+} from "./types";
 
 export const GALLERY_CATEGORIES = [
   "Golf simulator bays",
@@ -99,6 +109,7 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
     features: ["Private simulator bay", "Up to eight golfers", "Bose sound system", "75-inch television", "Premium golf experience"],
     featured: false,
     sort_order: 1,
+    photos: [],
   },
   {
     id: "p2",
@@ -118,6 +129,7 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
     ],
     featured: true,
     sort_order: 2,
+    photos: [],
   },
   {
     id: "p3",
@@ -137,6 +149,7 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
     ],
     featured: false,
     sort_order: 3,
+    photos: [],
   },
 ];
 
@@ -197,3 +210,11 @@ export const DEFAULT_LEAGUE_SETTINGS: LeagueSettings = {
 };
 
 export const DEFAULT_LEAGUE_OPTIONS: LeagueOption[] = [];
+
+export const DEFAULT_HOMEPAGE_PHOTOS: HomepagePhotos = {
+  hero_photos: [],
+  bar_photos: [],
+  events_photos: [],
+  league_photos: [],
+  visit_photos: [],
+};

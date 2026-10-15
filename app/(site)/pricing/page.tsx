@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckIcon } from "@/components/icons";
-import { BayPhotos } from "@/components/site/BayPhotos";
+import { PhotoCarousel } from "@/components/site/PhotoCarousel";
 import { PricingTable } from "@/components/site/PricingTable";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
@@ -51,7 +51,7 @@ export default async function PricingPage() {
             {bays.map((bay, i) => (
               <Reveal key={bay.id} delay={i * 90}>
                 <article className="flex h-full flex-col overflow-hidden border-t-2 border-gold bg-ink">
-                  <BayPhotos photos={bay.photos} name={bay.name} />
+                  <PhotoCarousel photos={bay.photos} label={`${bay.name} golf simulator`} />
                   <div className="flex flex-1 flex-col gap-4 p-7 sm:p-8">
                   <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
                   {bay.summary && <p className="leading-relaxed text-mist">{bay.summary}</p>}
