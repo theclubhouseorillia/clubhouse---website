@@ -14,6 +14,7 @@ import { Reveal } from "@/components/site/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
 import { Stars } from "@/components/site/Stars";
+import { WeatherCard } from "@/components/site/WeatherCard";
 import {
   getBayTypes,
   getEvents,
@@ -35,6 +36,7 @@ import {
 import { homepageEvents } from "@/lib/events";
 import { formatMonthYear, real, telHref } from "@/lib/format";
 import { addressLines, bookingLink, directionsUrl, leagueEmailHref } from "@/lib/site";
+import { getWeather } from "@/lib/weather";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -58,6 +60,7 @@ export default async function HomePage() {
     reviewsSection,
     reviews,
     giftCards,
+    weather,
   ] = await Promise.all([
     getSettings(),
     getBayTypes(),
@@ -75,12 +78,14 @@ export default async function HomePage() {
     getReviewsSection(),
     getReviews(),
     getGiftCards(),
+    getWeather(),
   ]);
 
   const booking = bookingLink(settings);
   const headline = real(settings.hero_headline) ?? settings.business_name;
   const slogan = settings.show_slogan ? settings.slogan?.trim() || null : null;
-  const upcoming = homepageEvents(events, 3);
+  // The weather card takes the third spot in the "What's on" row when the forecast is available.
+  const upcoming = homepageEvents(events, weather ? 2 : 3);
   const heroPhotos = photos.hero_photos.length
     ? photos.hero_photos
     : settings.hero_image_url
@@ -192,21 +197,29 @@ export default async function HomePage() {
               </div>
             </Reveal>
           </div>
-          {upcoming.length > 0 ? (
-            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {upcoming.map((event, i) => (
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {upcoming.length > 0 ? (
+              upcoming.map((event, i) => (
                 <Reveal key={event.id} delay={i * 90}>
                   <EventCard event={event} compact />
                 </Reveal>
-              ))}
-            </div>
-          ) : (
-            <Reveal className="mt-14">
-              <p className="card p-8 text-mist">
-                New events are posted here regularly. Check back soon, or follow us on social media for announcements.
-              </p>
-            </Reveal>
-          )}
+              ))
+            ) : (
+              <Reveal className={weather ? "lg:col-span-2" : "sm:col-span-2 lg:col-span-3"}>
+                <p className="card h-full p-8 text-mist">
+                  New events are posted here regularly. Check back soon, or follow us on social media for announcements.
+                </p>
+              </Reveal>
+            )}
+            {weather && (
+              <Reveal
+                delay={upcoming.length * 90}
+                className={upcoming.length % 2 === 0 && upcoming.length > 0 ? "sm:col-span-2 lg:col-span-1" : ""}
+              >
+                <WeatherCard weather={weather} booking={booking} />
+              </Reveal>
+            )}
+          </div>
         </div>
       </section>
 

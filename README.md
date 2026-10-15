@@ -29,6 +29,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Homepage photos: swipeable photo sets for the top of the page, sports bar, private events, winter league and visit sections
 - Announcement banner: add, edit, delete, switch on/off, and schedule start and end times
 - Events: one-off or **weekly repeating**, flyers, times, admission, ticket/booking links, feature on the homepage
+- Orillia weather on the homepage beside “What’s on” (current conditions + forecast from Environment and Climate Change Canada, refreshed every 15 minutes; hidden automatically if the forecast can’t be reached)
 - Simulator pricing and bay descriptions
 - Winter golf league page: step-by-step “How to sign up & pay”, details, pricing and the sign-up link (or email)
 - Pool table: photos, hourly price and its own booking button
