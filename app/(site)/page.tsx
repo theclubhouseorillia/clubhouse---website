@@ -170,8 +170,8 @@ export default async function HomePage() {
               <SectionHeading
                 id="ent-title"
                 eyebrow="What's on"
-                title="Karaoke, live DJs & live music"
-                intro="Big games on the big screens, weekly entertainment and special events all year."
+                title="What's happening at The Clubhouse"
+                intro="See what's on this week, plus our ongoing weekly specials and events."
               />
             </Reveal>
             <Reveal delay={100} className="lg:justify-self-end">
