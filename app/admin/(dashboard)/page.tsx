@@ -25,7 +25,7 @@ export default async function AdminOverview() {
       supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("handled", false),
       supabase.from("inquiries").select("id, kind, name, created_at, handled").order("created_at", { ascending: false }).limit(5),
       supabase.from("gallery_images").select("id", { count: "exact", head: true }),
-      supabase.from("menu_items").select("id", { count: "exact", head: true }).like("name", "[%"),
+      supabase.from("menu_settings").select("pdf_url").eq("id", 1).maybeSingle(),
       supabase.from("homepage_photos").select("hero_photos").eq("id", 1).maybeSingle(),
     ]);
 
@@ -62,10 +62,10 @@ export default async function AdminOverview() {
     },
     { done: (galleryRes.count ?? 0) > 0, label: "Upload photos to the gallery", href: "/admin/gallery", hint: "Photo gallery" },
     {
-      done: (placeholderMenuRes.count ?? 0) === 0,
-      label: "Replace the placeholder menu items with your real menu",
-      href: "/admin/menu-items",
-      hint: "Menu items",
+      done: !!(placeholderMenuRes.data as { pdf_url?: string | null } | null)?.pdf_url,
+      label: "Upload your menu PDF",
+      href: "/admin/menu",
+      hint: "Menu",
     },
     { done: (eventsRes.count ?? 0) > 0, label: "Publish your first event", href: "/admin/events", hint: "Events" },
   ];

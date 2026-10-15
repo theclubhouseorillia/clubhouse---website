@@ -20,7 +20,8 @@ export type FieldType =
   | "relation"
   | "list"
   | "image"
-  | "images";
+  | "images"
+  | "file";
 
 export type FieldDefault = string | number | boolean | null;
 
@@ -710,44 +711,38 @@ export const RESOURCES: ResourceDef[] = [
     ],
   },
   {
-    key: "menu-items",
-    table: "menu_items",
-    title: "Menu items",
-    singular: "Menu item",
-    description: "Food and drinks on the menu page.",
+    key: "menu",
+    table: "menu_settings",
+    title: "Menu",
+    singular: "Menu",
+    description: "Your menu PDF and a picture of each page. Shown on the Food & Drink page.",
     group: "Food & drink",
-    orderBy: [{ column: "sort_order" }, { column: "name" }],
-    titleField: "name",
-    summaryFields: ["price", "description"],
-    groupByField: "category_id",
-    thumbField: "image_url",
-    toggleField: "available",
-    toggleOn: "Available",
-    toggleOff: "Hidden",
+    singleton: true,
+    allowCreate: false,
+    allowDelete: false,
+    touchUpdatedAt: true,
+    orderBy: [{ column: "id" }],
+    titleField: "heading",
     fields: [
-      { name: "category_id", label: "Category", type: "relation", required: true, relation: { table: "menu_categories", labelField: "name" } },
-      { name: "name", label: "Name", type: "text", required: true, max: 120 },
-      { name: "price", label: "Price ($)", type: "money", help: "Leave blank to hide the price.", short: "" },
-      sortOrder,
-      { name: "description", label: "Description", type: "textarea", max: 500, wide: true, short: "" },
-      { name: "image_url", label: "Photo (optional)", type: "image", folder: "menu", wide: true },
-      { name: "available", label: "Show on the menu", type: "boolean", default: true },
-    ],
-  },
-  {
-    key: "menu-categories",
-    table: "menu_categories",
-    title: "Menu categories",
-    singular: "Category",
-    description: "Sections of your menu, like Appetizers or Cocktails. Deleting a category also deletes its items.",
-    group: "Food & drink",
-    orderBy: [{ column: "sort_order" }],
-    titleField: "name",
-    summaryFields: ["description"],
-    fields: [
-      { name: "name", label: "Name", type: "text", required: true, max: 80 },
-      sortOrder,
-      { name: "description", label: "Description (optional)", type: "text", max: 200, wide: true, short: "" },
+      { name: "heading", label: "Page heading", type: "text", required: true, max: 80 },
+      { name: "intro", label: "Intro", type: "textarea", max: 400, wide: true },
+      {
+        name: "pdf_url",
+        label: "Menu PDF",
+        type: "file",
+        folder: "menu",
+        wide: true,
+        help: "People can open or download this from the Food & Drink page. Upload a new one whenever your menu changes.",
+      },
+      {
+        name: "page_images",
+        label: "Menu pages (pictures)",
+        type: "images",
+        folder: "menu",
+        maxItems: 12,
+        wide: true,
+        help: "A picture of each page, in order, so people can scroll through the menu without opening the PDF. When you upload a new PDF, replace these too (export each page as a JPG or PNG).",
+      },
     ],
   },
   {

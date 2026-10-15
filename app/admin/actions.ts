@@ -71,7 +71,7 @@ export async function deleteRecord(resourceKey: string, id: string): Promise<Act
   const { supabase } = await requireAdmin();
 
   // Remember uploaded photos so we can tidy them up after deleting the row.
-  const imageFields = def.fields.filter((f) => f.type === "image" || f.type === "images").map((f) => f.name);
+  const imageFields = def.fields.filter((f) => f.type === "image" || f.type === "images" || f.type === "file").map((f) => f.name);
   let imagePaths: string[] = [];
   if (imageFields.length) {
     const { data: row } = await supabase.from(def.table).select("*").eq("id", id).maybeSingle();

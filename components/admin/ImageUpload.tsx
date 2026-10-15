@@ -299,3 +299,97 @@ export function MultiImageUpload({
     </div>
   );
 }
+
+/** Uploads a PDF (like a menu) to storage, returning its public web address. */
+async function uploadPdf(file: File, folder: string): Promise<string> {
+  if (file.type !== "application/pdf" && !/\.pdf$/i.test(file.name)) {
+    throw new Error(`“${file.name}” isn't a PDF. Please choose a .pdf file.`);
+  }
+  if (file.size > MAX_BYTES) {
+    throw new Error(`“${file.name}” is too large. Please use a PDF under 10 MB.`);
+  }
+  const unique =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const path = `${folder}/${new Date().getFullYear()}/${unique}.pdf`;
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.storage
+    .from("media")
+    .upload(path, file, { contentType: "application/pdf", cacheControl: "31536000", upsert: false });
+  if (error) throw new Error(`Upload failed: ${error.message}`);
+  return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+
+/** A single PDF field (for example, the menu). */
+export function FileUpload({
+  id,
+  value,
+  onChange,
+  folder = "uploads",
+  describedBy,
+}: {
+  id: string;
+  value: string;
+  onChange: (url: string) => void;
+  folder?: string;
+  describedBy?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(file: File | undefined) {
+    if (!file) return;
+    setError(null);
+    setBusy(true);
+    try {
+      onChange(await uploadPdf(file, folder));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        {value ? (
+          <a href={value} target="_blank" rel="noopener noreferrer" className="link-gold text-sm">
+            View current PDF
+          </a>
+        ) : (
+          <span className="text-sm text-mist">No PDF uploaded yet.</span>
+        )}
+        <input
+          ref={inputRef}
+          id={id}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="sr-only"
+          aria-describedby={describedBy}
+          onChange={(e) => handleFile(e.target.files?.[0])}
+          disabled={busy}
+        />
+        <label
+          htmlFor={id}
+          className={`btn btn-outline min-h-11 cursor-pointer px-4 ${busy ? "pointer-events-none opacity-60" : ""}`}
+        >
+          {busy ? "Uploading…" : value ? "Replace PDF" : "Upload PDF"}
+        </label>
+        {value && !busy && (
+          <button type="button" className="btn min-h-11 px-4 text-mist hover:text-danger" onClick={() => onChange("")}>
+            Remove
+          </button>
+        )}
+      </div>
+      {error && (
+        <p className="field-error" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}

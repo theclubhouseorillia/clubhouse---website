@@ -11,6 +11,7 @@ import type {
   LeagueOption,
   LeagueSettings,
   MenuCategory,
+  MenuSettings,
   Owner,
   OwnersSection,
   PoolTable,
@@ -276,3 +277,15 @@ export const DEFAULT_GIFT_CARDS: GiftCards = {
 export const DEFAULT_FAQS: Faq[] = [];
 
 export const DEFAULT_PRIVACY_POLICY: PrivacyPolicy = { content: "", updated_on: null };
+
+export const DEFAULT_MENU_SETTINGS: MenuSettings = {
+  heading: "Our Menu",
+  intro: "Scroll through our full food and drink menu below, or download it to keep on your phone.",
+  pdf_url: "/menu-files/the-clubhouse-menu.pdf",
+  page_images: [
+    "/menu-files/menu-page-1.jpg",
+    "/menu-files/menu-page-2.jpg",
+    "/menu-files/menu-page-3.jpg",
+    "/menu-files/menu-page-4.jpg",
+  ],
+};

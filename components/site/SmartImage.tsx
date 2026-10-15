@@ -26,11 +26,14 @@ export function SmartImage({
   className?: string;
   priority?: boolean;
 }) {
-  let optimisable = false;
-  try {
-    optimisable = !!SUPABASE_HOST && new URL(src).hostname === SUPABASE_HOST;
-  } catch {
-    optimisable = false;
+  // Files that ship with the website ("/menu-files/…") and uploads to our storage get optimised.
+  let optimisable = src.startsWith("/") && !src.startsWith("//");
+  if (!optimisable) {
+    try {
+      optimisable = !!SUPABASE_HOST && new URL(src).hostname === SUPABASE_HOST;
+    } catch {
+      optimisable = false;
+    }
   }
 
   if (optimisable) {

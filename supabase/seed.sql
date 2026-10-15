@@ -284,6 +284,16 @@ Phone: {phone}
 We may update this policy from time to time. The date at the top of this page shows when it was last updated.$policy$)
 on conflict (id) do nothing;
 
+-- Menu PDF and page pictures (files ship with the site in public/menu-files) ------
+insert into public.menu_settings (id, intro, pdf_url, page_images)
+values (
+  1,
+  'Scroll through our full food and drink menu below, or download it to keep on your phone.',
+  '/menu-files/the-clubhouse-menu.pdf',
+  array['/menu-files/menu-page-1.jpg', '/menu-files/menu-page-2.jpg', '/menu-files/menu-page-3.jpg', '/menu-files/menu-page-4.jpg']
+)
+on conflict (id) do nothing;
+
 -- =============================================================================
 -- MAKE YOURSELF AN ADMIN
 -- 1. Supabase → Authentication → Users → Add user → Create new user

@@ -645,3 +645,30 @@ begin
     execute format('grant insert, update, delete on public.%I to authenticated', t);
   end loop;
 end $$;
+
+-- =============================================================================
+-- Menu (one row): the menu PDF and a picture of each page for the Food & Drink page.
+-- (The older menu_categories / menu_items tables are no longer shown on the site.)
+-- =============================================================================
+
+create table if not exists public.menu_settings (
+  id          int primary key default 1 check (id = 1),
+  heading     text not null default 'Our Menu',
+  intro       text,
+  pdf_url     text,
+  page_images text[] not null default '{}',
+  updated_at  timestamptz not null default now()
+);
+
+alter table public.menu_settings enable row level security;
+drop policy if exists "Public read" on public.menu_settings;
+create policy "Public read" on public.menu_settings for select to anon, authenticated using (true);
+drop policy if exists "Admins manage" on public.menu_settings;
+create policy "Admins manage" on public.menu_settings for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.menu_settings to anon, authenticated;
+grant insert, update, delete on public.menu_settings to authenticated;
+
+-- The dashboard uploads menu PDFs to the media bucket.
+update storage.buckets
+   set allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf']
+ where id = 'media';

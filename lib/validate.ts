@@ -23,6 +23,13 @@ function isEmpty(v: unknown): boolean {
   return v === null || v === undefined || (typeof v === "string" && v.trim() === "");
 }
 
+/** An uploaded file (https) or a file that ships with the website (/path). */
+function isUploadedOrSitePath(value: string): boolean {
+  if (value.length > 1000) return false;
+  if (/^https:\/\//i.test(value)) return true;
+  return /^\/[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(value) && !value.includes("..");
+}
+
 function isValidLink(value: string): boolean {
   if (value.startsWith("/") && !value.startsWith("//")) return true;
   if (value.startsWith("#")) return true;
@@ -62,7 +69,7 @@ function coerce(field: FieldDef, raw: unknown): unknown {
       .filter((i) => i.length > 0);
     const max = field.maxItems ?? 12;
     if (urls.length > max) fail(`please keep this to ${max} photos or fewer.`);
-    if (urls.some((u) => !/^https:\/\//i.test(u) || u.length > 1000)) fail("please upload the photos again.");
+    if (urls.some((u) => !isUploadedOrSitePath(u))) fail("please upload the photos again.");
     if (field.required && urls.length === 0) fail("add at least one photo.");
     return urls;
   }
@@ -94,7 +101,10 @@ function coerce(field: FieldDef, raw: unknown): unknown {
       }
       return str;
     case "image":
-      if (!/^https:\/\//i.test(str) || str.length > 1000) fail("please upload the image again.");
+      if (!isUploadedOrSitePath(str)) fail("please upload the image again.");
+      return str;
+    case "file":
+      if (!isUploadedOrSitePath(str) || !/\.pdf($|\?)/i.test(str)) fail("please upload the PDF again.");
       return str;
     case "number":
     case "money": {

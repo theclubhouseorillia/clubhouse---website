@@ -125,3 +125,9 @@ export const StarIcon = (p: IconProps) => (
     <path d="m12 2.8 2.78 5.64 6.22.9-4.5 4.39 1.06 6.2L12 17.02l-5.56 2.92 1.06-6.2L3 9.35l6.22-.9z" />
   </Base>
 );
+
+export const DownloadIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+  </Base>
+);

@@ -11,6 +11,7 @@ import {
   DEFAULT_LEAGUE_OPTIONS,
   DEFAULT_LEAGUE_SETTINGS,
   DEFAULT_MENU,
+  DEFAULT_MENU_SETTINGS,
   DEFAULT_OWNERS,
   DEFAULT_OWNERS_SECTION,
   DEFAULT_PACKAGES,
@@ -36,6 +37,7 @@ import type {
   MenuItem,
   Faq,
   GiftCards,
+  MenuSettings,
   Owner,
   OwnersSection,
   PrivacyPolicy,
@@ -326,4 +328,17 @@ export const getPrivacyPolicy = cache(async (): Promise<PrivacyPolicy> => {
   );
   if (!row) return DEFAULT_PRIVACY_POLICY;
   return { content: row.content ?? "", updated_on: row.updated_on ?? null };
+});
+
+export const getMenuSettings = cache(async (): Promise<MenuSettings> => {
+  const row = await safeQuery<Partial<MenuSettings> | null>("menu settings", null, (sb) =>
+    sb.from("menu_settings").select("heading, intro, pdf_url, page_images").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_MENU_SETTINGS;
+  return {
+    heading: row.heading || DEFAULT_MENU_SETTINGS.heading,
+    intro: row.intro ?? null,
+    pdf_url: row.pdf_url || null,
+    page_images: textList(row.page_images),
+  };
 });

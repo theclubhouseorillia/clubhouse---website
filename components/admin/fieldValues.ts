@@ -74,6 +74,8 @@ export function displayValue(field: FieldDef, value: unknown, relationOptions: R
       return relationOptions[field.name]?.find((o) => o.value === String(value))?.label ?? "";
     case "image":
       return "";
+    case "file":
+      return value ? "PDF uploaded" : "";
     case "images":
       return Array.isArray(value) && value.length ? `${value.length} photo${value.length === 1 ? "" : "s"}` : "";
     default: {

@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { FieldDef } from "@/lib/resources";
 import { displayValue, type FormValue, type RelationOptions } from "./fieldValues";
-import { ImageUpload, MultiImageUpload } from "./ImageUpload";
+import { FileUpload, ImageUpload, MultiImageUpload } from "./ImageUpload";
 
 export function FieldInput({
   field,
@@ -96,6 +96,16 @@ export function FieldInput({
           describedBy={helpId}
           max={field.maxItems}
         />
+        {help}
+      </div>
+    );
+  }
+
+  if (field.type === "file") {
+    return (
+      <div>
+        <span className="field-label">{field.label}</span>
+        <FileUpload id={id} value={str} onChange={onChange} folder={field.folder} describedBy={helpId} />
         {help}
       </div>
     );

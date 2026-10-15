@@ -180,6 +180,15 @@ export interface OwnersSection {
   photo_url: string | null;
 }
 
+export interface MenuSettings {
+  heading: string;
+  intro: string | null;
+  /** The menu PDF people can open or download. */
+  pdf_url: string | null;
+  /** A picture of each page, in order, shown on the Food & Drink page. */
+  page_images: string[];
+}
+
 export interface GiftCards {
   enabled: boolean;
   heading: string;

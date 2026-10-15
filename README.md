@@ -37,10 +37,11 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Gift Cards page (call or email to order), with a homepage band and banner message
 - FAQ page: questions whose answer is still in [square brackets] stay hidden until you fill them in
 - Calendar page: a month view plus day-by-day list of every event and weekly special (from Admin → Events), with holiday hours
+- Food & Drink page shows your menu PDF: a picture of each page to scroll through, plus open/download buttons (Admin → Menu)
 - Privacy policy page, linked in the footer and under every form (a plain-language starting point, not legal advice)
 - Anonymous visitor stats with Vercel Web Analytics (turn it on in Vercel → your project → Analytics)
 - Private event packages
-- Menu categories and items (with photos)
+- Menu: upload your menu PDF and a picture of each page
 - Weekly hours, plus holiday and special hours
 - Photo gallery uploads
 - Inbox of every form submission (also emailed to you)
@@ -48,7 +49,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 
 **Under the hood:** secure logins, a real database with row-level security, photo uploads that are automatically resized, form validation, spam protection (hidden honeypot field, timing check, rate limiting, optional Cloudflare Turnstile), SEO metadata, a sitemap, structured data for Google, accessibility features and error handling.
 
-> **About placeholders.** Your prices, packages, hours and bay descriptions are pre-loaded. Your business name, address, phone, slogan, social links, menu items and photos start as placeholders in `[square brackets]`. Fill them in from the dashboard after your first login; the Overview page lists what's left.
+> **About placeholders.** Your prices, packages, hours and bay descriptions are pre-loaded. Your business name, address, phone, slogan, social links and photos start as placeholders in `[square brackets]`. Fill them in from the dashboard after your first login; the Overview page lists what's left.
 
 ---
 
@@ -141,7 +142,7 @@ This makes the **Forgot your password?** link work.
 
 1. Visit `https://www.yourdomain.ca/admin` and sign in.
 2. The **Overview** page shows a checklist. Start with **Business settings**: name, address, phone, booking link, and the email address that should receive form submissions.
-3. Then upload photos, replace the placeholder menu items, and publish your first events.
+3. Then upload photos, check your menu PDF, and publish your first events.
 
 Bookmark `/admin`. There's deliberately no admin link on the public website.
 
