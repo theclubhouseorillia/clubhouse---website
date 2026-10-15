@@ -33,7 +33,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - “Watch the game here” schedule: big games you're showing (Admin → Watch the game here), next three on the homepage sports bar section and the full list on `/sports`; past games drop off automatically
 - Memberships & hour packs page (`/memberships`): plans appear once their name and price are filled in (no [brackets]); visitors call or email to buy
 - Course showcase (`/courses`): famous courses on your Trackman simulators, linked from the homepage simulators section
-- Kids' birthday parties page (`/kids-parties`): packages (shown once filled in) and a party inquiry form that emails you and saves to the inbox
+- Kids' birthday parties: a “Kids' Birthday Party” package on the Private Events page (Admin → Private event packages); the old `/kids-parties` address forwards there
 - Rental Clubs section on the homepage between the simulator bays and the pool table (Admin → Rental clubs: text, highlights, optional price, photos)
 - Instagram strip on the homepage: paste a free Behold.so JSON feed link in Admin → Settings → “Instagram feed link (Behold)”
 - Simulator pricing and bay descriptions

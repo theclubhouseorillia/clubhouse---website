@@ -48,19 +48,15 @@ function Field({
 export function InquiryForm({
   kind,
   packages = [],
-  topic,
 }: {
   kind: "event" | "contact";
   packages?: string[];
-  /** "kids-party" switches the event form's wording to a kids' birthday party. */
-  topic?: "kids-party";
 }) {
-  const party = kind === "event" && topic === "kids-party";
   const [state, formAction, pending] = useActionState(submitInquiry, initialState);
   const [startedAt, setStartedAt] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
-  const prefix = party ? "kp" : kind === "event" ? "ev" : "ct";
+  const prefix = kind === "event" ? "ev" : "ct";
   const err = state.fieldErrors;
 
   const packageRef = useRef<HTMLSelectElement>(null);
@@ -91,7 +87,6 @@ export function InquiryForm({
   return (
     <form ref={formRef} onSubmit={onSubmit} noValidate className="relative flex flex-col gap-5">
       <input type="hidden" name="kind" value={kind} />
-      {party && <input type="hidden" name="topic" value="kids-party" />}
       <input type="hidden" name="started_at" value={startedAt} />
       {/* Honeypot: hidden from people, irresistible to bots. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
@@ -155,7 +150,7 @@ export function InquiryForm({
                 aria-describedby={describe("preferred_date")}
               />
             </Field>
-            <Field id={`${prefix}-guest_count`} label={party ? "Number of kids" : "Estimated number of guests"} error={err.guest_count}>
+            <Field id={`${prefix}-guest_count`} label="Estimated number of guests" error={err.guest_count}>
               <input
                 id={`${prefix}-guest_count`}
                 name="guest_count"
@@ -184,7 +179,7 @@ export function InquiryForm({
 
       <Field
         id={`${prefix}-message`}
-        label={party ? "Tell us about the party" : kind === "event" ? "Tell us about your event" : "Message"}
+        label={kind === "event" ? "Tell us about your event" : "Message"}
         required={kind === "contact"}
         error={err.message}
       >
@@ -195,13 +190,7 @@ export function InquiryForm({
           maxLength={4000}
           required={kind === "contact"}
           className="field resize-y"
-          placeholder={
-            party
-              ? "Birthday child's name and age, time of day, food, anything else we should know"
-              : kind === "event"
-                ? "Occasion, timing, food and drink needs, anything else we should know"
-                : ""
-          }
+          placeholder={kind === "event" ? "Occasion, timing, food and drink needs, anything else we should know" : ""}
           aria-invalid={invalid("message")}
           aria-describedby={describe("message")}
         />
@@ -226,7 +215,7 @@ export function InquiryForm({
 
       <div>
         <button type="submit" className="btn btn-gold w-full sm:w-auto" disabled={pending || !startedAt}>
-          {pending ? "Sending…" : party ? "Send party inquiry" : kind === "event" ? "Send event inquiry" : "Send message"}
+          {pending ? "Sending…" : kind === "event" ? "Send event inquiry" : "Send message"}
         </button>
         <p className="mt-4 text-xs text-mist">
           We only use your details to reply to you. See our{" "}

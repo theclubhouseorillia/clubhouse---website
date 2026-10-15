@@ -37,7 +37,6 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
   };
 
   const kind = formData.get("kind") === "event" ? "event" : "contact";
-  const kidsParty = kind === "event" && formData.get("topic") === "kids-party";
 
   // 1. Spam traps. Bots that fill the hidden field get a fake "success".
   if (str(formData, "company_website", 200)) return success;
@@ -105,8 +104,7 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
       p_phone: phone || null,
       p_preferred_date: kind === "event" && preferredDate ? preferredDate : null,
       p_guest_count: guestCount,
-      // Kids' party inquiries are saved as event inquiries, labelled so they stand out in Admin → Inbox.
-      p_package: kidsParty ? `Kids' party${pkg ? ` – ${pkg}` : ""}` : kind === "event" && pkg ? pkg : null,
+      p_package: kind === "event" && pkg ? pkg : null,
       p_message: message || null,
       p_ip_hash: ipHash,
     });
@@ -128,23 +126,20 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
   let emailed = false;
   if (recipient) {
     const rows: [string, string][] = [
-      ["Type", kidsParty ? "Kids' birthday party inquiry" : kind === "event" ? "Private event inquiry" : "Contact message"],
+      ["Type", kind === "event" ? "Private event inquiry" : "Contact message"],
       ["Name", name],
       ["Email", email],
       ["Phone", phone || "Not provided"],
     ];
     if (kind === "event") {
       rows.push(["Preferred date", preferredDate ? formatLongDate(preferredDate) : "Not specified"]);
-      rows.push([kidsParty ? "Number of kids" : "Guests", guestCount ? String(guestCount) : "Not specified"]);
+      rows.push(["Guests", guestCount ? String(guestCount) : "Not specified"]);
       rows.push(["Package", pkg || "Not specified"]);
     }
     rows.push(["Message", message || "—"]);
 
-    const subject = kidsParty
-      ? `New kids' party inquiry from ${name}`
-      : kind === "event"
-        ? `New private event inquiry from ${name}`
-        : `New website message from ${name}`;
+    const subject =
+      kind === "event" ? `New private event inquiry from ${name}` : `New website message from ${name}`;
     const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#111">
 <h2 style="margin:0 0 16px">${escapeHtml(subject)}</h2>
 <table cellpadding="8" style="border-collapse:collapse">${rows

@@ -427,7 +427,7 @@ export default async function HomePage() {
               />
             </Reveal>
           )}
-          <div className="mt-14 grid gap-6 lg:grid-cols-3">
+          <div className={`mt-14 grid gap-6 ${packages.length % 3 === 0 || packages.length > 4 ? "lg:grid-cols-3" : "md:grid-cols-2"}`}>
             {packages.map((pkg, i) => (
               <Reveal key={pkg.id} delay={i * 90}>
                 <PackageCard

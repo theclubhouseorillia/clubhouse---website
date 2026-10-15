@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 
 const OCCASIONS = [
   "Birthday parties",
+  "Kids' birthday parties",
   "Christmas & holiday parties",
   "Corporate functions",
   "Team-building",
@@ -51,19 +52,13 @@ export default async function PrivateEventsPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-mist">
-            Planning a party for the kids?{" "}
-            <Link href="/kids-parties" className="link-gold">
-              See our kids&apos; birthday parties
-            </Link>
-          </p>
         </div>
       </section>
 
       <section aria-labelledby="packages-title" className="pb-20 sm:pb-28">
         <div className="container-site">
           <SectionHeading id="packages-title" eyebrow="Packages" title="Choose your experience" />
-          <div className="mt-14 grid gap-6 lg:grid-cols-3">
+          <div className={`mt-14 grid gap-6 ${packages.length % 3 === 0 || packages.length > 4 ? "lg:grid-cols-3" : "md:grid-cols-2"}`}>
             {packages.map((pkg, i) => (
               <Reveal key={pkg.id} delay={i * 90}>
                 <PackageCard

@@ -17,7 +17,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/sports", priority: 0.7, freq: "daily" },
     { path: "/courses", priority: 0.7, freq: "monthly" },
     { path: "/memberships", priority: 0.7, freq: "monthly" },
-    { path: "/kids-parties", priority: 0.8, freq: "monthly" },
     { path: "/gift-cards", priority: 0.7, freq: "monthly" },
     { path: "/faq", priority: 0.6, freq: "monthly" },
     { path: "/privacy", priority: 0.2, freq: "monthly" },

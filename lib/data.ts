@@ -5,7 +5,6 @@ import { getPublicClient } from "./supabase/public";
 import {
   DEFAULT_BAY_TYPES,
   DEFAULT_COURSES,
-  DEFAULT_KIDS_PACKAGES,
   DEFAULT_MEMBERSHIP_PLANS,
   DEFAULT_SPORTS_GAMES,
   DEFAULT_FAQS,
@@ -405,7 +404,7 @@ export const getCourses = cache(async (): Promise<Course[]> => {
   );
 });
 
-/** Package-style rows (memberships, kids' parties) that have been filled in: anything still in [brackets] stays hidden. */
+/** Package-style rows (memberships) that have been filled in: anything still in [brackets] stays hidden. */
 function readyPackages(rows: EventPackage[]): EventPackage[] {
   return rows
     .map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features.filter((f) => !hasPlaceholderText(f)) : [], photos: [] }))
@@ -421,14 +420,6 @@ function readyPackages(rows: EventPackage[]): EventPackage[] {
 export const getMembershipPlans = cache(async (): Promise<EventPackage[]> => {
   const rows = await safeQuery<EventPackage[]>("membership plans", DEFAULT_MEMBERSHIP_PLANS, (sb) =>
     sb.from("membership_plans").select("id, name, price_label, price_note, description, features, featured, sort_order").order("sort_order"),
-  );
-  return readyPackages(rows);
-});
-
-/** Kids' birthday party packages that are ready to show. */
-export const getKidsPackages = cache(async (): Promise<EventPackage[]> => {
-  const rows = await safeQuery<EventPackage[]>("kids packages", DEFAULT_KIDS_PACKAGES, (sb) =>
-    sb.from("kids_packages").select("id, name, price_label, price_note, description, features, featured, sort_order").order("sort_order"),
   );
   return readyPackages(rows);
 });

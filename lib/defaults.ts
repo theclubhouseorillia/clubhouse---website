@@ -238,8 +238,6 @@ export const DEFAULT_COURSES: Course[] = [];
 
 export const DEFAULT_MEMBERSHIP_PLANS: EventPackage[] = [];
 
-export const DEFAULT_KIDS_PACKAGES: EventPackage[] = [];
-
 export const DEFAULT_HOMEPAGE_PHOTOS: HomepagePhotos = {
   hero_photos: [],
   bar_photos: [],

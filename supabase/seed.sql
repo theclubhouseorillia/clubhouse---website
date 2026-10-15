@@ -323,12 +323,12 @@ select * from (values
 ) as v(name, price_label, price_note, description, features, featured, sort_order)
 where not exists (select 1 from public.membership_plans);
 
--- Kids' party packages: fill in the [brackets] in Admin to show them ---------------
-insert into public.kids_packages (name, price_label, price_note, description, features, featured, sort_order)
-select * from (values
-  ('Kids'' Birthday Party', '[Price]', '[e.g. up to 10 kids · 2 hours]', '[Short description]', array['[What''s included, e.g. private simulator bay]'], false, 1)
-) as v(name, price_label, price_note, description, features, featured, sort_order)
-where not exists (select 1 from public.kids_packages);
+-- Kids' birthday parties: a private event package ----------------------------------
+insert into public.event_packages (name, price_label, price_note, description, features, featured, sort_order, photos)
+select 'Kids'' Birthday Party', 'Inquire for pricing', null,
+       'Golf simulator birthday parties for kids. Tell us the date and how many kids are coming, and we''ll put together the right package.',
+       '{}'::text[], false, 4, '{}'::text[]
+where not exists (select 1 from public.event_packages where name = 'Kids'' Birthday Party');
 
 -- Course showcase: only list courses your Trackman simulators actually have ---------
 insert into public.courses (name, location, description, sort_order)

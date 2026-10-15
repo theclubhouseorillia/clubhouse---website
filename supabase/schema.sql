@@ -735,6 +735,7 @@ create table if not exists public.courses (
   created_at  timestamptz not null default now()
 );
 
+-- (No longer shown on the site: kids' parties are now a private event package.)
 create table if not exists public.kids_packages (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
