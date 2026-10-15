@@ -65,6 +65,7 @@ export interface BayType {
   name: string;
   summary: string | null;
   details: string[];
+  image_url: string | null;
   sort_order: number;
 }
 

@@ -105,7 +105,7 @@ export const getBayTypes = cache(async (): Promise<BayType[]> => {
   const rows = await safeQuery<BayType[]>("bay types", DEFAULT_BAY_TYPES, (sb) =>
     sb.from("bay_types").select("*").order("sort_order"),
   );
-  return rows.map((r) => ({ ...r, details: Array.isArray(r.details) ? r.details : [] }));
+  return rows.map((r) => ({ ...r, details: Array.isArray(r.details) ? r.details : [], image_url: r.image_url ?? null }));
 });
 
 export const getRates = cache(async (): Promise<Rate[]> => {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckIcon } from "@/components/icons";
+import { PhotoSlot } from "@/components/site/PhotoSlot";
 import { PricingTable } from "@/components/site/PricingTable";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
@@ -49,7 +50,16 @@ export default async function PricingPage() {
           <div className="mt-12 grid gap-5 lg:grid-cols-3">
             {bays.map((bay, i) => (
               <Reveal key={bay.id} delay={i * 90}>
-                <article className="flex h-full flex-col gap-4 border-t-2 border-gold bg-ink p-7 sm:p-8">
+                <article className="flex h-full flex-col overflow-hidden border-t-2 border-gold bg-ink">
+                  <PhotoSlot
+                    src={bay.image_url}
+                    alt={`${bay.name} golf simulator`}
+                    label={bay.name}
+                    className="aspect-[4/3]"
+                    imageClassName="object-cover"
+                    sizes="(min-width: 1024px) 33vw, 100vw"
+                  />
+                  <div className="flex flex-1 flex-col gap-4 p-7 sm:p-8">
                   <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
                   {bay.summary && <p className="leading-relaxed text-mist">{bay.summary}</p>}
                   {bay.details.length > 0 && (
@@ -62,6 +72,7 @@ export default async function PricingPage() {
                       ))}
                     </ul>
                   )}
+                  </div>
                 </article>
               </Reveal>
             ))}

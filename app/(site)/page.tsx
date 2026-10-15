@@ -46,8 +46,6 @@ export default async function HomePage() {
   const upcoming = homepageEvents(events, 3);
   const barPhoto =
     gallery.find((g) => g.category === "Bar & lounge") ?? gallery.find((g) => g.category === "Food & drinks") ?? null;
-  const simPhoto =
-    gallery.find((g) => g.category === "Golf simulator bays") ?? gallery.find((g) => g.category === "Private simulator") ?? null;
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
@@ -139,37 +137,45 @@ export default async function HomePage() {
           <div className="mt-14 grid gap-5 lg:grid-cols-3">
             {bays.map((bay, i) => (
               <Reveal key={bay.id} delay={i * 90}>
-                <article className="card flex h-full flex-col gap-5 p-7 sm:p-8">
-                  <span className="font-display text-5xl font-semibold text-gold/40" aria-hidden="true">
-                    0{i + 1}
-                  </span>
-                  <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
-                  {bay.summary && <p className="leading-relaxed text-mist">{bay.summary}</p>}
-                  {bay.details.length > 0 && (
-                    <ul className="mt-auto flex flex-col gap-2.5 border-t border-line pt-5">
-                      {bay.details.map((d) => (
-                        <li key={d} className="flex gap-3 text-sm text-cream/90">
-                          <CheckIcon width={16} height={16} className="mt-0.5 shrink-0 text-gold" />
-                          {d}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                <article className="card group flex h-full flex-col overflow-hidden">
+                  <div className="relative">
+                    <PhotoSlot
+                      src={bay.image_url}
+                      alt={`${bay.name} golf simulator`}
+                      label={bay.name}
+                      className="aspect-[4/3] border-b border-line"
+                      imageClassName="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                      sizes="(min-width: 1024px) 33vw, 100vw"
+                    />
+                    <span
+                      className="absolute left-4 top-4 bg-ink/80 px-2.5 py-1 font-display text-2xl font-semibold leading-none text-gold"
+                      aria-hidden="true"
+                    >
+                      0{i + 1}
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col gap-4 p-7 sm:p-8">
+                    <h3 className="font-display text-3xl font-semibold text-cream">{bay.name}</h3>
+                    {bay.summary && <p className="leading-relaxed text-mist">{bay.summary}</p>}
+                    {bay.details.length > 0 && (
+                      <ul className="mt-auto flex flex-col gap-2.5 border-t border-line pt-5">
+                        {bay.details.map((d) => (
+                          <li key={d} className="flex gap-3 text-sm text-cream/90">
+                            <CheckIcon width={16} height={16} className="mt-0.5 shrink-0 text-gold" />
+                            {d}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <Link href="/pricing" className="link-gold mt-2 inline-flex items-center gap-2 text-sm uppercase tracking-[0.14em]">
+                      See pricing <ArrowRightIcon width={14} height={14} />
+                    </Link>
+                  </div>
                 </article>
               </Reveal>
             ))}
           </div>
 
-          <Reveal className="mt-5">
-            <PhotoSlot
-              src={simPhoto?.image_url}
-              alt={simPhoto?.alt_text ?? ""}
-              label="Golf simulator bays"
-              className="aspect-[16/9] rounded-[4px] border border-line sm:aspect-[21/8]"
-              imageClassName="object-cover"
-              sizes="(min-width: 1280px) 1200px, 100vw"
-            />
-          </Reveal>
         </div>
       </section>
 
