@@ -14,6 +14,7 @@ export function Header({
   phoneHref,
   phoneLabel,
   nav,
+  giftCardHref = null,
 }: {
   businessName: string;
   logoUrl: string | null;
@@ -21,6 +22,8 @@ export function Header({
   phoneHref: string | null;
   phoneLabel: string | null;
   nav: NavVisibility;
+  /** Online gift card shop (or the Gift Cards page); null hides the button. */
+  giftCardHref?: string | null;
 }) {
   const pathname = usePathname();
   const links = navLinks(nav);
@@ -78,7 +81,7 @@ export function Header({
           )}
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-4 min-[1440px]:flex">
+        <nav aria-label="Main" className="hidden items-center gap-3.5 min-[1440px]:flex min-[1600px]:gap-4">
           {desktopLinks.map((link) => (
             <Link
               key={link.href}
@@ -94,7 +97,12 @@ export function Header({
         </nav>
 
         <div className="flex items-center gap-2">
-          <SmartLink href={booking.href} className="btn btn-gold hidden min-h-11 px-5 sm:inline-flex">
+          {giftCardHref && (
+            <SmartLink href={giftCardHref} className="btn btn-outline hidden min-h-11 whitespace-nowrap px-4 sm:inline-flex">
+              Buy a Gift Card
+            </SmartLink>
+          )}
+          <SmartLink href={booking.href} className="btn btn-gold hidden min-h-11 whitespace-nowrap px-5 sm:inline-flex">
             Book a Simulator
           </SmartLink>
           <button
@@ -139,6 +147,11 @@ export function Header({
             <SmartLink href={booking.href} className="btn btn-gold w-full">
               Book a Simulator
             </SmartLink>
+            {giftCardHref && (
+              <SmartLink href={giftCardHref} className="btn btn-outline w-full">
+                Buy a Gift Card
+              </SmartLink>
+            )}
             {phoneHref && (
               <a href={phoneHref} className="btn btn-outline w-full">
                 <PhoneIcon width={16} height={16} />

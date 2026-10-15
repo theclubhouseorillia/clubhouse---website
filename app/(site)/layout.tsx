@@ -67,6 +67,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         phoneHref={phoneHref}
         phoneLabel={real(settings.phone)}
         nav={nav}
+        giftCardHref={giftCards.enabled ? (giftCards.buy_url ?? "/gift-cards") : null}
       />
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
