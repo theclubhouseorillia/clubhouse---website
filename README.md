@@ -31,6 +31,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Events: one-off or **weekly repeating**, flyers, times, admission, ticket/booking links, feature on the homepage
 - Simulator pricing and bay descriptions
 - Winter golf league page: details, pricing and the sign-up email
+- Pool table: photos, hourly price and its own booking button
 - Private event packages
 - Menu categories and items (with photos)
 - Weekly hours, plus holiday and special hours

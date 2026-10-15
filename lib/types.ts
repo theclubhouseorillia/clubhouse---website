@@ -158,3 +158,14 @@ export interface HomepagePhotos {
   league_photos: string[];
   visit_photos: string[];
 }
+
+export interface PoolTable {
+  enabled: boolean;
+  title: string;
+  description: string | null;
+  price_label: string;
+  price_note: string | null;
+  features: string[];
+  photos: string[];
+  booking_url: string | null;
+}

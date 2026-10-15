@@ -477,3 +477,28 @@ insert into public.homepage_photos (id) values (1) on conflict (id) do nothing;
 
 alter table public.event_packages add column if not exists photos text[] not null default '{}';
 alter table public.league_options add column if not exists photos text[] not null default '{}';
+
+-- =============================================================================
+-- Pool table (one row): photos, price and booking link
+-- =============================================================================
+
+create table if not exists public.pool_table (
+  id          int primary key default 1 check (id = 1),
+  enabled     boolean not null default true,
+  title       text not null default 'Pool Table',
+  description text,
+  price_label text not null default '$20',
+  price_note  text default 'per hour',
+  features    text[] not null default '{}',
+  photos      text[] not null default '{}',
+  booking_url text,
+  updated_at  timestamptz not null default now()
+);
+alter table public.pool_table enable row level security;
+drop policy if exists "Public read" on public.pool_table;
+create policy "Public read" on public.pool_table for select to anon, authenticated using (true);
+drop policy if exists "Admins manage" on public.pool_table;
+create policy "Admins manage" on public.pool_table
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.pool_table to anon, authenticated;
+grant insert, update, delete on public.pool_table to authenticated;

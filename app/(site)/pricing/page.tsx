@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckIcon } from "@/components/icons";
 import { PhotoCarousel } from "@/components/site/PhotoCarousel";
+import { PoolTableFeature } from "@/components/site/PoolTableFeature";
 import { PricingTable } from "@/components/site/PricingTable";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
-import { getBayTypes, getRates, getSettings } from "@/lib/data";
+import { getBayTypes, getGallery, getPoolTable, getRates, getSettings } from "@/lib/data";
 import { real } from "@/lib/format";
 import { bookingLink } from "@/lib/site";
 
@@ -17,7 +18,16 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const [settings, rates, bays] = await Promise.all([getSettings(), getRates(), getBayTypes()]);
+  const [settings, rates, bays, pool, gallery] = await Promise.all([
+    getSettings(),
+    getRates(),
+    getBayTypes(),
+    getPoolTable(),
+    getGallery(),
+  ]);
+  const poolPhotos = pool.photos.length
+    ? pool.photos
+    : gallery.filter((g) => g.category === "Pool table").map((g) => g.image_url);
   const booking = bookingLink(settings);
   const season = real(settings.pricing_season_label) ?? "Simulator pricing";
 
@@ -72,6 +82,14 @@ export default async function PricingPage() {
           </div>
         </div>
       </section>
+
+      {pool.enabled && (
+        <section aria-labelledby="pricing-pool-title" className="py-20 sm:py-28">
+          <div className="container-site">
+            <PoolTableFeature pool={pool} photos={poolPhotos} booking={booking} id="pricing-pool-title" />
+          </div>
+        </section>
+      )}
 
       <section className="py-20 sm:py-24">
         <div className="container-site">

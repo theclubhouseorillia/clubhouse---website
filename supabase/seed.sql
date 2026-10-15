@@ -178,6 +178,18 @@ select * from (values
 ) as v(name, price_label, price_note, description, features, featured, sort_order)
 where not exists (select 1 from public.league_options);
 
+-- Pool table -------------------------------------------------------------------
+insert into public.pool_table (id, title, description, price_label, price_note, features)
+values (
+  1,
+  'Premium Pool Table',
+  'Rack ''em up between rounds or make a night of it. Grab a drink from the bar and challenge your crew on our premium pool table.',
+  '$20',
+  'per hour',
+  array['Premium pool table', 'Book online in seconds']
+)
+on conflict (id) do nothing;
+
 -- =============================================================================
 -- MAKE YOURSELF AN ADMIN
 -- 1. Supabase → Authentication → Users → Add user → Create new user

@@ -9,6 +9,7 @@ import type {
   LeagueOption,
   LeagueSettings,
   MenuCategory,
+  PoolTable,
   Rate,
   Settings,
 } from "./types";
@@ -217,4 +218,16 @@ export const DEFAULT_HOMEPAGE_PHOTOS: HomepagePhotos = {
   events_photos: [],
   league_photos: [],
   visit_photos: [],
+};
+
+export const DEFAULT_POOL_TABLE: PoolTable = {
+  enabled: true,
+  title: "Premium Pool Table",
+  description:
+    "Rack 'em up between rounds or make a night of it. Grab a drink from the bar and challenge your crew on our premium pool table.",
+  price_label: "$20",
+  price_note: "per hour",
+  features: ["Premium pool table", "Book online in seconds"],
+  photos: [],
+  booking_url: null,
 };

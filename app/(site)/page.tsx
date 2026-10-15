@@ -7,6 +7,7 @@ import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
 import { OpenToday } from "@/components/site/OpenToday";
 import { PackageCard } from "@/components/site/PackageCard";
+import { PoolTableFeature } from "@/components/site/PoolTableFeature";
 import { Reveal } from "@/components/site/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
@@ -18,6 +19,7 @@ import {
   getHours,
   getLeagueSettings,
   getPackages,
+  getPoolTable,
   getSettings,
   getSpecialHours,
 } from "@/lib/data";
@@ -30,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [settings, bays, events, packages, hours, special, gallery, league, photos] = await Promise.all([
+  const [settings, bays, events, packages, hours, special, gallery, league, photos, pool] = await Promise.all([
     getSettings(),
     getBayTypes(),
     getEvents(),
@@ -40,6 +42,7 @@ export default async function HomePage() {
     getGallery(),
     getLeagueSettings(),
     getHomepagePhotos(),
+    getPoolTable(),
   ]);
 
   const booking = bookingLink(settings);
@@ -54,6 +57,9 @@ export default async function HomePage() {
   const galleryBarPhoto =
     gallery.find((g) => g.category === "Bar & lounge") ?? gallery.find((g) => g.category === "Food & drinks") ?? null;
   const barPhotos = photos.bar_photos.length ? photos.bar_photos : galleryBarPhoto ? [galleryBarPhoto.image_url] : [];
+  const poolPhotos = pool.photos.length
+    ? pool.photos
+    : gallery.filter((g) => g.category === "Pool table").map((g) => g.image_url);
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
@@ -171,6 +177,15 @@ export default async function HomePage() {
 
         </div>
       </section>
+
+      {/* POOL TABLE */}
+      {pool.enabled && (
+        <section aria-labelledby="pool-title" className="border-t border-line py-24 sm:py-28">
+          <div className="container-site">
+            <PoolTableFeature pool={pool} photos={poolPhotos} booking={booking} />
+          </div>
+        </section>
+      )}
 
       {/* SPORTS BAR */}
       <section aria-labelledby="bar-title" className="border-y border-line bg-coal py-24 sm:py-32">

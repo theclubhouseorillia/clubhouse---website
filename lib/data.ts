@@ -10,6 +10,7 @@ import {
   DEFAULT_LEAGUE_SETTINGS,
   DEFAULT_MENU,
   DEFAULT_PACKAGES,
+  DEFAULT_POOL_TABLE,
   DEFAULT_RATES,
   DEFAULT_SETTINGS,
 } from "./defaults";
@@ -26,6 +27,7 @@ import type {
   LeagueSettings,
   MenuCategory,
   MenuItem,
+  PoolTable,
   Rate,
   Settings,
   SpecialHours,
@@ -209,5 +211,21 @@ export const getHomepagePhotos = cache(async (): Promise<HomepagePhotos> => {
     events_photos: photoList(row.events_photos),
     league_photos: photoList(row.league_photos),
     visit_photos: photoList(row.visit_photos),
+  };
+});
+
+export const getPoolTable = cache(async (): Promise<PoolTable> => {
+  const row = await safeQuery<Partial<PoolTable> | null>("pool table", null, (sb) =>
+    sb.from("pool_table").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_POOL_TABLE;
+  return {
+    ...DEFAULT_POOL_TABLE,
+    ...row,
+    enabled: row.enabled ?? true,
+    title: row.title || DEFAULT_POOL_TABLE.title,
+    price_label: row.price_label || DEFAULT_POOL_TABLE.price_label,
+    features: Array.isArray(row.features) ? row.features : [],
+    photos: photoList(row.photos),
   };
 });
