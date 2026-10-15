@@ -70,6 +70,7 @@ export const DEFAULT_SETTINGS: Settings = {
   facebook_url: null,
   instagram_url: null,
   instagram_feed_url: null,
+  membership_portal_url: null,
   tiktok_url: null,
   seo_description: null,
   pricing_season_label: "Winter pricing",

@@ -799,3 +799,10 @@ grant insert, update, delete on public.rental_clubs to authenticated;
 -- Gift cards: online shop link (e.g. Toast eGift cards) and its QR code.
 alter table public.gift_cards add column if not exists buy_url text;
 alter table public.gift_cards add column if not exists qr_image_url text;
+
+-- Memberships: online checkout (Stripe Payment Link) per plan, plus the Stripe
+-- customer portal link members use to update their card or cancel.
+alter table public.membership_plans add column if not exists buy_url text;
+alter table public.membership_plans add column if not exists buy_label text;
+alter table public.site_settings add column if not exists membership_portal_url text;
+grant select (membership_portal_url) on public.site_settings to anon;

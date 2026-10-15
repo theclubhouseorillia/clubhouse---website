@@ -92,13 +92,26 @@ function toNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * An https checkout link, or null. Stripe test-mode links (buy.stripe.com/test_…,
+ * billing.stripe.com/p/login/test_…) only accept test cards, so the live website
+ * hides them; preview deployments still show them for testing.
+ */
+export function checkoutUrl(raw: unknown): string | null {
+  const url = typeof raw === "string" ? raw.trim() : "";
+  if (!/^https:\/\/\S+$/i.test(url)) return null;
+  const testMode = /^https:\/\/(buy|checkout|billing)\.stripe\.com\/(p\/login\/)?test_/i.test(url);
+  if (testMode && process.env.VERCEL_ENV === "production") return null;
+  return url;
+}
+
 // Every settings column the public site may read. The private inquiry email is
 // deliberately left out (see schema.sql: visitors can't read that column).
 const PUBLIC_SETTINGS_COLUMNS = [
   "business_name", "logo_url", "hero_headline", "hero_subheadline", "slogan", "show_slogan",
   "hero_image_url", "bar_heading", "bar_text", "highlights", "packages_note", "street_address",
   "city", "province", "postal_code", "phone", "public_email", "website_url", "booking_url",
-  "facebook_url", "instagram_url", "instagram_feed_url", "tiktok_url", "seo_description", "pricing_season_label",
+  "facebook_url", "instagram_url", "instagram_feed_url", "membership_portal_url", "tiktok_url", "seo_description", "pricing_season_label",
   "pricing_note", "hours_season_label",
 ].join(",");
 
@@ -113,6 +126,7 @@ export const getSettings = cache(async (): Promise<Settings> => {
     business_name: row.business_name || DEFAULT_SETTINGS.business_name,
     show_slogan: row.show_slogan ?? true,
     highlights: Array.isArray(row.highlights) ? row.highlights : [],
+    membership_portal_url: checkoutUrl(row.membership_portal_url),
   };
 });
 
@@ -419,8 +433,15 @@ function readyPackages(rows: EventPackage[]): EventPackage[] {
 /** Simulator memberships and hour packs that are ready to show. */
 export const getMembershipPlans = cache(async (): Promise<EventPackage[]> => {
   const rows = await safeQuery<EventPackage[]>("membership plans", DEFAULT_MEMBERSHIP_PLANS, (sb) =>
-    sb.from("membership_plans").select("id, name, price_label, price_note, description, features, featured, sort_order").order("sort_order"),
+    sb
+      .from("membership_plans")
+      .select("id, name, price_label, price_note, description, features, featured, sort_order, buy_url, buy_label")
+      .order("sort_order"),
   );
-  return readyPackages(rows);
+  return readyPackages(rows).map((p) => ({
+    ...p,
+    buy_url: checkoutUrl(p.buy_url),
+    buy_label: p.buy_label?.trim() && !hasPlaceholderText(p.buy_label) ? p.buy_label.trim() : null,
+  }));
 });
 

@@ -23,6 +23,8 @@ export interface Settings {
   instagram_url: string | null;
   /** Behold.so JSON feed for the homepage Instagram strip. */
   instagram_feed_url: string | null;
+  /** Stripe customer portal login link, where members update their card or cancel. */
+  membership_portal_url: string | null;
   tiktok_url: string | null;
   seo_description: string | null;
   pricing_season_label: string | null;
@@ -92,6 +94,9 @@ export interface EventPackage {
   featured: boolean;
   sort_order: number;
   photos: string[];
+  /** Memberships only: online checkout link (e.g. a Stripe Payment Link) and its button text. */
+  buy_url?: string | null;
+  buy_label?: string | null;
 }
 
 export interface MenuItem {
