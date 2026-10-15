@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CalendarIcon, CheckIcon, ClockIcon, ExternalIcon, MailIcon } from "@/components/icons";
+import { CalendarIcon, CheckIcon, ClockIcon, ExternalIcon, MailIcon, PhoneIcon } from "@/components/icons";
 import { PackageCard } from "@/components/site/PackageCard";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
-import { getLeagueOptions, getLeagueSettings } from "@/lib/data";
-import { real } from "@/lib/format";
+import { getLeagueOptions, getLeagueSettings, getLeagueSteps, getSettings } from "@/lib/data";
+import { real, telHref } from "@/lib/format";
 import { leagueEmailHref } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,7 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LeaguePage() {
-  const [league, options] = await Promise.all([getLeagueSettings(), getLeagueOptions()]);
+  const [league, options, steps, settings] = await Promise.all([
+    getLeagueSettings(),
+    getLeagueOptions(),
+    getLeagueSteps(),
+    getSettings(),
+  ]);
   if (!league.enabled) notFound();
 
   const emailHref = leagueEmailHref(league.email, league.email_subject);
@@ -31,10 +36,62 @@ export default async function LeaguePage() {
   const joinHref = hasSignup && signupUrl ? signupUrl : emailHref;
   const ctaLabel = hasSignup ? "Sign up now" : hasEmail ? "Email us to join" : "Contact us to join";
   const CtaIcon = hasSignup ? ExternalIcon : MailIcon;
+  const tel = telHref(settings.phone);
 
   return (
     <>
       <PageHeader eyebrow="Leagues" title={league.title} intro={league.intro} />
+
+      {steps.length > 0 && (
+        <section
+          id="sign-up"
+          aria-labelledby="league-signup-title"
+          className="scroll-mt-28 border-b border-line bg-coal py-20 sm:py-24"
+        >
+          <div className="container-site grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
+            <Reveal className="flex flex-col gap-6">
+              <SectionHeading
+                id="league-signup-title"
+                eyebrow="Step by step"
+                title="How to sign up & pay"
+                intro="It only takes a few minutes. Follow these steps on your phone."
+              />
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+                <SmartLink href={joinHref} className="btn btn-gold">
+                  <CtaIcon width={18} height={18} />
+                  {ctaLabel}
+                </SmartLink>
+                {tel && (
+                  <a href={tel} className="btn btn-outline">
+                    <PhoneIcon width={18} height={18} />
+                    Questions? Call us
+                  </a>
+                )}
+              </div>
+            </Reveal>
+
+            <Reveal delay={100}>
+              <ol className="flex flex-col">
+                {steps.map((step, i) => (
+                  <li key={step.id} className="relative flex gap-5 pb-9 last:pb-0">
+                    {i < steps.length - 1 && (
+                      <span aria-hidden="true" className="absolute bottom-0 left-6 top-12 w-px bg-gold/35" />
+                    )}
+                    <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold/60 bg-ink font-display text-xl font-semibold text-gold">
+                      <span className="sr-only">Step </span>
+                      {i + 1}
+                    </span>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <h3 className="font-display text-2xl font-semibold leading-tight text-cream">{step.title}</h3>
+                      {real(step.description) && <p className="leading-relaxed text-mist">{step.description}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="league-details-title" className="py-20 sm:py-24">
         <div className="container-site grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">

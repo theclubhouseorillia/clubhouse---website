@@ -659,6 +659,22 @@ export const RESOURCES: ResourceDef[] = [
     ],
   },
   {
+    key: "league-steps",
+    table: "league_steps",
+    title: "League sign-up steps",
+    singular: "Step",
+    description: "The numbered “How to sign up & pay” steps on the Winter Golf League page. They show in display order.",
+    group: "Golf",
+    orderBy: [{ column: "sort_order" }, { column: "created_at" }],
+    titleField: "title",
+    summaryFields: ["description"],
+    fields: [
+      { name: "title", label: "Step", type: "text", required: true, max: 80, wide: true, placeholder: "Tap “Join”" },
+      { name: "description", label: "What to do", type: "textarea", max: 600, wide: true, short: "" },
+      sortOrder,
+    ],
+  },
+  {
     key: "events",
     table: "events",
     title: "Events",

@@ -675,3 +675,20 @@ update storage.buckets
 
 -- Online sign-up link for the Winter Golf League (e.g. a Trackman league page).
 alter table public.league_settings add column if not exists signup_url text;
+
+-- "How to sign up & pay" steps on the Winter Golf League page.
+create table if not exists public.league_steps (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null,
+  description text not null default '',
+  sort_order  int not null default 0,
+  created_at  timestamptz not null default now()
+);
+alter table public.league_steps enable row level security;
+drop policy if exists "Public read" on public.league_steps;
+create policy "Public read" on public.league_steps for select to anon, authenticated using (true);
+drop policy if exists "Admins manage" on public.league_steps;
+create policy "Admins manage" on public.league_steps for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.league_steps to anon, authenticated;
+grant insert, update, delete on public.league_steps to authenticated;
+

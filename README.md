@@ -30,7 +30,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Announcement banner: add, edit, delete, switch on/off, and schedule start and end times
 - Events: one-off or **weekly repeating**, flyers, times, admission, ticket/booking links, feature on the homepage
 - Simulator pricing and bay descriptions
-- Winter golf league page: details, pricing and the sign-up link (or email)
+- Winter golf league page: step-by-step “How to sign up & pay”, details, pricing and the sign-up link (or email)
 - Pool table: photos, hourly price and its own booking button
 - Meet the Owners: your story, one group photo and each owner's name and title, at the bottom of the homepage
 - Google reviews: your star rating, the reviews you pick, and "Leave us a review" / "Read all reviews on Google" buttons

@@ -183,6 +183,16 @@ select * from (values
 ) as v(name, price_label, price_note, description, features, featured, sort_order)
 where not exists (select 1 from public.league_options);
 
+insert into public.league_steps (title, description, sort_order)
+select * from (values
+  ('Get the Trackman Golf app', 'Download the free Trackman Golf app from the App Store or Google Play. Sign in, or create your free Trackman account.', 1),
+  ('Open our league link', 'On your phone, tap “Sign up now” on this page. It opens The Clubhouse Winter League in the Trackman Golf app.', 2),
+  ('Tap “Join”', 'Tap Join to enter this season of the league.', 3),
+  ('Pay your league fee', 'Trackman takes you straight to a secure payment page. Pay your entry fee there to lock in your spot.', 4),
+  ('You’re in!', 'After you pay, you’re taken back to the season page. Scroll down to see the league schedule, formats and rules. Sign in to your Trackman account on the simulator when you play, so your league rounds count.', 5)
+) as v(title, description, sort_order)
+where not exists (select 1 from public.league_steps);
+
 -- Pool table -------------------------------------------------------------------
 insert into public.pool_table (id, title, description, price_label, price_note, features)
 values (

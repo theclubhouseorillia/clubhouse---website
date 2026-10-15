@@ -95,7 +95,14 @@ export default async function HomePage() {
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
-  const leagueHref = leagueEmailHref(league.email, league.email_subject);
+  const leagueHasSignup = /^https?:\/\//i.test(real(league.signup_url) ?? "");
+  // With online sign-up, "How to sign up" opens the step-by-step guide on the league page; otherwise people email.
+  const leagueHref = leagueHasSignup ? "/league#sign-up" : leagueEmailHref(league.email, league.email_subject);
+  const leagueJoinLabel = leagueHasSignup
+    ? "How to sign up"
+    : leagueHref.startsWith("mailto:")
+      ? "Email us to join"
+      : "Contact us to join";
   const showReviews = reviewsSection.enabled && (reviews.length > 0 || reviewsSection.rating !== null);
   const ownersIntro = real(ownersSection.intro);
   const ownersHaveBios = owners.some((o) => real(o.bio));
@@ -375,8 +382,8 @@ export default async function HomePage() {
                       League details &amp; pricing
                     </Link>
                     <SmartLink href={leagueHref} className="btn btn-outline">
-                      <MailIcon width={16} height={16} />
-                      {leagueHref.startsWith("mailto:") ? "Email us to join" : "Contact us to join"}
+                      {!leagueHasSignup && <MailIcon width={16} height={16} />}
+                      {leagueJoinLabel}
                     </SmartLink>
                   </div>
                 )}
@@ -391,8 +398,8 @@ export default async function HomePage() {
                   League details &amp; pricing
                 </Link>
                 <SmartLink href={leagueHref} className="btn btn-outline">
-                  <MailIcon width={16} height={16} />
-                  {leagueHref.startsWith("mailto:") ? "Email us to join" : "Contact us to join"}
+                  {!leagueHasSignup && <MailIcon width={16} height={16} />}
+                  {leagueJoinLabel}
                 </SmartLink>
               </div>
               )}

@@ -10,6 +10,7 @@ import type {
   HoursRow,
   LeagueOption,
   LeagueSettings,
+  LeagueStep,
   MenuCategory,
   MenuSettings,
   Owner,
@@ -223,6 +224,8 @@ export const DEFAULT_LEAGUE_SETTINGS: LeagueSettings = {
 };
 
 export const DEFAULT_LEAGUE_OPTIONS: LeagueOption[] = [];
+
+export const DEFAULT_LEAGUE_STEPS: LeagueStep[] = [];
 
 export const DEFAULT_HOMEPAGE_PHOTOS: HomepagePhotos = {
   hero_photos: [],

@@ -151,6 +151,14 @@ export interface LeagueSettings {
   note: string | null;
 }
 
+/** One step of "How to sign up & pay" on the league page. */
+export interface LeagueStep {
+  id: string;
+  title: string;
+  description: string;
+  sort_order: number;
+}
+
 /** League pricing options share the package card layout. */
 export type LeagueOption = EventPackage;
 

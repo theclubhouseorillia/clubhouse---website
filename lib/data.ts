@@ -10,6 +10,7 @@ import {
   DEFAULT_HOURS,
   DEFAULT_LEAGUE_OPTIONS,
   DEFAULT_LEAGUE_SETTINGS,
+  DEFAULT_LEAGUE_STEPS,
   DEFAULT_MENU,
   DEFAULT_MENU_SETTINGS,
   DEFAULT_OWNERS,
@@ -33,6 +34,7 @@ import type {
   HoursRow,
   LeagueOption,
   LeagueSettings,
+  LeagueStep,
   MenuCategory,
   MenuItem,
   Faq,
@@ -216,6 +218,14 @@ export const getLeagueOptions = cache(async (): Promise<LeagueOption[]> => {
     sb.from("league_options").select("*").order("sort_order"),
   );
   return rows.map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features : [], photos: photoList(r.photos) }));
+});
+
+/** "How to sign up & pay" steps on the league page, in order. */
+export const getLeagueSteps = cache(async (): Promise<LeagueStep[]> => {
+  const rows = await safeQuery<LeagueStep[]>("league steps", DEFAULT_LEAGUE_STEPS, (sb) =>
+    sb.from("league_steps").select("id, title, description, sort_order").order("sort_order").order("created_at"),
+  );
+  return rows.filter((r) => typeof r.title === "string" && r.title.trim() !== "");
 });
 
 export const getHomepagePhotos = cache(async (): Promise<HomepagePhotos> => {
