@@ -287,5 +287,6 @@ export const DEFAULT_MENU_SETTINGS: MenuSettings = {
     "/menu-files/menu-page-2.jpg",
     "/menu-files/menu-page-3.jpg",
     "/menu-files/menu-page-4.jpg",
+    "/menu-files/menu-page-5.jpg",
   ],
 };

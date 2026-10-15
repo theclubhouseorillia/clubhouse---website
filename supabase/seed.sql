@@ -290,7 +290,7 @@ values (
   1,
   'Scroll through our full food and drink menu below, or download it to keep on your phone.',
   '/menu-files/the-clubhouse-menu.pdf',
-  array['/menu-files/menu-page-1.jpg', '/menu-files/menu-page-2.jpg', '/menu-files/menu-page-3.jpg', '/menu-files/menu-page-4.jpg']
+  array['/menu-files/menu-page-1.jpg', '/menu-files/menu-page-2.jpg', '/menu-files/menu-page-3.jpg', '/menu-files/menu-page-4.jpg', '/menu-files/menu-page-5.jpg']
 )
 on conflict (id) do nothing;
 
