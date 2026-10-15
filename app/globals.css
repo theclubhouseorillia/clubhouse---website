@@ -12,8 +12,10 @@
   --color-line: #2b302d;
   --color-forest: #143628;
   --color-forest-2: #1d4a37;
-  --color-gold: #c9a45c;
-  --color-gold-2: #dfc286;
+  /* Accent colour (buttons, highlights, links). Named "gold" in the class
+     names for historical reasons; it is currently a fairway green. */
+  --color-gold: #4fbf73;
+  --color-gold-2: #7ed79b;
   --color-cream: #f3eee3;
   --color-mist: #b8b5ab;
   --color-danger: #f0a294;
@@ -172,7 +174,7 @@
   /* Dotted "golf ball" texture used behind image placeholders. */
   .dimples {
     background-color: var(--color-coal-2);
-    background-image: radial-gradient(rgb(201 164 92 / 0.14) 1px, transparent 1.6px);
+    background-image: radial-gradient(rgb(79 191 115 / 0.14) 1px, transparent 1.6px);
     background-size: 16px 16px;
   }
 
@@ -202,14 +204,14 @@
   .field:focus {
     outline: none;
     border-color: var(--color-gold);
-    box-shadow: 0 0 0 3px rgb(201 164 92 / 0.25);
+    box-shadow: 0 0 0 3px rgb(79 191 115 / 0.25);
   }
   .field[aria-invalid="true"] {
     border-color: var(--color-danger);
   }
   select.field {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23c9a45c' stroke-width='1.6'%3E%3Cpath d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%234fbf73' stroke-width='1.6'%3E%3Cpath d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.9rem center;
     padding-right: 2.4rem;

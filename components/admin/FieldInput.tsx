@@ -73,7 +73,7 @@ export function FieldInput({
             type="checkbox"
             checked={value === true}
             onChange={(e) => onChange(e.target.checked)}
-            className="h-5 w-5 shrink-0 accent-[#c9a45c]"
+            className="h-5 w-5 shrink-0 accent-[#4fbf73]"
             aria-describedby={helpId}
           />
           <span className="text-sm font-semibold text-cream">{field.label}</span>
