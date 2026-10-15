@@ -147,6 +147,9 @@ export function parseCitypage(xml: string): Weather | null {
     });
   }
 
+  // Some stations report a temperature but no sky condition; borrow the next period's look.
+  if (current && !current.condition && periods[0]) current.kind = periods[0].kind;
+
   if (!current && periods.length === 0) return null;
   return { location, observedAt, current, periods };
 }
