@@ -9,6 +9,8 @@ import {
   DEFAULT_LEAGUE_OPTIONS,
   DEFAULT_LEAGUE_SETTINGS,
   DEFAULT_MENU,
+  DEFAULT_OWNERS,
+  DEFAULT_OWNERS_SECTION,
   DEFAULT_PACKAGES,
   DEFAULT_POOL_TABLE,
   DEFAULT_RATES,
@@ -27,6 +29,8 @@ import type {
   LeagueSettings,
   MenuCategory,
   MenuItem,
+  Owner,
+  OwnersSection,
   PoolTable,
   Rate,
   Settings,
@@ -230,4 +234,23 @@ export const getPoolTable = cache(async (): Promise<PoolTable> => {
     features: Array.isArray(row.features) ? row.features : [],
     photos: photoList(row.photos),
   };
+});
+
+export const getOwnersSection = cache(async (): Promise<OwnersSection> => {
+  const row = await safeQuery<Partial<OwnersSection> | null>("owners section", null, (sb) =>
+    sb.from("owners_section").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_OWNERS_SECTION;
+  return {
+    enabled: row.enabled ?? true,
+    heading: row.heading || DEFAULT_OWNERS_SECTION.heading,
+    intro: row.intro ?? null,
+    photos: photoList(row.photos),
+  };
+});
+
+export const getOwners = cache(async (): Promise<Owner[]> => {
+  return safeQuery<Owner[]>("owners", DEFAULT_OWNERS, (sb) =>
+    sb.from("owners").select("*").order("sort_order").order("name"),
+  );
 });

@@ -9,10 +9,12 @@ export function Footer({
   settings,
   hours,
   showLeague,
+  showOwners,
 }: {
   settings: Settings;
   hours: HoursRow[];
   showLeague: boolean;
+  showOwners: boolean;
 }) {
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
@@ -96,7 +98,7 @@ export function Footer({
         <nav aria-label="Footer">
           <h2 className="eyebrow mb-5">Explore</h2>
           <ul className="flex flex-col gap-1">
-            {navLinks(showLeague).map((link) => (
+            {navLinks(showLeague, showOwners).map((link) => (
               <li key={link.href}>
                 <Link href={link.href} className="inline-block py-1.5 text-mist transition hover:text-gold-2">
                   {link.label}

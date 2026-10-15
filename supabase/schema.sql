@@ -506,3 +506,44 @@ grant insert, update, delete on public.pool_table to authenticated;
 -- Which pricing column each bay's price range comes from
 alter table public.bay_types add column if not exists price_column text
   check (price_column in ('open_bay', 'semi_private', 'private_bay'));
+
+-- =============================================================================
+-- Meet the Owners: section settings (one row) and each owner
+-- =============================================================================
+
+create table if not exists public.owners_section (
+  id         int primary key default 1 check (id = 1),
+  enabled    boolean not null default true,
+  heading    text not null default 'Meet the Owners',
+  intro      text,
+  photos     text[] not null default '{}',
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.owners (
+  id         uuid primary key default gen_random_uuid(),
+  name       text not null,
+  role       text,
+  bio        text,
+  photo_url  text,
+  sort_order int not null default 0
+);
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['owners_section', 'owners'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists "Public read" on public.%I', t);
+    execute format('create policy "Public read" on public.%I for select to anon, authenticated using (true)', t);
+    execute format('drop policy if exists "Admins manage" on public.%I', t);
+    execute format(
+      'create policy "Admins manage" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())',
+      t
+    );
+    execute format('grant select on public.%I to anon, authenticated', t);
+    execute format('grant insert, update, delete on public.%I to authenticated', t);
+  end loop;
+end $$;
+insert into public.owners_section (id) values (1) on conflict (id) do nothing;

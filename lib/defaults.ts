@@ -9,6 +9,8 @@ import type {
   LeagueOption,
   LeagueSettings,
   MenuCategory,
+  Owner,
+  OwnersSection,
   PoolTable,
   Rate,
   Settings,
@@ -234,3 +236,12 @@ export const DEFAULT_POOL_TABLE: PoolTable = {
   photos: [],
   booking_url: null,
 };
+
+export const DEFAULT_OWNERS_SECTION: OwnersSection = {
+  enabled: true,
+  heading: "Meet the Owners",
+  intro: null,
+  photos: [],
+};
+
+export const DEFAULT_OWNERS: Owner[] = [];

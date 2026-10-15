@@ -14,6 +14,7 @@ export function Header({
   phoneHref,
   phoneLabel,
   showLeague,
+  showOwners,
 }: {
   businessName: string;
   logoUrl: string | null;
@@ -21,9 +22,10 @@ export function Header({
   phoneHref: string | null;
   phoneLabel: string | null;
   showLeague: boolean;
+  showOwners: boolean;
 }) {
   const pathname = usePathname();
-  const links = navLinks(showLeague);
+  const links = navLinks(showLeague, showOwners);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -65,29 +67,29 @@ export function Header({
         scrolled || open ? "border-line bg-ink/95 backdrop-blur-md" : "border-transparent bg-ink/70 backdrop-blur-sm"
       }`}
     >
-      <div className="container-site flex h-[4.5rem] items-center justify-between gap-6 lg:h-20">
+      <div className="mx-auto flex h-[4.5rem] w-full max-w-[96rem] items-center justify-between gap-6 px-5 md:px-8 lg:h-20">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label={`${businessName}, home`}>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="" className="h-10 w-auto max-w-[11rem] object-contain lg:h-12" />
           ) : (
-            <span className="truncate font-display text-xl font-semibold uppercase tracking-[0.08em] text-cream sm:text-2xl">
+            <span className="block max-w-[13rem] font-display text-lg font-semibold uppercase leading-[1.05] tracking-[0.06em] text-cream sm:max-w-[16rem] sm:text-xl">
               {businessName}
             </span>
           )}
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-6 xl:flex">
+        <nav aria-label="Main" className="hidden items-center gap-5 min-[1360px]:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               aria-current={isActive(link.href) ? "page" : undefined}
-              className={`relative py-2 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:text-gold-2 ${
+              className={`relative whitespace-nowrap py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-colors hover:text-gold-2 ${
                 isActive(link.href) ? "text-gold" : "text-cream/85"
               }`}
             >
-              {link.label}
+              {link.short}
             </Link>
           ))}
         </nav>
@@ -99,7 +101,7 @@ export function Header({
           <button
             ref={toggleRef}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-sm border border-line text-cream xl:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-sm border border-line text-cream min-[1360px]:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -113,7 +115,7 @@ export function Header({
       <div
         id="mobile-menu"
         hidden={!open}
-        className="max-h-[calc(100svh-4.5rem)] overflow-y-auto border-t border-line bg-ink xl:hidden"
+        className="max-h-[calc(100svh-4.5rem)] overflow-y-auto border-t border-line bg-ink min-[1360px]:hidden"
       >
         <nav aria-label="Mobile" className="container-site flex flex-col py-4">
           <Link
@@ -127,6 +129,7 @@ export function Header({
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setOpen(false)}
               aria-current={isActive(link.href) ? "page" : undefined}
               className={`border-b border-line/60 py-4 font-display text-2xl ${isActive(link.href) ? "text-gold" : "text-cream"}`}
             >

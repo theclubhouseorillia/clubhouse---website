@@ -171,3 +171,19 @@ export interface PoolTable {
   photos: string[];
   booking_url: string | null;
 }
+
+export interface OwnersSection {
+  enabled: boolean;
+  heading: string;
+  intro: string | null;
+  photos: string[];
+}
+
+export interface Owner {
+  id: string;
+  name: string;
+  role: string | null;
+  bio: string | null;
+  photo_url: string | null;
+  sort_order: number;
+}

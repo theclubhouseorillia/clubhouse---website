@@ -59,19 +59,23 @@ export function siteUrl(): string {
   return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
+/** `label` is used in the phone menu and footer; `short` in the desktop top bar. */
 export const NAV_LINKS = [
-  { href: "/pricing", label: "Simulators & Pricing" },
-  { href: "/league", label: "Winter League" },
-  { href: "/events", label: "Events" },
-  { href: "/private-events", label: "Private Events" },
-  { href: "/menu", label: "Food & Drink" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/contact", label: "Contact" },
+  { href: "/pricing", label: "Simulators & Pricing", short: "Pricing" },
+  { href: "/league", label: "Winter League", short: "League" },
+  { href: "/events", label: "Events", short: "Events" },
+  { href: "/private-events", label: "Private Events", short: "Private Events" },
+  { href: "/menu", label: "Food & Drink", short: "Menu" },
+  { href: "/gallery", label: "Gallery", short: "Gallery" },
+  { href: "/contact", label: "Contact", short: "Contact" },
+  { href: "/#owners", label: "Meet the Owners", short: "The Owners" },
 ] as const;
 
-/** Menu links, leaving out the league page when it's switched off. */
-export function navLinks(showLeague: boolean) {
-  return NAV_LINKS.filter((l) => showLeague || l.href !== "/league");
+/** Menu links, leaving out sections that are switched off. */
+export function navLinks(showLeague: boolean, showOwners = true) {
+  return NAV_LINKS.filter(
+    (l) => (showLeague || l.href !== "/league") && (showOwners || l.href !== "/#owners"),
+  );
 }
 
 /** "Email us to join" link for the league, with the subject and a few prompts filled in. */

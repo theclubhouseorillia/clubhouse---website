@@ -32,6 +32,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Simulator pricing and bay descriptions
 - Winter golf league page: details, pricing and the sign-up email
 - Pool table: photos, hourly price and its own booking button
+- Meet the Owners: your story, group photos and a card for each owner, at the bottom of the homepage
 - Private event packages
 - Menu categories and items (with photos)
 - Weekly hours, plus holiday and special hours

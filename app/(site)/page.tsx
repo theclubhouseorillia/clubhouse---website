@@ -8,6 +8,7 @@ import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
 import { OpenToday } from "@/components/site/OpenToday";
 import { PackageCard } from "@/components/site/PackageCard";
+import { PhotoSlot } from "@/components/site/PhotoSlot";
 import { PoolTableFeature } from "@/components/site/PoolTableFeature";
 import { Reveal } from "@/components/site/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
@@ -19,6 +20,8 @@ import {
   getHomepagePhotos,
   getHours,
   getLeagueSettings,
+  getOwners,
+  getOwnersSection,
   getPackages,
   getPoolTable,
   getRates,
@@ -34,7 +37,21 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [settings, bays, events, packages, hours, special, gallery, league, photos, pool, rates] = await Promise.all([
+  const [
+    settings,
+    bays,
+    events,
+    packages,
+    hours,
+    special,
+    gallery,
+    league,
+    photos,
+    pool,
+    rates,
+    ownersSection,
+    owners,
+  ] = await Promise.all([
     getSettings(),
     getBayTypes(),
     getEvents(),
@@ -46,6 +63,8 @@ export default async function HomePage() {
     getHomepagePhotos(),
     getPoolTable(),
     getRates(),
+    getOwnersSection(),
+    getOwners(),
   ]);
 
   const booking = bookingLink(settings);
@@ -67,6 +86,9 @@ export default async function HomePage() {
   const tel = telHref(settings.phone);
   const directions = directionsUrl(settings);
   const leagueHref = leagueEmailHref(league.email, league.email_subject);
+  const ownersIntro = real(ownersSection.intro);
+  const ownerGrid =
+    owners.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : owners.length === 2 ? "sm:grid-cols-2 lg:max-w-4xl" : "max-w-md";
 
   return (
     <>
@@ -411,6 +433,72 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {/* MEET THE OWNERS (the "Meet the Owners" button in the top menu jumps here) */}
+      {ownersSection.enabled && (
+        <section id="owners" aria-labelledby="owners-title" className="scroll-mt-28 border-t border-line py-24 sm:py-28">
+          <div className="container-site flex flex-col gap-14">
+            <div
+              className={
+                ownersSection.photos.length > 0 ? "grid items-center gap-10 lg:grid-cols-2 lg:gap-16" : "max-w-3xl"
+              }
+            >
+              <Reveal>
+                <SectionHeading
+                  id="owners-title"
+                  eyebrow="Our story"
+                  title={ownersSection.heading}
+                  intro={ownersIntro ?? undefined}
+                />
+              </Reveal>
+              {ownersSection.photos.length > 0 && (
+                <Reveal delay={100} className="overflow-hidden rounded-[4px] border border-line">
+                  <PhotoCarousel
+                    photos={ownersSection.photos}
+                    label="The owners"
+                    className="aspect-[4/3]"
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                  />
+                </Reveal>
+              )}
+            </div>
+
+            {owners.length > 0 && (
+              <div className={`grid gap-6 ${ownerGrid}`}>
+                {owners.map((owner, i) => {
+                  const bio = real(owner.bio);
+                  const role = real(owner.role);
+                  return (
+                    <Reveal key={owner.id} delay={i * 80} className="card flex flex-col overflow-hidden">
+                      <PhotoSlot
+                        src={owner.photo_url}
+                        alt={owner.name}
+                        label={owner.name}
+                        className="aspect-[4/5] border-b border-line bg-coal"
+                        sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+                      />
+                      <div className="flex flex-col gap-2 p-6">
+                        <h3 className="font-display text-2xl text-cream">{owner.name}</h3>
+                        {role && (
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">{role}</p>
+                        )}
+                        {bio && <p className="mt-2 leading-relaxed whitespace-pre-line text-mist">{bio}</p>}
+                      </div>
+                    </Reveal>
+                  );
+                })}
+              </div>
+            )}
+
+            <div>
+              <a href="#top" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-mist transition hover:text-gold-2">
+                <ArrowRightIcon className="-rotate-90" width={16} height={16} />
+                Back to top
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }
