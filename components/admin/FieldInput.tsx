@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { FieldDef } from "@/lib/resources";
 import { displayValue, type FormValue, type RelationOptions } from "./fieldValues";
-import { ImageUpload } from "./ImageUpload";
+import { ImageUpload, MultiImageUpload } from "./ImageUpload";
 
 export function FieldInput({
   field,
@@ -78,6 +78,24 @@ export function FieldInput({
           />
           <span className="text-sm font-semibold text-cream">{field.label}</span>
         </label>
+        {help}
+      </div>
+    );
+  }
+
+  if (field.type === "images") {
+    const urls = str.split("\n").filter((u) => u.trim());
+    return (
+      <div>
+        <span className="field-label">{field.label}</span>
+        <MultiImageUpload
+          id={id}
+          value={urls}
+          onChange={(next) => onChange(next.join("\n"))}
+          folder={field.folder}
+          describedBy={helpId}
+          max={field.maxItems}
+        />
         {help}
       </div>
     );

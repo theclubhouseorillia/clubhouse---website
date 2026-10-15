@@ -59,7 +59,7 @@ export const DEFAULT_BAY_TYPES: BayType[] = [
     name: "Open Bays",
     summary: "Two bays located near the sports bar and lounge, ideal for social golf and groups.",
     details: ["Steps from the bar, lounge and big screens", "Great for groups and casual rounds", "Rental clubs available"],
-    image_url: null,
+    photos: [],
     sort_order: 1,
   },
   {
@@ -67,7 +67,7 @@ export const DEFAULT_BAY_TYPES: BayType[] = [
     name: "Semi-Private Bay",
     summary: "A more secluded simulator experience, set apart from the main lounge.",
     details: ["A quieter, more focused setting", "Great for small groups and practice"],
-    image_url: null,
+    photos: [],
     sort_order: 2,
   },
   {
@@ -75,7 +75,7 @@ export const DEFAULT_BAY_TYPES: BayType[] = [
     name: "Private Bay",
     summary: "Our premium private simulator space with a Bose sound system and a 75-inch television.",
     details: ["Fully private room", "Bose sound system", "75-inch television", "Up to eight golfers"],
-    image_url: null,
+    photos: [],
     sort_order: 3,
   },
 ];

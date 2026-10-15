@@ -19,7 +19,8 @@ export type FieldType =
   | "select"
   | "relation"
   | "list"
-  | "image";
+  | "image"
+  | "images";
 
 export type FieldDefault = string | number | boolean | null;
 
@@ -41,6 +42,8 @@ export interface FieldDef {
   after?: string;
   /** Storage folder for image uploads. */
   folder?: string;
+  /** Most photos allowed in an "images" field. */
+  maxItems?: number;
   /** Span the full width of the form. */
   wide?: boolean;
   /** Short label for the list view. Empty string = show the value on its own. */
@@ -218,22 +221,23 @@ export const RESOURCES: ResourceDef[] = [
     table: "bay_types",
     title: "Simulator bays",
     singular: "Bay type",
-    description: "Each bay's photo, description and features. Shown on the homepage and pricing page.",
+    description: "Each bay's photos, description and features. Shown on the homepage and pricing page.",
     group: "Golf",
     orderBy: [{ column: "sort_order" }],
     titleField: "name",
     summaryFields: ["summary"],
-    thumbField: "image_url",
+    thumbField: "photos",
     fields: [
       { name: "name", label: "Name", type: "text", required: true, max: 80 },
       sortOrder,
       {
-        name: "image_url",
-        label: "Photo of this bay",
-        type: "image",
+        name: "photos",
+        label: "Photos of this bay",
+        type: "images",
         folder: "bays",
+        maxItems: 12,
         wide: true,
-        help: "Shown on this bay's card on the homepage and pricing page. A landscape photo works best.",
+        help: "Visitors can swipe through these on the homepage and pricing page. Landscape photos work best; use the arrows to choose which shows first.",
       },
       { name: "summary", label: "Short description", type: "textarea", max: 400, wide: true, short: "" },
       { name: "details", label: "Key features", type: "list", wide: true, help: "One per line." },

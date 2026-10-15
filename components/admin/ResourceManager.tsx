@@ -298,7 +298,8 @@ export function ResourceManager({
               <ul className="flex flex-col gap-3">
                 {group.rows.map((row) => {
                   const id = String(row.id);
-                  const thumb = def.thumbField ? row[def.thumbField] : null;
+                  const thumbRaw = def.thumbField ? row[def.thumbField] : null;
+                  const thumb = Array.isArray(thumbRaw) ? thumbRaw[0] : thumbRaw;
                   const toggleOn = def.toggleField ? row[def.toggleField] === true : false;
                   const status = scheduleStatus(def, row);
                   const title =

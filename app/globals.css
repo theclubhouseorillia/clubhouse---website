@@ -171,6 +171,14 @@
     border-radius: 4px;
   }
 
+  /* Swipeable photo strips: scrollable, without a visible scrollbar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Dotted "golf ball" texture used behind image placeholders. */
   .dimples {
     background-color: var(--color-coal-2);

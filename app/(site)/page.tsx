@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon, CalendarIcon, CheckIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
+import { BayPhotos } from "@/components/site/BayPhotos";
 import { EventCard } from "@/components/site/EventCard";
 import { HoursList } from "@/components/site/HoursList";
 import { OpenToday } from "@/components/site/OpenToday";
@@ -138,17 +139,10 @@ export default async function HomePage() {
             {bays.map((bay, i) => (
               <Reveal key={bay.id} delay={i * 90}>
                 <article className="card group flex h-full flex-col overflow-hidden">
-                  <div className="relative">
-                    <PhotoSlot
-                      src={bay.image_url}
-                      alt={`${bay.name} golf simulator`}
-                      label={bay.name}
-                      className="aspect-[4/3] border-b border-line"
-                      imageClassName="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      sizes="(min-width: 1024px) 33vw, 100vw"
-                    />
+                  <div className="relative border-b border-line">
+                    <BayPhotos photos={bay.photos} name={bay.name} />
                     <span
-                      className="absolute left-4 top-4 bg-ink/80 px-2.5 py-1 font-display text-2xl font-semibold leading-none text-gold"
+                      className="pointer-events-none absolute left-4 top-4 bg-ink/80 px-2.5 py-1 font-display text-2xl font-semibold leading-none text-gold"
                       aria-hidden="true"
                     >
                       0{i + 1}

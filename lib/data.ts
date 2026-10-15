@@ -102,10 +102,18 @@ export const getEvents = cache(async (): Promise<EventRow[]> => {
 });
 
 export const getBayTypes = cache(async (): Promise<BayType[]> => {
-  const rows = await safeQuery<BayType[]>("bay types", DEFAULT_BAY_TYPES, (sb) =>
+  type Row = BayType & { image_url?: string | null };
+  const rows = await safeQuery<Row[]>("bay types", DEFAULT_BAY_TYPES, (sb) =>
     sb.from("bay_types").select("*").order("sort_order"),
   );
-  return rows.map((r) => ({ ...r, details: Array.isArray(r.details) ? r.details : [], image_url: r.image_url ?? null }));
+  return rows.map(({ image_url, ...r }) => {
+    const photos = Array.isArray(r.photos) ? r.photos.filter((p) => typeof p === "string" && p) : [];
+    return {
+      ...r,
+      details: Array.isArray(r.details) ? r.details : [],
+      photos: photos.length ? photos : image_url ? [image_url] : [],
+    };
+  });
 });
 
 export const getRates = cache(async (): Promise<Rate[]> => {

@@ -21,6 +21,7 @@ export function toFormValue(field: FieldDef, raw: unknown): FormValue {
     case "boolean":
       return raw === undefined || raw === null ? Boolean(field.default) : raw === true;
     case "list":
+    case "images":
       return Array.isArray(raw) ? raw.join("\n") : "";
     case "datetime":
       return typeof raw === "string" && raw ? isoToLocalInput(raw) : "";
@@ -73,6 +74,8 @@ export function displayValue(field: FieldDef, value: unknown, relationOptions: R
       return relationOptions[field.name]?.find((o) => o.value === String(value))?.label ?? "";
     case "image":
       return "";
+    case "images":
+      return Array.isArray(value) && value.length ? `${value.length} photo${value.length === 1 ? "" : "s"}` : "";
     default: {
       const s = String(value);
       return s.length > 90 ? `${s.slice(0, 87)}…` : s;

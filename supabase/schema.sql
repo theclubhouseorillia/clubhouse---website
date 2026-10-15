@@ -448,3 +448,6 @@ end $$;
 
 -- Photo for each simulator bay (shown on the homepage and pricing page)
 alter table public.bay_types add column if not exists image_url text;
+
+-- Several photos per simulator bay (swipeable on the homepage and pricing page)
+alter table public.bay_types add column if not exists photos text[] not null default '{}';

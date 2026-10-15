@@ -55,6 +55,18 @@ function coerce(field: FieldDef, raw: unknown): unknown {
     return clean;
   }
 
+  if (field.type === "images") {
+    const items = Array.isArray(raw) ? raw : typeof raw === "string" ? raw.split(/\r?\n/) : [];
+    const urls = items
+      .map((i) => (typeof i === "string" ? i.trim() : ""))
+      .filter((i) => i.length > 0);
+    const max = field.maxItems ?? 12;
+    if (urls.length > max) fail(`please keep this to ${max} photos or fewer.`);
+    if (urls.some((u) => !/^https:\/\//i.test(u) || u.length > 1000)) fail("please upload the photos again.");
+    if (field.required && urls.length === 0) fail("add at least one photo.");
+    return urls;
+  }
+
   if (isEmpty(raw)) {
     if (field.required) fail("this field is required.");
     // e.g. a cleared "Display order" goes back to its default instead of failing.
