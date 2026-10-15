@@ -13,6 +13,8 @@ export function PackageCard({
 }) {
   const features = maxFeatures ? pkg.features.slice(0, maxFeatures) : pkg.features;
   const hidden = pkg.features.length - features.length;
+  // Show dollar amounts large; wording such as "Inquire for pricing" smaller.
+  const isAmount = /\d/.test(pkg.price_label);
 
   return (
     <article
@@ -30,7 +32,15 @@ export function PackageCard({
         {pkg.description && <p className="text-mist">{pkg.description}</p>}
       </div>
       <div className="border-y border-line/80 py-5">
-        <p className="font-display text-5xl font-semibold text-gold">{pkg.price_label}</p>
+        <p
+          className={
+            isAmount
+              ? "font-display text-5xl font-semibold text-gold"
+              : "text-sm font-bold uppercase tracking-[0.18em] text-gold"
+          }
+        >
+          {pkg.price_label}
+        </p>
         {pkg.price_note && <p className="mt-1 text-sm uppercase tracking-[0.12em] text-mist">{pkg.price_note}</p>}
       </div>
       <ul className="flex flex-col gap-3">

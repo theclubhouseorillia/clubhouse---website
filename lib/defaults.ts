@@ -34,8 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "Rental clubs for left-handed, right-handed and women's golfers",
     "About 5,000 sq ft of entertainment space",
   ],
-  packages_note:
-    "Additional hours are available at an additional cost. All prices are before applicable taxes.",
+  packages_note: "Contact us for pricing and availability. We'll tailor a package to your group and date.",
   street_address: "[Street address]",
   city: "[City]",
   province: "[Province]",
@@ -91,8 +90,8 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
   {
     id: "p1",
     name: "Private Simulator Experience",
-    price_label: "$95 / hour",
-    price_note: "plus taxes",
+    price_label: "Inquire for pricing",
+    price_note: null,
     description: "Your group's own private simulator room.",
     features: ["Private simulator bay", "Up to eight golfers", "Bose sound system", "75-inch television", "Premium golf experience"],
     featured: false,
@@ -101,8 +100,8 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
   {
     id: "p2",
     name: "Group Golf Experience",
-    price_label: "From $1,199",
-    price_note: "plus taxes · 3-hour minimum",
+    price_label: "Inquire for pricing",
+    price_note: null,
     description: "Three simulator bays plus the lounge and pool table for your group.",
     features: [
       "Two open simulator bays",
@@ -120,8 +119,8 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
   {
     id: "p3",
     name: "Full Facility Private Event",
-    price_label: "From $1,999",
-    price_note: "plus taxes · 3-hour minimum",
+    price_label: "Inquire for pricing",
+    price_note: null,
     description: "Exclusive use of the entire venue.",
     features: [
       "Exclusive use of our approximately 5,000 sq ft facility",

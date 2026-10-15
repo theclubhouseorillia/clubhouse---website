@@ -271,7 +271,7 @@ export const RESOURCES: ResourceDef[] = [
     summaryFields: ["price_label", "price_note", "featured"],
     fields: [
       { name: "name", label: "Package name", type: "text", required: true, max: 100, wide: true },
-      { name: "price_label", label: "Price", type: "text", required: true, max: 60, placeholder: "From $1,199", short: "" },
+      { name: "price_label", label: "Price", type: "text", required: true, max: 60, placeholder: "Inquire for pricing", help: "A price like “From $1,199”, or wording like “Inquire for pricing”.", short: "" },
       { name: "price_note", label: "Price note", type: "text", max: 120, placeholder: "plus taxes · 3-hour minimum", short: "" },
       { name: "description", label: "Short description", type: "textarea", max: 500, wide: true, short: "" },
       { name: "features", label: "What's included", type: "list", wide: true, help: "One per line." },
