@@ -252,8 +252,8 @@ export default async function HomePage() {
                     Courses you can play <ArrowRightIcon width={16} height={16} />
                   </Link>
                 )}
-                <Link href="/pricing" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
-                  Simulator pricing <ArrowRightIcon width={16} height={16} />
+                <Link href="/memberships" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                  Purchase memberships <ArrowRightIcon width={16} height={16} />
                 </Link>
               </div>
             </Reveal>
