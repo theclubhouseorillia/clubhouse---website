@@ -146,6 +146,8 @@ export interface LeagueSettings {
   highlights: string[];
   email: string | null;
   email_subject: string | null;
+  /** Online sign-up page (e.g. Trackman). When set, the league page's join buttons open it. */
+  signup_url: string | null;
   note: string | null;
 }
 

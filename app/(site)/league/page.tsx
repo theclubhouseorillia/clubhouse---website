@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CalendarIcon, CheckIcon, ClockIcon, MailIcon } from "@/components/icons";
+import { CalendarIcon, CheckIcon, ClockIcon, ExternalIcon, MailIcon } from "@/components/icons";
 import { PackageCard } from "@/components/site/PackageCard";
 import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
@@ -25,7 +25,12 @@ export default async function LeaguePage() {
 
   const emailHref = leagueEmailHref(league.email, league.email_subject);
   const hasEmail = emailHref.startsWith("mailto:");
-  const ctaLabel = hasEmail ? "Email us to join" : "Contact us to join";
+  const signupUrl = real(league.signup_url);
+  const hasSignup = !!signupUrl && /^https?:\/\//i.test(signupUrl);
+  // With an online sign-up link, every join button opens it; otherwise people email (or use the contact page).
+  const joinHref = hasSignup && signupUrl ? signupUrl : emailHref;
+  const ctaLabel = hasSignup ? "Sign up now" : hasEmail ? "Email us to join" : "Contact us to join";
+  const CtaIcon = hasSignup ? ExternalIcon : MailIcon;
 
   return (
     <>
@@ -55,11 +60,17 @@ export default async function LeaguePage() {
                 </div>
               )}
             </dl>
-            <div>
-              <SmartLink href={emailHref} className="btn btn-gold">
-                <MailIcon width={18} height={18} />
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <SmartLink href={joinHref} className="btn btn-gold">
+                <CtaIcon width={18} height={18} />
                 {ctaLabel}
               </SmartLink>
+              {hasSignup && (
+                <SmartLink href={emailHref} className="btn btn-outline">
+                  <MailIcon width={18} height={18} />
+                  Questions? Contact us
+                </SmartLink>
+              )}
             </div>
           </Reveal>
 
@@ -89,7 +100,7 @@ export default async function LeaguePage() {
             >
               {options.map((option, i) => (
                 <Reveal key={option.id} delay={i * 90}>
-                  <PackageCard pkg={option} cta={{ href: emailHref, label: ctaLabel }} />
+                  <PackageCard pkg={option} cta={{ href: joinHref, label: ctaLabel }} />
                 </Reveal>
               ))}
             </div>
@@ -104,11 +115,13 @@ export default async function LeaguePage() {
             <div className="flex flex-col gap-3">
               <h2 className="font-display text-4xl font-semibold text-cream">Ready to play?</h2>
               <p className="max-w-xl text-cream/85">
-                Send us a quick email with your name, phone number and whether you&apos;re joining solo or with a team.
+                {hasSignup
+                  ? "Sign up online in a couple of minutes. Spots are limited, so grab yours early."
+                  : "Send us a quick email with your name, phone number and whether you’re joining solo or with a team."}
               </p>
             </div>
-            <SmartLink href={emailHref} className="btn btn-gold">
-              <MailIcon width={18} height={18} />
+            <SmartLink href={joinHref} className="btn btn-gold">
+              <CtaIcon width={18} height={18} />
               {ctaLabel}
             </SmartLink>
           </div>

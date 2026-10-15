@@ -672,3 +672,6 @@ grant insert, update, delete on public.menu_settings to authenticated;
 update storage.buckets
    set allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf']
  where id = 'media';
+
+-- Online sign-up link for the Winter Golf League (e.g. a Trackman league page).
+alter table public.league_settings add column if not exists signup_url text;
