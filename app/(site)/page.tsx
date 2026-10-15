@@ -98,6 +98,11 @@ export default async function HomePage() {
               <Link href="/pricing" className="btn btn-outline">
                 View Our Pricing
               </Link>
+              {league.enabled && (
+                <Link href="/league" className="btn btn-outline">
+                  Join the Winter League
+                </Link>
+              )}
             </div>
             <div className="flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm text-mist">
               <OpenToday hours={hours} special={special} />
