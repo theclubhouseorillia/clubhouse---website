@@ -23,6 +23,7 @@ import {
   DEFAULT_POOL_TABLE,
   DEFAULT_PRIVACY_POLICY,
   DEFAULT_RATES,
+  DEFAULT_RENTAL_CLUBS,
   DEFAULT_REVIEWS,
   DEFAULT_REVIEWS_SECTION,
   DEFAULT_SETTINGS,
@@ -53,6 +54,7 @@ import type {
   ReviewsSection,
   PoolTable,
   Rate,
+  RentalClubs,
   Settings,
   SpecialHours,
 } from "./types";
@@ -245,6 +247,21 @@ export const getHomepagePhotos = cache(async (): Promise<HomepagePhotos> => {
     events_photos: photoList(row.events_photos),
     league_photos: photoList(row.league_photos),
     visit_photos: photoList(row.visit_photos),
+  };
+});
+
+export const getRentalClubs = cache(async (): Promise<RentalClubs> => {
+  const row = await safeQuery<Partial<RentalClubs> | null>("rental clubs", null, (sb) =>
+    sb.from("rental_clubs").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_RENTAL_CLUBS;
+  return {
+    ...DEFAULT_RENTAL_CLUBS,
+    ...row,
+    enabled: row.enabled ?? true,
+    title: row.title || DEFAULT_RENTAL_CLUBS.title,
+    features: Array.isArray(row.features) ? row.features.filter((f) => !hasPlaceholderText(f)) : [],
+    photos: photoList(row.photos),
   };
 });
 

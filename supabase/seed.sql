@@ -348,3 +348,13 @@ select * from (values
 ) as v(name, location, description, sort_order)
 where not exists (select 1 from public.courses);
 
+-- Rental Clubs section -----------------------------------------------------------
+insert into public.rental_clubs (id, title, description, features)
+values (
+  1,
+  'Rental Clubs',
+  'No clubs? No problem. We have rental sets ready for right-handed, left-handed and women’s golfers, so anyone can grab a bay and play.',
+  array['Right-handed sets', 'Left-handed sets', 'Women’s sets']
+)
+on conflict (id) do nothing;
+

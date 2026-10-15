@@ -19,6 +19,7 @@ import type {
   PoolTable,
   PrivacyPolicy,
   Rate,
+  RentalClubs,
   Review,
   ReviewsSection,
   Settings,
@@ -257,6 +258,17 @@ export const DEFAULT_POOL_TABLE: PoolTable = {
   features: ["Premium pool table", "Book online in seconds"],
   photos: [],
   booking_url: null,
+};
+
+export const DEFAULT_RENTAL_CLUBS: RentalClubs = {
+  enabled: true,
+  title: "Rental Clubs",
+  description:
+    "No clubs? No problem. We have rental sets ready for right-handed, left-handed and women’s golfers, so anyone can grab a bay and play.",
+  price_label: null,
+  price_note: null,
+  features: ["Right-handed sets", "Left-handed sets", "Women’s sets"],
+  photos: [],
 };
 
 export const DEFAULT_OWNERS_SECTION: OwnersSection = {

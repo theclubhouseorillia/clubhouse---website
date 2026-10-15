@@ -12,6 +12,7 @@ import { OpenToday } from "@/components/site/OpenToday";
 import { PackageCard } from "@/components/site/PackageCard";
 import { PhotoSlot } from "@/components/site/PhotoSlot";
 import { PoolTableFeature } from "@/components/site/PoolTableFeature";
+import { RentalClubsFeature } from "@/components/site/RentalClubsFeature";
 import { Reveal } from "@/components/site/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { SmartLink } from "@/components/site/SmartLink";
@@ -31,6 +32,7 @@ import {
   getPackages,
   getPoolTable,
   getRates,
+  getRentalClubs,
   getReviews,
   getReviewsSection,
   getSettings,
@@ -68,6 +70,7 @@ export default async function HomePage() {
     weather,
     games,
     courses,
+    rentalClubs,
   ] = await Promise.all([
     getSettings(),
     getBayTypes(),
@@ -88,6 +91,7 @@ export default async function HomePage() {
     getWeather(),
     getSportsGames(),
     getCourses(),
+    getRentalClubs(),
   ]);
   const instagram = await getInstagramPosts(settings.instagram_feed_url);
 
@@ -299,6 +303,15 @@ export default async function HomePage() {
 
         </div>
       </section>
+
+      {/* RENTAL CLUBS (Admin → Rental clubs) */}
+      {rentalClubs.enabled && (
+        <section aria-labelledby="clubs-title" className="border-t border-line py-24 sm:py-28">
+          <div className="container-site">
+            <RentalClubsFeature clubs={rentalClubs} booking={booking} />
+          </div>
+        </section>
+      )}
 
       {/* POOL TABLE */}
       {pool.enabled && (

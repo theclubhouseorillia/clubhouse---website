@@ -34,6 +34,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Memberships & hour packs page (`/memberships`): plans appear once their name and price are filled in (no [brackets]); visitors call or email to buy
 - Course showcase (`/courses`): famous courses on your Trackman simulators, linked from the homepage simulators section
 - Kids' birthday parties page (`/kids-parties`): packages (shown once filled in) and a party inquiry form that emails you and saves to the inbox
+- Rental Clubs section on the homepage between the simulator bays and the pool table (Admin → Rental clubs: text, highlights, optional price, photos)
 - Instagram strip on the homepage: paste a free Behold.so JSON feed link in Admin → Settings → “Instagram feed link (Behold)”
 - Simulator pricing and bay descriptions
 - Winter golf league page: step-by-step “How to sign up & pay”, details, pricing and the sign-up link (or email)

@@ -775,3 +775,23 @@ end $$;
 alter table public.site_settings add column if not exists instagram_feed_url text;
 grant select (instagram_feed_url) on public.site_settings to anon;
 
+-- Rental Clubs section on the homepage (one row).
+create table if not exists public.rental_clubs (
+  id          int primary key default 1 check (id = 1),
+  enabled     boolean not null default true,
+  title       text not null default 'Rental Clubs',
+  description text,
+  price_label text,   -- optional; hidden while blank or in [brackets]
+  price_note  text,
+  features    text[] not null default '{}',
+  photos      text[] not null default '{}',
+  updated_at  timestamptz not null default now()
+);
+alter table public.rental_clubs enable row level security;
+drop policy if exists "Public read" on public.rental_clubs;
+create policy "Public read" on public.rental_clubs for select to anon, authenticated using (true);
+drop policy if exists "Admins manage" on public.rental_clubs;
+create policy "Admins manage" on public.rental_clubs for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.rental_clubs to anon, authenticated;
+grant insert, update, delete on public.rental_clubs to authenticated;
+

@@ -207,6 +207,17 @@ export interface PoolTable {
   booking_url: string | null;
 }
 
+export interface RentalClubs {
+  enabled: boolean;
+  title: string;
+  description: string | null;
+  /** Optional; hidden on the site while blank or still in [brackets]. */
+  price_label: string | null;
+  price_note: string | null;
+  features: string[];
+  photos: string[];
+}
+
 export interface OwnersSection {
   enabled: boolean;
   heading: string;
