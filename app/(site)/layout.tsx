@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 import { Footer } from "@/components/site/Footer";
@@ -6,28 +7,38 @@ import { BusinessJsonLd } from "@/components/site/JsonLd";
 import { MobileBookBar } from "@/components/site/MobileBookBar";
 import {
   getAnnouncements,
+  getFaqs,
+  getGiftCards,
   getHomepagePhotos,
   getHours,
   getLeagueSettings,
   getOwnersSection,
   getSettings,
 } from "@/lib/data";
-import { real, telHref } from "@/lib/format";
-import { bookingLink } from "@/lib/site";
+import { hasPlaceholderText, real, telHref } from "@/lib/format";
+import { bookingLink, type NavVisibility } from "@/lib/site";
 
 // Pages are cached for speed and refreshed every 5 minutes. Saving anything in
 // the admin dashboard refreshes them immediately.
 export const revalidate = 300;
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  const [settings, announcements, hours, league, photos, owners] = await Promise.all([
+  const [settings, announcements, hours, league, photos, owners, giftCards, faqs] = await Promise.all([
     getSettings(),
     getAnnouncements(),
     getHours(),
     getLeagueSettings(),
     getHomepagePhotos(),
     getOwnersSection(),
+    getGiftCards(),
+    getFaqs(),
   ]);
+  const nav: NavVisibility = {
+    league: league.enabled,
+    owners: owners.enabled,
+    giftCards: giftCards.enabled,
+    faq: faqs.some((f) => !hasPlaceholderText(f.answer)),
+  };
   const booking = bookingLink(settings);
   const phoneHref = telHref(settings.phone);
 
@@ -46,15 +57,16 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         booking={booking}
         phoneHref={phoneHref}
         phoneLabel={real(settings.phone)}
-        showLeague={league.enabled}
-        showOwners={owners.enabled}
+        nav={nav}
       />
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>
-      <Footer settings={settings} hours={hours} showLeague={league.enabled} showOwners={owners.enabled} />
+      <Footer settings={settings} hours={hours} nav={nav} />
       <MobileBookBar booking={booking} phoneHref={phoneHref} />
       <BusinessJsonLd settings={settings} hours={hours} image={photos.hero_photos[0] ?? null} />
+      {/* Anonymous visitor stats (Vercel Web Analytics: no cookies). Public pages only, not the dashboard. */}
+      <Analytics />
     </>
   );
 }

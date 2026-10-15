@@ -596,3 +596,52 @@ insert into public.reviews_section (id) values (1) on conflict (id) do nothing;
 -- Tip: in the dashboard, set the two links using your Google place ID:
 --   https://www.google.com/maps/place/?q=place_id:YOUR_PLACE_ID
 --   https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID
+
+-- =============================================================================
+-- Gift cards page (one row), FAQ, and privacy policy (one row)
+-- =============================================================================
+
+create table if not exists public.gift_cards (
+  id           int primary key default 1 check (id = 1),
+  enabled      boolean not null default true,
+  heading      text not null default 'Gift Cards',
+  intro        text,
+  how_to_order text,
+  amounts      text[] not null default '{}',
+  highlights   text[] not null default '{}',
+  photo_url    text,
+  updated_at   timestamptz not null default now()
+);
+
+create table if not exists public.faqs (
+  id         uuid primary key default gen_random_uuid(),
+  question   text not null,
+  answer     text not null default '',   -- answers still in [brackets] are hidden on the site
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.privacy_policy (
+  id         int primary key default 1 check (id = 1),
+  content    text not null default '',   -- "## " headings, "- " bullets, {business_name}/{email}/{phone}/{address}
+  updated_on date not null default current_date,
+  updated_at timestamptz not null default now()
+);
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['gift_cards', 'faqs', 'privacy_policy'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists "Public read" on public.%I', t);
+    execute format('create policy "Public read" on public.%I for select to anon, authenticated using (true)', t);
+    execute format('drop policy if exists "Admins manage" on public.%I', t);
+    execute format(
+      'create policy "Admins manage" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())',
+      t
+    );
+    execute format('grant select on public.%I to anon, authenticated', t);
+    execute format('grant insert, update, delete on public.%I to authenticated', t);
+  end loop;
+end $$;

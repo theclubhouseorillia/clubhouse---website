@@ -134,7 +134,7 @@ export function FieldInput({
   switch (field.type) {
     case "textarea":
       control = (
-        <textarea {...common} rows={5} maxLength={field.max} value={str} onChange={(e) => onChange(e.target.value)} />
+        <textarea {...common} rows={field.rows ?? 5} maxLength={field.max} value={str} onChange={(e) => onChange(e.target.value)} />
       );
       break;
     case "list":

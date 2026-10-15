@@ -195,6 +195,95 @@ values (
 )
 on conflict (id) do nothing;
 
+-- Gift cards page ---------------------------------------------------------------
+insert into public.gift_cards (id, intro, how_to_order)
+values (
+  1,
+  'The perfect gift for the golfer in your life, or anyone who loves a great night out.',
+  'To order a gift card, give us a call or send us an email. Let us know the amount and who it''s for, and we''ll take care of the rest.'
+)
+on conflict (id) do nothing;
+
+insert into public.announcements (message, link_url, link_label, enabled, sort_order)
+select 'Gift cards are available: call or email us to order', '/gift-cards', 'Gift cards', true, 4
+where not exists (select 1 from public.announcements where link_url = '/gift-cards');
+
+-- FAQ (answers in [square brackets] stay hidden until you fill them in) -----------
+insert into public.faqs (question, answer, sort_order)
+select * from (values
+  ('Do I need to bring my own golf clubs?',
+   'No. We have rental clubs for left-handed, right-handed and women''s golfers. You''re welcome to bring your own set too.', 1),
+  ('I''ve never golfed before. Is this for me?',
+   'Absolutely. Our simulators are fun for every skill level, from first-timers to seasoned golfers. Just ask and we''ll get you set up.', 2),
+  ('How do I book a simulator?',
+   'Book online with the Book a Simulator button at the top of any page, or give us a call.', 3),
+  ('How many people can play in one bay?',
+   '[How many golfers fit in each bay, e.g. Up to six per bay, and up to eight in our private bay.]', 4),
+  ('How long does a round of golf take?',
+   'As a rough guide, 18 holes takes about an hour per player and 9 holes about half that. A group of four playing 18 holes should book around three to four hours.', 5),
+  ('Do you take walk-ins?',
+   '[e.g. Yes, whenever a bay is free. We recommend booking ahead for evenings and weekends.]', 6),
+  ('Can we eat and drink while we play?',
+   'Yes. We have a full-service bar and food menu, and you can order while you play.', 7),
+  ('Can I book the pool table?',
+   'Yes. The pool table is $20 an hour and you can book it online.', 8),
+  ('Are kids allowed?',
+   '[Your policy for guests under 19, e.g. Minors are welcome with an adult until 8 PM.]', 9),
+  ('What should I wear?',
+   '[e.g. Whatever you''re comfortable swinging in. Please no golf spikes.]', 10),
+  ('What is your cancellation policy?',
+   '[Your cancellation or rescheduling policy.]', 11),
+  ('Do you host private parties and corporate events?',
+   'Yes. We host birthdays, holiday parties, corporate events and more, from a private bay for a small group to the whole venue. Visit our Private Events page to send us an inquiry.', 12),
+  ('Do you sell gift cards?',
+   'Yes. Call or email us to order one. See our Gift Cards page for details.', 13),
+  ('Do you have a winter golf league?',
+   'Yes. See our Winter League page for details and how to join.', 14)
+) as v(question, answer, sort_order)
+where not exists (select 1 from public.faqs);
+
+-- Privacy policy (a plain-language starting point; not legal advice) -------------
+insert into public.privacy_policy (id, content)
+values (1, $policy${business_name} ("we" or "us") respects your privacy. This page explains what personal information we collect through this website, how we use it, and the choices you have.
+
+## What we collect
+When you send us a message or a private event inquiry, we collect the details you enter: your name, email address, phone number, event date, group size and message.
+
+To block spam, our forms also record a scrambled code made from your internet address. The code can't be turned back into your address, and we only use it to limit repeated submissions.
+
+When you browse the site, we collect anonymous visitor statistics, such as which pages are viewed, the type of device and browser, and the country a visit comes from. These statistics don't use cookies and don't identify you personally.
+
+## How we use it
+- To reply to your questions and plan your event
+- To keep a record of the inquiries we receive
+- To understand which pages are useful so we can improve the site
+
+We don't sell or rent your personal information, and we don't use it for advertising.
+
+## Who we share it with
+We use trusted service providers to run this website: Vercel (website hosting and visitor statistics), Supabase (database) and an email delivery service that forwards inquiries to us. They handle your information only to provide these services to us. These providers may store or process information outside Canada, including in the United States, where it may be subject to the laws of that country.
+
+Online simulator and pool table bookings are handled by our booking provider, YourGolfBooking, on its own website and under its own privacy policy. The map on our Contact page is provided by Google.
+
+## How long we keep it
+We keep inquiries for as long as we need them to respond and for our business records, and then delete them.
+
+## Cookies
+This website doesn't use advertising or tracking cookies. Cookies are only used to keep our staff signed in to the website's admin area.
+
+## Your choices
+You can ask to see the personal information we hold about you, ask us to correct it, or ask us to delete it. You can also withdraw your consent at any time. Contact us using the details below and we'll respond within 30 days.
+
+## Contact us
+If you have questions about this policy or your information, contact {business_name}:
+{address}
+Email: {email}
+Phone: {phone}
+
+## Changes to this policy
+We may update this policy from time to time. The date at the top of this page shows when it was last updated.$policy$)
+on conflict (id) do nothing;
+
 -- =============================================================================
 -- MAKE YOURSELF AN ADMIN
 -- 1. Supabase → Authentication → Users → Add user → Create new user

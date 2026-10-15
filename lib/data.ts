@@ -4,6 +4,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getPublicClient } from "./supabase/public";
 import {
   DEFAULT_BAY_TYPES,
+  DEFAULT_FAQS,
+  DEFAULT_GIFT_CARDS,
   DEFAULT_HOMEPAGE_PHOTOS,
   DEFAULT_HOURS,
   DEFAULT_LEAGUE_OPTIONS,
@@ -13,6 +15,7 @@ import {
   DEFAULT_OWNERS_SECTION,
   DEFAULT_PACKAGES,
   DEFAULT_POOL_TABLE,
+  DEFAULT_PRIVACY_POLICY,
   DEFAULT_RATES,
   DEFAULT_REVIEWS,
   DEFAULT_REVIEWS_SECTION,
@@ -31,8 +34,11 @@ import type {
   LeagueSettings,
   MenuCategory,
   MenuItem,
+  Faq,
+  GiftCards,
   Owner,
   OwnersSection,
+  PrivacyPolicy,
   Review,
   ReviewsSection,
   PoolTable,
@@ -285,4 +291,39 @@ export const getReviews = cache(async (): Promise<Review[]> => {
     sb.from("reviews").select("*").order("sort_order").order("created_at", { ascending: false }),
   );
   return rows.map((r) => ({ ...r, rating: Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5))) }));
+});
+
+function textList(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim() !== "").map((x) => x.trim()) : [];
+}
+
+export const getGiftCards = cache(async (): Promise<GiftCards> => {
+  const row = await safeQuery<Partial<GiftCards> | null>("gift cards", null, (sb) =>
+    sb.from("gift_cards").select("*").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_GIFT_CARDS;
+  return {
+    enabled: row.enabled ?? true,
+    heading: row.heading || DEFAULT_GIFT_CARDS.heading,
+    intro: row.intro ?? null,
+    how_to_order: row.how_to_order ?? null,
+    amounts: textList(row.amounts),
+    highlights: textList(row.highlights),
+    photo_url: row.photo_url || null,
+  };
+});
+
+/** All FAQs, including ones whose answer is still a [placeholder]. */
+export const getFaqs = cache(async (): Promise<Faq[]> => {
+  return safeQuery<Faq[]>("faqs", DEFAULT_FAQS, (sb) =>
+    sb.from("faqs").select("id, question, answer, sort_order").order("sort_order").order("created_at"),
+  );
+});
+
+export const getPrivacyPolicy = cache(async (): Promise<PrivacyPolicy> => {
+  const row = await safeQuery<Partial<PrivacyPolicy> | null>("privacy policy", null, (sb) =>
+    sb.from("privacy_policy").select("content, updated_on").eq("id", 1).maybeSingle(),
+  );
+  if (!row) return DEFAULT_PRIVACY_POLICY;
+  return { content: row.content ?? "", updated_on: row.updated_on ?? null };
 });

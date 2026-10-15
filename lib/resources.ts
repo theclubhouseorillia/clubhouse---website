@@ -46,6 +46,8 @@ export interface FieldDef {
   maxItems?: number;
   /** Span the full width of the form. */
   wide?: boolean;
+  /** Height of a textarea, in lines. */
+  rows?: number;
   /** Short label for the list view. Empty string = show the value on its own. */
   short?: string;
 }
@@ -333,6 +335,107 @@ export const RESOURCES: ResourceDef[] = [
       },
       { name: "review_date", label: "Date of the review (optional)", type: "date" },
       sortOrder,
+    ],
+  },
+  {
+    key: "gift-cards",
+    table: "gift_cards",
+    title: "Gift cards",
+    singular: "Gift cards page",
+    description: "Your Gift Cards page. Customers call or email you to order, using the phone and email in Business settings.",
+    group: "Website",
+    singleton: true,
+    allowCreate: false,
+    allowDelete: false,
+    touchUpdatedAt: true,
+    orderBy: [{ column: "id" }],
+    titleField: "heading",
+    fields: [
+      {
+        name: "enabled",
+        label: "Show the Gift Cards page",
+        type: "boolean",
+        default: true,
+        wide: true,
+        help: "Also controls the gift card band on the homepage and the menu link.",
+      },
+      { name: "heading", label: "Heading", type: "text", required: true, max: 80 },
+      { name: "intro", label: "Intro", type: "textarea", max: 400, wide: true },
+      { name: "how_to_order", label: "How to order", type: "textarea", max: 800, wide: true },
+      {
+        name: "amounts",
+        label: "Popular amounts (optional)",
+        type: "list",
+        wide: true,
+        help: "One per line, e.g. $25, $50, $100, Any amount.",
+      },
+      {
+        name: "highlights",
+        label: "Good to know (optional)",
+        type: "list",
+        wide: true,
+        help: "One per line, e.g. what a gift card can be used for, or that it never expires.",
+      },
+      { name: "photo_url", label: "Photo (optional)", type: "image", folder: "gift-cards", wide: true },
+    ],
+  },
+  {
+    key: "faqs",
+    table: "faqs",
+    title: "FAQ",
+    singular: "Question",
+    description:
+      "Questions and answers on your FAQ page. Answers still in [square brackets] stay hidden until you fill them in.",
+    group: "Website",
+    orderBy: [{ column: "sort_order" }, { column: "created_at" }],
+    titleField: "question",
+    summaryFields: ["answer"],
+    fields: [
+      { name: "question", label: "Question", type: "text", required: true, max: 200, wide: true },
+      {
+        name: "answer",
+        label: "Answer",
+        type: "textarea",
+        required: true,
+        max: 2000,
+        wide: true,
+        short: "",
+        help: "Replace any text in [square brackets] with your own answer, or the question won't show on the site.",
+      },
+      sortOrder,
+    ],
+  },
+  {
+    key: "privacy",
+    table: "privacy_policy",
+    title: "Privacy policy",
+    singular: "Privacy policy",
+    description: "The privacy policy page linked in your footer and under your forms.",
+    group: "Website",
+    singleton: true,
+    allowCreate: false,
+    allowDelete: false,
+    touchUpdatedAt: true,
+    orderBy: [{ column: "id" }],
+    titleField: "updated_on",
+    fields: [
+      {
+        name: "updated_on",
+        label: "Last updated",
+        type: "date",
+        required: true,
+        help: "Change this to today's date whenever you edit the policy.",
+      },
+      {
+        name: "content",
+        label: "Policy",
+        type: "textarea",
+        required: true,
+        max: 20000,
+        rows: 24,
+        wide: true,
+        help: "Start a line with ## for a heading and - for a bullet point. Leave a blank line between paragraphs. {business_name}, {email}, {phone} and {address} fill in automatically from Business settings.",
+      },
     ],
   },
   {

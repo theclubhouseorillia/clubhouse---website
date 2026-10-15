@@ -141,3 +141,15 @@ export function formatMonthYear(iso: string): string {
   if (!d) return iso;
   return new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", month: "long", year: "numeric" }).format(d);
 }
+
+/** True if the text still contains a "[placeholder]" anywhere in it. */
+export function hasPlaceholderText(value: string | null | undefined): boolean {
+  return !value || !value.trim() || /\[[^\]]+\]/.test(value);
+}
+
+/** "October 14, 2026" */
+export function formatFullDate(iso: string): string {
+  const d = parseDateOnly(iso);
+  if (!d) return iso;
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" }).format(d);
+}

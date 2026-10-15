@@ -2,19 +2,17 @@ import Link from "next/link";
 import { ClockIcon, MailIcon, MapPinIcon, PhoneIcon } from "@/components/icons";
 import { real, telHref } from "@/lib/format";
 import { groupHours } from "@/lib/hours";
-import { addressLines, directionsUrl, navLinks, socialLinks } from "@/lib/site";
+import { addressLines, directionsUrl, navLinks, socialLinks, type NavVisibility } from "@/lib/site";
 import type { HoursRow, Settings } from "@/lib/types";
 
 export function Footer({
   settings,
   hours,
-  showLeague,
-  showOwners,
+  nav,
 }: {
   settings: Settings;
   hours: HoursRow[];
-  showLeague: boolean;
-  showOwners: boolean;
+  nav: NavVisibility;
 }) {
   const phone = real(settings.phone);
   const tel = telHref(settings.phone);
@@ -98,7 +96,7 @@ export function Footer({
         <nav aria-label="Footer">
           <h2 className="eyebrow mb-5">Explore</h2>
           <ul className="flex flex-col gap-1">
-            {navLinks(showLeague, showOwners).map((link) => (
+            {navLinks(nav).map((link) => (
               <li key={link.href}>
                 <Link href={link.href} className="inline-block py-1.5 text-mist transition hover:text-gold-2">
                   {link.label}
@@ -112,6 +110,10 @@ export function Footer({
         <div className="container-site flex flex-col gap-2 py-6 text-xs text-mist/80 sm:flex-row sm:justify-between">
           <p>
             © {year} {settings.business_name}. All rights reserved.
+            <span aria-hidden="true"> · </span>
+            <Link href="/privacy" className="underline-offset-4 transition hover:text-gold-2 hover:underline">
+              Privacy policy
+            </Link>
           </p>
           <p>Prices are in Canadian dollars and before applicable taxes.</p>
         </div>

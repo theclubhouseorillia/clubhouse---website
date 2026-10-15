@@ -75,6 +75,13 @@ export default async function ContactPage() {
                   Private event inquiry
                 </Link>
               </div>
+              <p className="text-mist">
+                Have a quick question? Check our{" "}
+                <Link href="/faq" className="link-gold">
+                  frequently asked questions
+                </Link>
+                .
+              </p>
               {socials.length > 0 && (
                 <ul className="flex flex-wrap gap-2" aria-label="Social media">
                   {socials.map((s) => (

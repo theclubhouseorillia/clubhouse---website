@@ -18,6 +18,7 @@ import {
   getBayTypes,
   getEvents,
   getGallery,
+  getGiftCards,
   getHomepagePhotos,
   getHours,
   getLeagueSettings,
@@ -56,6 +57,7 @@ export default async function HomePage() {
     owners,
     reviewsSection,
     reviews,
+    giftCards,
   ] = await Promise.all([
     getSettings(),
     getBayTypes(),
@@ -72,6 +74,7 @@ export default async function HomePage() {
     getOwners(),
     getReviewsSection(),
     getReviews(),
+    getGiftCards(),
   ]);
 
   const booking = bookingLink(settings);
@@ -392,6 +395,29 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* GIFT CARDS */}
+      {giftCards.enabled && (
+        <section aria-labelledby="gift-title" className="border-t border-line py-16 sm:py-20">
+          <div className="container-site">
+            <Reveal className="flex flex-col items-start justify-between gap-6 border border-gold/40 bg-forest p-8 sm:p-10 lg:flex-row lg:items-center">
+              <div className="flex flex-col gap-2">
+                <span className="eyebrow">{giftCards.heading}</span>
+                <h2 id="gift-title" className="font-display text-3xl font-semibold text-cream sm:text-4xl">
+                  Give the gift of golf
+                </h2>
+                <p className="max-w-xl text-cream/85">
+                  {real(giftCards.intro) ?? "Looking for a gift for the golfer in your life?"} Call or email us to order.
+                </p>
+              </div>
+              <Link href="/gift-cards" className="btn btn-gold shrink-0">
+                {giftCards.heading}
+                <ArrowRightIcon width={16} height={16} />
+              </Link>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* GOOGLE REVIEWS */}
       {showReviews && (

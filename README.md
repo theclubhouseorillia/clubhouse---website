@@ -34,6 +34,10 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Pool table: photos, hourly price and its own booking button
 - Meet the Owners: your story, one group photo and each owner's name and title, at the bottom of the homepage
 - Google reviews: your star rating, the reviews you pick, and "Leave us a review" / "Read all reviews on Google" buttons
+- Gift Cards page (call or email to order), with a homepage band and banner message
+- FAQ page: questions whose answer is still in [square brackets] stay hidden until you fill them in
+- Privacy policy page, linked in the footer and under every form (a plain-language starting point, not legal advice)
+- Anonymous visitor stats with Vercel Web Analytics (turn it on in Vercel → your project → Analytics)
 - Private event packages
 - Menu categories and items (with photos)
 - Weekly hours, plus holiday and special hours

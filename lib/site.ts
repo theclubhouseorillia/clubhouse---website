@@ -59,23 +59,69 @@ export function siteUrl(): string {
   return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
-/** `label` is used in the phone menu and footer; `short` in the desktop top bar. */
-export const NAV_LINKS = [
-  { href: "/pricing", label: "Simulators & Pricing", short: "Pricing" },
-  { href: "/league", label: "Winter League", short: "League" },
-  { href: "/events", label: "Events", short: "Events" },
-  { href: "/private-events", label: "Private Events", short: "Private Events" },
-  { href: "/menu", label: "Food & Drink", short: "Menu" },
-  { href: "/gallery", label: "Gallery", short: "Gallery" },
-  { href: "/contact", label: "Contact", short: "Contact" },
-  { href: "/#owners", label: "Meet the Owners", short: "The Owners" },
-] as const;
+export interface NavLink {
+  href: string;
+  /** Used in the phone menu and footer. */
+  label: string;
+  /** Used in the desktop top bar. */
+  short: string;
+  /** false = phone menu and footer only (keeps the desktop bar from overflowing). */
+  desktop: boolean;
+}
+
+export const NAV_LINKS: readonly NavLink[] = [
+  { href: "/pricing", label: "Simulators & Pricing", short: "Pricing", desktop: true },
+  { href: "/league", label: "Winter League", short: "League", desktop: true },
+  { href: "/events", label: "Events", short: "Events", desktop: true },
+  { href: "/private-events", label: "Private Events", short: "Private Events", desktop: true },
+  { href: "/menu", label: "Food & Drink", short: "Menu", desktop: true },
+  { href: "/gallery", label: "Gallery", short: "Gallery", desktop: true },
+  { href: "/contact", label: "Contact", short: "Contact", desktop: true },
+  { href: "/#owners", label: "Meet the Owners", short: "The Owners", desktop: true },
+  { href: "/gift-cards", label: "Gift Cards", short: "Gift Cards", desktop: false },
+  { href: "/faq", label: "FAQ", short: "FAQ", desktop: false },
+];
+
+/** Which optional sections are switched on (and so get a menu link). */
+export interface NavVisibility {
+  league: boolean;
+  owners: boolean;
+  giftCards: boolean;
+  faq: boolean;
+}
+
+const OPTIONAL: Record<string, keyof NavVisibility> = {
+  "/league": "league",
+  "/#owners": "owners",
+  "/gift-cards": "giftCards",
+  "/faq": "faq",
+};
 
 /** Menu links, leaving out sections that are switched off. */
-export function navLinks(showLeague: boolean, showOwners = true) {
-  return NAV_LINKS.filter(
-    (l) => (showLeague || l.href !== "/league") && (showOwners || l.href !== "/#owners"),
-  );
+export function navLinks(show: NavVisibility): NavLink[] {
+  return NAV_LINKS.filter((l) => {
+    const key = OPTIONAL[l.href];
+    return key ? show[key] : true;
+  });
+}
+
+/** "Email us" link for gift card orders, with a few prompts filled in. */
+export function giftCardEmailHref(email: string | null): string | null {
+  const address = real(email);
+  if (!address) return null;
+  const body = "Hi! I'd like to order a gift card.\n\nAmount:\nWho it's for:\nMy name and phone number:\n";
+  return `mailto:${address}?subject=${encodeURIComponent("Gift card order")}&body=${encodeURIComponent(body)}`;
+}
+
+/** Fills {business_name}, {email}, {phone} and {address} in editable text like the privacy policy. */
+export function fillTokens(text: string, settings: Settings): string {
+  const values: Record<string, string> = {
+    business_name: settings.business_name,
+    email: real(settings.public_email) ?? "",
+    phone: real(settings.phone) ?? "",
+    address: hasRealAddress(settings) ? fullAddress(settings) : "",
+  };
+  return text.replace(/\{(business_name|email|phone|address)\}/g, (_, key: string) => values[key] ?? "");
 }
 
 /** "Email us to join" link for the league, with the subject and a few prompts filled in. */

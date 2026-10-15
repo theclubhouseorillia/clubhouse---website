@@ -180,6 +180,28 @@ export interface OwnersSection {
   photo_url: string | null;
 }
 
+export interface GiftCards {
+  enabled: boolean;
+  heading: string;
+  intro: string | null;
+  how_to_order: string | null;
+  amounts: string[];
+  highlights: string[];
+  photo_url: string | null;
+}
+
+export interface Faq {
+  id: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+}
+
+export interface PrivacyPolicy {
+  content: string;
+  updated_on: string | null;
+}
+
 export interface ReviewsSection {
   enabled: boolean;
   heading: string;

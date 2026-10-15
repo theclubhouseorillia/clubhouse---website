@@ -217,6 +217,13 @@ export function InquiryForm({
         <button type="submit" className="btn btn-gold w-full sm:w-auto" disabled={pending || !startedAt}>
           {pending ? "Sending…" : kind === "event" ? "Send event inquiry" : "Send message"}
         </button>
+        <p className="mt-4 text-xs text-mist">
+          We only use your details to reply to you. See our{" "}
+          <a href="/privacy" className="underline underline-offset-4 transition hover:text-gold-2">
+            privacy policy
+          </a>
+          .
+        </p>
       </div>
     </form>
   );

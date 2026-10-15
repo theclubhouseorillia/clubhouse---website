@@ -13,6 +13,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/menu", priority: 0.7, freq: "monthly" },
     { path: "/gallery", priority: 0.6, freq: "monthly" },
     { path: "/contact", priority: 0.8, freq: "monthly" },
+    { path: "/gift-cards", priority: 0.7, freq: "monthly" },
+    { path: "/faq", priority: 0.6, freq: "monthly" },
+    { path: "/privacy", priority: 0.2, freq: "monthly" },
   ];
   return pages.map((p) => ({
     url: `${base}${p.path}`,

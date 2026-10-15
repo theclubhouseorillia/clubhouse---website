@@ -4,6 +4,8 @@
 import type {
   BayType,
   EventPackage,
+  Faq,
+  GiftCards,
   HomepagePhotos,
   HoursRow,
   LeagueOption,
@@ -12,6 +14,7 @@ import type {
   Owner,
   OwnersSection,
   PoolTable,
+  PrivacyPolicy,
   Rate,
   Review,
   ReviewsSection,
@@ -258,3 +261,18 @@ export const DEFAULT_REVIEWS_SECTION: ReviewsSection = {
 };
 
 export const DEFAULT_REVIEWS: Review[] = [];
+
+export const DEFAULT_GIFT_CARDS: GiftCards = {
+  enabled: true,
+  heading: "Gift Cards",
+  intro: "The perfect gift for the golfer in your life, or anyone who loves a great night out.",
+  how_to_order:
+    "To order a gift card, give us a call or send us an email. Let us know the amount and who it's for, and we'll take care of the rest.",
+  amounts: [],
+  highlights: [],
+  photo_url: null,
+};
+
+export const DEFAULT_FAQS: Faq[] = [];
+
+export const DEFAULT_PRIVACY_POLICY: PrivacyPolicy = { content: "", updated_on: null };
