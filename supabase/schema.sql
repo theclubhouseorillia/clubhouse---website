@@ -756,7 +756,8 @@ begin
     execute format('drop policy if exists "Public read" on public.%I', t);
     execute format('drop policy if exists "Public read published" on public.%I', t);
     if t in ('sports_games', 'courses') then
-      execute format('create policy "Public read published" on public.%I for select to anon, authenticated using (published = true or public.is_admin())', t);
+      -- Admins see hidden rows through "Admins manage" below (visitors can't call is_admin()).
+      execute format('create policy "Public read published" on public.%I for select to anon, authenticated using (published = true)', t);
     else
       execute format('create policy "Public read" on public.%I for select to anon, authenticated using (true)', t);
     end if;
