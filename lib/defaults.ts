@@ -3,6 +3,7 @@
 // It mirrors supabase/seed.sql.
 import type {
   BayType,
+  Course,
   EventPackage,
   Faq,
   GiftCards,
@@ -21,6 +22,7 @@ import type {
   Review,
   ReviewsSection,
   Settings,
+  SportsGame,
 } from "./types";
 
 export const GALLERY_CATEGORIES = [
@@ -66,6 +68,7 @@ export const DEFAULT_SETTINGS: Settings = {
   inquiry_email: null,
   facebook_url: null,
   instagram_url: null,
+  instagram_feed_url: null,
   tiktok_url: null,
   seo_description: null,
   pricing_season_label: "Winter pricing",
@@ -227,6 +230,14 @@ export const DEFAULT_LEAGUE_SETTINGS: LeagueSettings = {
 export const DEFAULT_LEAGUE_OPTIONS: LeagueOption[] = [];
 
 export const DEFAULT_LEAGUE_STEPS: LeagueStep[] = [];
+
+export const DEFAULT_SPORTS_GAMES: SportsGame[] = [];
+
+export const DEFAULT_COURSES: Course[] = [];
+
+export const DEFAULT_MEMBERSHIP_PLANS: EventPackage[] = [];
+
+export const DEFAULT_KIDS_PACKAGES: EventPackage[] = [];
 
 export const DEFAULT_HOMEPAGE_PHOTOS: HomepagePhotos = {
   hero_photos: [],

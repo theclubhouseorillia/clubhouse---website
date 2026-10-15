@@ -7,13 +7,16 @@ import { BusinessJsonLd } from "@/components/site/JsonLd";
 import { MobileBookBar } from "@/components/site/MobileBookBar";
 import {
   getAnnouncements,
+  getCourses,
   getFaqs,
   getGiftCards,
   getHomepagePhotos,
   getHours,
   getLeagueSettings,
+  getMembershipPlans,
   getOwnersSection,
   getSettings,
+  getSportsGames,
 } from "@/lib/data";
 import { hasPlaceholderText, real, telHref } from "@/lib/format";
 import { bookingLink, type NavVisibility } from "@/lib/site";
@@ -23,7 +26,7 @@ import { bookingLink, type NavVisibility } from "@/lib/site";
 export const revalidate = 300;
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  const [settings, announcements, hours, league, photos, owners, giftCards, faqs] = await Promise.all([
+  const [settings, announcements, hours, league, photos, owners, giftCards, faqs, games, courses, plans] = await Promise.all([
     getSettings(),
     getAnnouncements(),
     getHours(),
@@ -32,12 +35,18 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
     getOwnersSection(),
     getGiftCards(),
     getFaqs(),
+    getSportsGames(),
+    getCourses(),
+    getMembershipPlans(),
   ]);
   const nav: NavVisibility = {
     league: league.enabled,
     owners: owners.enabled,
     giftCards: giftCards.enabled,
     faq: faqs.some((f) => !hasPlaceholderText(f.answer)),
+    sports: games.length > 0,
+    courses: courses.length > 0,
+    memberships: plans.length > 0,
   };
   const booking = bookingLink(settings);
   const phoneHref = telHref(settings.phone);

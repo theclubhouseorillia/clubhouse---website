@@ -314,3 +314,37 @@ on conflict (id) do nothing;
 -- select id from auth.users where email = 'you@example.com'
 -- on conflict do nothing;
 -- =============================================================================
+
+-- Memberships & hour packs: fill in the [brackets] in Admin to show them ----------
+insert into public.membership_plans (name, price_label, price_note, description, features, featured, sort_order)
+select * from (values
+  ('Hour Pack', '[Price]', '[e.g. 10 hours of simulator time]', '[Short description, e.g. Prepaid simulator hours at a discount. Use them any time.]', array['[What''s included]'], false, 1),
+  ('Monthly Membership', '[Price per month]', '[e.g. per month]', '[Short description, e.g. A set number of hours every month, plus member perks.]', array['[What''s included]'], true, 2)
+) as v(name, price_label, price_note, description, features, featured, sort_order)
+where not exists (select 1 from public.membership_plans);
+
+-- Kids' party packages: fill in the [brackets] in Admin to show them ---------------
+insert into public.kids_packages (name, price_label, price_note, description, features, featured, sort_order)
+select * from (values
+  ('Kids'' Birthday Party', '[Price]', '[e.g. up to 10 kids · 2 hours]', '[Short description]', array['[What''s included, e.g. private simulator bay]'], false, 1)
+) as v(name, price_label, price_note, description, features, featured, sort_order)
+where not exists (select 1 from public.kids_packages);
+
+-- Course showcase: only list courses your Trackman simulators actually have ---------
+insert into public.courses (name, location, description, sort_order)
+select * from (values
+  ('St Andrews (Old Course)', 'St Andrews, Scotland', 'The Home of Golf. Play the most famous links in the world, from the Swilcan Bridge to the Road Hole.', 1),
+  ('Royal Troon', 'Troon, Scotland', 'Open Championship links on Scotland’s west coast, home of the famous “Postage Stamp” par 3.', 2),
+  ('Royal Portrush', 'Portrush, Northern Ireland', 'Dramatic links on the Antrim coast and host of The Open in 2019 and 2025.', 3),
+  ('Royal Birkdale', 'Southport, England', 'Classic links among the sand dunes of England’s northwest coast and a regular host of The Open.', 4),
+  ('Pebble Beach Golf Links', 'Pebble Beach, California', 'America’s most famous public course, with cliff-top holes along the Pacific Ocean.', 5),
+  ('Pinehurst No. 2', 'Pinehurst, North Carolina', 'Donald Ross’s masterpiece, known for its crowned greens and a regular U.S. Open host.', 6),
+  ('Muirfield Village', 'Dublin, Ohio', 'Jack Nicklaus’s course and home of the Memorial Tournament.', 7),
+  ('Quail Hollow', 'Charlotte, North Carolina', 'A Tour favourite with the famous “Green Mile” finish and host of the 2025 PGA Championship.', 8),
+  ('Valderrama', 'Sotogrande, Spain', 'Host of the 1997 Ryder Cup, the first played in continental Europe.', 9),
+  ('PGA National (Champion)', 'Palm Beach Gardens, Florida', 'Take on the “Bear Trap,” the notorious stretch of holes 15 to 17.', 10),
+  ('Liberty National', 'Jersey City, New Jersey', 'Skyline views of Manhattan and the Statue of Liberty from almost every hole.', 11),
+  ('Lofoten Links', 'Lofoten Islands, Norway', 'Seaside links above the Arctic Circle in northern Norway.', 12)
+) as v(name, location, description, sort_order)
+where not exists (select 1 from public.courses);
+

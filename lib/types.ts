@@ -21,6 +21,8 @@ export interface Settings {
   inquiry_email: string | null;
   facebook_url: string | null;
   instagram_url: string | null;
+  /** Behold.so JSON feed for the homepage Instagram strip. */
+  instagram_feed_url: string | null;
   tiktok_url: string | null;
   seo_description: string | null;
   pricing_season_label: string | null;
@@ -151,6 +153,27 @@ export interface LeagueSettings {
   /** Longer description under "How it works": "## " starts a heading, "- " a bullet. */
   details: string | null;
   note: string | null;
+}
+
+/** A game shown on the "Watch the game here" schedule. */
+export interface SportsGame {
+  id: string;
+  title: string;
+  sport: string | null;
+  game_date: string;
+  start_time: string | null;
+  note: string | null;
+  featured: boolean;
+}
+
+/** A course on the course showcase page. */
+export interface Course {
+  id: string;
+  name: string;
+  location: string | null;
+  description: string | null;
+  image_url: string | null;
+  sort_order: number;
 }
 
 /** One step of "How to sign up & pay" on the league page. */

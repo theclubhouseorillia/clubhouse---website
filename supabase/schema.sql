@@ -694,3 +694,83 @@ grant insert, update, delete on public.league_steps to authenticated;
 
 -- Longer league description (format, tee times, rules, registration) under "How it works".
 alter table public.league_settings add column if not exists details text;
+
+-- =============================================================================
+-- "Watch the game here" schedule, memberships & hour packs, course showcase,
+-- kids' party packages, and the Instagram strip's feed link.
+-- =============================================================================
+
+create table if not exists public.sports_games (
+  id         uuid primary key default gen_random_uuid(),
+  title      text not null,
+  sport      text,
+  game_date  date not null,
+  start_time time,
+  note       text,
+  featured   boolean not null default false,
+  published  boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.membership_plans (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  price_label text not null default '',   -- plans still in [brackets] stay hidden on the site
+  price_note  text,
+  description text,
+  features    text[] not null default '{}',
+  featured    boolean not null default false,
+  sort_order  int not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.courses (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  location    text,
+  description text,
+  image_url   text,
+  published   boolean not null default true,
+  sort_order  int not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists public.kids_packages (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  price_label text not null default '',   -- packages still in [brackets] stay hidden on the site
+  price_note  text,
+  description text,
+  features    text[] not null default '{}',
+  featured    boolean not null default false,
+  sort_order  int not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['sports_games', 'membership_plans', 'courses', 'kids_packages'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists "Public read" on public.%I', t);
+    execute format('drop policy if exists "Public read published" on public.%I', t);
+    if t in ('sports_games', 'courses') then
+      execute format('create policy "Public read published" on public.%I for select to anon, authenticated using (published = true or public.is_admin())', t);
+    else
+      execute format('create policy "Public read" on public.%I for select to anon, authenticated using (true)', t);
+    end if;
+    execute format('drop policy if exists "Admins manage" on public.%I', t);
+    execute format(
+      'create policy "Admins manage" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())',
+      t
+    );
+    execute format('grant select on public.%I to anon, authenticated', t);
+    execute format('grant insert, update, delete on public.%I to authenticated', t);
+  end loop;
+end $$;
+
+-- Behold.so JSON feed link for the homepage Instagram strip (public, like the other social links).
+alter table public.site_settings add column if not exists instagram_feed_url text;
+grant select (instagram_feed_url) on public.site_settings to anon;
+

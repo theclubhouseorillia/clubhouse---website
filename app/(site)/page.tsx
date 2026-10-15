@@ -4,8 +4,10 @@ import { ArrowRightIcon, CalendarIcon, CheckIcon, ExternalIcon, MailIcon, MapPin
 import { PhotoCarousel } from "@/components/site/PhotoCarousel";
 import { BayPriceRange } from "@/components/site/BayPriceRange";
 import { EventCard } from "@/components/site/EventCard";
+import { GameRow } from "@/components/site/GameList";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
+import { InstagramStrip } from "@/components/site/InstagramStrip";
 import { OpenToday } from "@/components/site/OpenToday";
 import { PackageCard } from "@/components/site/PackageCard";
 import { PhotoSlot } from "@/components/site/PhotoSlot";
@@ -17,6 +19,7 @@ import { Stars } from "@/components/site/Stars";
 import { WeatherCard } from "@/components/site/WeatherCard";
 import {
   getBayTypes,
+  getCourses,
   getEvents,
   getGallery,
   getGiftCards,
@@ -32,10 +35,12 @@ import {
   getReviewsSection,
   getSettings,
   getSpecialHours,
+  getSportsGames,
 } from "@/lib/data";
 import { homepageEvents } from "@/lib/events";
 import { formatMonthYear, real, telHref } from "@/lib/format";
 import { addressLines, bookingLink, directionsUrl, leagueEmailHref } from "@/lib/site";
+import { getInstagramPosts } from "@/lib/instagram";
 import { getWeather } from "@/lib/weather";
 
 export const metadata: Metadata = {
@@ -61,6 +66,8 @@ export default async function HomePage() {
     reviews,
     giftCards,
     weather,
+    games,
+    courses,
   ] = await Promise.all([
     getSettings(),
     getBayTypes(),
@@ -79,7 +86,10 @@ export default async function HomePage() {
     getReviews(),
     getGiftCards(),
     getWeather(),
+    getSportsGames(),
+    getCourses(),
   ]);
+  const instagram = await getInstagramPosts(settings.instagram_feed_url);
 
   const booking = bookingLink(settings);
   const headline = real(settings.hero_headline) ?? settings.business_name;
@@ -236,9 +246,16 @@ export default async function HomePage() {
               />
             </Reveal>
             <Reveal delay={100} className="lg:justify-self-end">
-              <Link href="/pricing" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
-                Simulator pricing <ArrowRightIcon width={16} height={16} />
-              </Link>
+              <div className="flex flex-wrap gap-x-8 gap-y-3">
+                {courses.length > 0 && (
+                  <Link href="/courses" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                    Courses you can play <ArrowRightIcon width={16} height={16} />
+                  </Link>
+                )}
+                <Link href="/pricing" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                  Simulator pricing <ArrowRightIcon width={16} height={16} />
+                </Link>
+              </div>
             </Reveal>
           </div>
 
@@ -321,6 +338,21 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ul>
+            )}
+            {games.length > 0 && (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <h3 className="font-display text-2xl font-semibold text-cream">Watch the game here</h3>
+                  <Link href="/sports" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.14em]">
+                    Full schedule <ArrowRightIcon width={14} height={14} />
+                  </Link>
+                </div>
+                <ul className="flex flex-col gap-3">
+                  {games.slice(0, 3).map((game) => (
+                    <GameRow key={game.id} game={game} showDate />
+                  ))}
+                </ul>
+              </div>
             )}
             <div className="flex flex-wrap gap-3">
               <Link href="/menu" className="btn btn-outline">
@@ -506,6 +538,9 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* INSTAGRAM (Admin → Settings → Instagram feed link) */}
+      {instagram.length > 0 && <InstagramStrip posts={instagram} profileUrl={real(settings.instagram_url)} />}
 
       {/* VISIT */}
       <section aria-labelledby="visit-title" className="border-t border-line bg-coal py-24 sm:py-28">

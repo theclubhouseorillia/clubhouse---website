@@ -79,6 +79,10 @@ export const NAV_LINKS: readonly NavLink[] = [
   { href: "/gallery", label: "Gallery", short: "Gallery", desktop: true },
   { href: "/contact", label: "Contact", short: "Contact", desktop: true },
   { href: "/#owners", label: "Meet the Owners", short: "The Owners", desktop: true },
+  { href: "/sports", label: "Watch the Game", short: "Sports", desktop: false },
+  { href: "/courses", label: "Courses You Can Play", short: "Courses", desktop: false },
+  { href: "/memberships", label: "Memberships & Hour Packs", short: "Memberships", desktop: false },
+  { href: "/kids-parties", label: "Kids' Parties", short: "Kids' Parties", desktop: false },
   { href: "/gift-cards", label: "Gift Cards", short: "Gift Cards", desktop: false },
   { href: "/faq", label: "FAQ", short: "FAQ", desktop: false },
 ];
@@ -89,6 +93,9 @@ export interface NavVisibility {
   owners: boolean;
   giftCards: boolean;
   faq: boolean;
+  sports: boolean;
+  courses: boolean;
+  memberships: boolean;
 }
 
 const OPTIONAL: Record<string, keyof NavVisibility> = {
@@ -96,6 +103,9 @@ const OPTIONAL: Record<string, keyof NavVisibility> = {
   "/#owners": "owners",
   "/gift-cards": "giftCards",
   "/faq": "faq",
+  "/sports": "sports",
+  "/courses": "courses",
+  "/memberships": "memberships",
 };
 
 /** Menu links, leaving out sections that are switched off. */

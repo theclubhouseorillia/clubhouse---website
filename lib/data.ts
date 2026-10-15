@@ -4,6 +4,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getPublicClient } from "./supabase/public";
 import {
   DEFAULT_BAY_TYPES,
+  DEFAULT_COURSES,
+  DEFAULT_KIDS_PACKAGES,
+  DEFAULT_MEMBERSHIP_PLANS,
+  DEFAULT_SPORTS_GAMES,
   DEFAULT_FAQS,
   DEFAULT_GIFT_CARDS,
   DEFAULT_HOMEPAGE_PHOTOS,
@@ -23,10 +27,12 @@ import {
   DEFAULT_REVIEWS_SECTION,
   DEFAULT_SETTINGS,
 } from "./defaults";
-import { todayISO } from "./format";
+import { hasPlaceholderText, todayISO } from "./format";
 import type {
   Announcement,
   BayType,
+  Course,
+  SportsGame,
   EventPackage,
   EventRow,
   GalleryImage,
@@ -91,7 +97,7 @@ const PUBLIC_SETTINGS_COLUMNS = [
   "business_name", "logo_url", "hero_headline", "hero_subheadline", "slogan", "show_slogan",
   "hero_image_url", "bar_heading", "bar_text", "highlights", "packages_note", "street_address",
   "city", "province", "postal_code", "phone", "public_email", "website_url", "booking_url",
-  "facebook_url", "instagram_url", "tiktok_url", "seo_description", "pricing_season_label",
+  "facebook_url", "instagram_url", "instagram_feed_url", "tiktok_url", "seo_description", "pricing_season_label",
   "pricing_note", "hours_season_label",
 ].join(",");
 
@@ -352,3 +358,59 @@ export const getMenuSettings = cache(async (): Promise<MenuSettings> => {
     page_images: textList(row.page_images),
   };
 });
+
+/** Upcoming games for "Watch the game here" (today onward), soonest first. */
+export const getSportsGames = cache(async (): Promise<SportsGame[]> => {
+  const rows = await safeQuery<SportsGame[]>("sports games", DEFAULT_SPORTS_GAMES, (sb) =>
+    sb
+      .from("sports_games")
+      .select("id, title, sport, game_date, start_time, note, featured")
+      .eq("published", true)
+      .gte("game_date", todayISO())
+      .order("game_date")
+      .order("start_time", { nullsFirst: false })
+      .limit(60),
+  );
+  return rows.filter((g) => typeof g.title === "string" && g.title.trim() !== "");
+});
+
+/** Courses for the course showcase, in display order. */
+export const getCourses = cache(async (): Promise<Course[]> => {
+  return safeQuery<Course[]>("courses", DEFAULT_COURSES, (sb) =>
+    sb
+      .from("courses")
+      .select("id, name, location, description, image_url, sort_order")
+      .eq("published", true)
+      .order("sort_order")
+      .order("created_at"),
+  );
+});
+
+/** Package-style rows (memberships, kids' parties) that have been filled in: anything still in [brackets] stays hidden. */
+function readyPackages(rows: EventPackage[]): EventPackage[] {
+  return rows
+    .map((r) => ({ ...r, features: Array.isArray(r.features) ? r.features.filter((f) => !hasPlaceholderText(f)) : [], photos: [] }))
+    .filter((r) => r.name?.trim() && r.price_label?.trim() && !hasPlaceholderText(r.name) && !hasPlaceholderText(r.price_label))
+    .map((r) => ({
+      ...r,
+      price_note: hasPlaceholderText(r.price_note) ? null : r.price_note,
+      description: hasPlaceholderText(r.description) ? null : r.description,
+    }));
+}
+
+/** Simulator memberships and hour packs that are ready to show. */
+export const getMembershipPlans = cache(async (): Promise<EventPackage[]> => {
+  const rows = await safeQuery<EventPackage[]>("membership plans", DEFAULT_MEMBERSHIP_PLANS, (sb) =>
+    sb.from("membership_plans").select("id, name, price_label, price_note, description, features, featured, sort_order").order("sort_order"),
+  );
+  return readyPackages(rows);
+});
+
+/** Kids' birthday party packages that are ready to show. */
+export const getKidsPackages = cache(async (): Promise<EventPackage[]> => {
+  const rows = await safeQuery<EventPackage[]>("kids packages", DEFAULT_KIDS_PACKAGES, (sb) =>
+    sb.from("kids_packages").select("id, name, price_label, price_note, description, features, featured, sort_order").order("sort_order"),
+  );
+  return readyPackages(rows);
+});
+

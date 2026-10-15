@@ -51,6 +51,12 @@ export default async function PrivateEventsPage() {
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-mist">
+            Planning a party for the kids?{" "}
+            <Link href="/kids-parties" className="link-gold">
+              See our kids&apos; birthday parties
+            </Link>
+          </p>
         </div>
       </section>
 

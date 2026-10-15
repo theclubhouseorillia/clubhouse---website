@@ -30,6 +30,11 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Announcement banner: add, edit, delete, switch on/off, and schedule start and end times
 - Events: one-off or **weekly repeating**, flyers, times, admission, ticket/booking links, feature on the homepage
 - Orillia weather on the homepage beside “What’s on” (current conditions + forecast from Environment and Climate Change Canada, refreshed every 15 minutes; hidden automatically if the forecast can’t be reached)
+- “Watch the game here” schedule: big games you're showing (Admin → Watch the game here), next three on the homepage sports bar section and the full list on `/sports`; past games drop off automatically
+- Memberships & hour packs page (`/memberships`): plans appear once their name and price are filled in (no [brackets]); visitors call or email to buy
+- Course showcase (`/courses`): famous courses on your Trackman simulators, linked from the homepage simulators section
+- Kids' birthday parties page (`/kids-parties`): packages (shown once filled in) and a party inquiry form that emails you and saves to the inbox
+- Instagram strip on the homepage: paste a free Behold.so JSON feed link in Admin → Settings → “Instagram feed link (Behold)”
 - Simulator pricing and bay descriptions
 - Winter golf league page: step-by-step “How to sign up & pay”, details, pricing and the sign-up link (or email)
 - Pool table: photos, hourly price and its own booking button
