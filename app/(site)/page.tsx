@@ -259,6 +259,21 @@ export default async function HomePage() {
                 <Link href="/memberships" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
                   Purchase memberships <ArrowRightIcon width={16} height={16} />
                 </Link>
+                {giftCards.enabled &&
+                  (giftCards.buy_url ? (
+                    <a
+                      href={giftCards.buy_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]"
+                    >
+                      Purchase gift cards <ExternalIcon width={16} height={16} />
+                    </a>
+                  ) : (
+                    <Link href="/gift-cards" className="link-gold inline-flex items-center gap-2 text-sm uppercase tracking-[0.16em]">
+                      Purchase gift cards <ArrowRightIcon width={16} height={16} />
+                    </Link>
+                  ))}
               </div>
             </Reveal>
           </div>
