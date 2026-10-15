@@ -300,6 +300,8 @@ export const DEFAULT_GIFT_CARDS: GiftCards = {
   amounts: [],
   highlights: [],
   photo_url: null,
+  buy_url: null,
+  qr_image_url: null,
 };
 
 export const DEFAULT_FAQS: Faq[] = [];

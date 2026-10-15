@@ -243,6 +243,10 @@ export interface GiftCards {
   amounts: string[];
   highlights: string[];
   photo_url: string | null;
+  /** Online eGift card shop (e.g. Toast). */
+  buy_url: string | null;
+  /** QR code that opens the online shop. */
+  qr_image_url: string | null;
 }
 
 export interface Faq {

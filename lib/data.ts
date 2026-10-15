@@ -345,6 +345,8 @@ export const getGiftCards = cache(async (): Promise<GiftCards> => {
     amounts: textList(row.amounts),
     highlights: textList(row.highlights),
     photo_url: row.photo_url || null,
+    buy_url: /^https:\/\/\S+$/i.test(row.buy_url?.trim() ?? "") ? (row.buy_url as string).trim() : null,
+    qr_image_url: row.qr_image_url || null,
   };
 });
 

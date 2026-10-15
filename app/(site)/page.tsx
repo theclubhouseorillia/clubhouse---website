@@ -478,13 +478,26 @@ export default async function HomePage() {
                   Give the gift of golf
                 </h2>
                 <p className="max-w-xl text-cream/85">
-                  {real(giftCards.intro) ?? "Looking for a gift for the golfer in your life?"} Call or email us to order.
+                  {real(giftCards.intro) ?? "Looking for a gift for the golfer in your life?"}{" "}
+                  {giftCards.buy_url ? "Buy one online in minutes, or call or email us." : "Call or email us to order."}
                 </p>
               </div>
-              <Link href="/gift-cards" className="btn btn-gold shrink-0">
-                {giftCards.heading}
-                <ArrowRightIcon width={16} height={16} />
-              </Link>
+              {giftCards.buy_url ? (
+                <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+                  <a href={giftCards.buy_url} target="_blank" rel="noopener noreferrer" className="btn btn-gold">
+                    Buy a gift card
+                    <ExternalIcon width={16} height={16} />
+                  </a>
+                  <Link href="/gift-cards" className="btn btn-outline">
+                    More info
+                  </Link>
+                </div>
+              ) : (
+                <Link href="/gift-cards" className="btn btn-gold shrink-0">
+                  {giftCards.heading}
+                  <ArrowRightIcon width={16} height={16} />
+                </Link>
+              )}
             </Reveal>
           </div>
         </section>

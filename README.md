@@ -41,7 +41,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Pool table: photos, hourly price and its own booking button
 - Meet the Owners: your story, one group photo and each owner's name and title, at the bottom of the homepage
 - Google reviews: your star rating, the reviews you pick, and "Leave us a review" / "Read all reviews on Google" buttons
-- Gift Cards page (call or email to order), with a homepage band and banner message
+- Gift Cards page: “Buy a gift card online” button and QR code for your online gift card shop (e.g. Toast eGift cards), plus call or email to order; homepage band with a buy button
 - FAQ page: questions whose answer is still in [square brackets] stay hidden until you fill them in
 - Calendar page: a month view plus day-by-day list of every event and weekly special (from Admin → Events), with holiday hours
 - Food & Drink page shows your menu PDF: a picture of each page to scroll through, plus open/download buttons (Admin → Menu)

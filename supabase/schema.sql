@@ -795,3 +795,6 @@ create policy "Admins manage" on public.rental_clubs for all to authenticated us
 grant select on public.rental_clubs to anon, authenticated;
 grant insert, update, delete on public.rental_clubs to authenticated;
 
+-- Gift cards: online shop link (e.g. Toast eGift cards) and its QR code.
+alter table public.gift_cards add column if not exists buy_url text;
+alter table public.gift_cards add column if not exists qr_image_url text;
