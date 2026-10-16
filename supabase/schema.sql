@@ -806,3 +806,263 @@ alter table public.membership_plans add column if not exists buy_url text;
 alter table public.membership_plans add column if not exists buy_label text;
 alter table public.site_settings add column if not exists membership_portal_url text;
 grant select (membership_portal_url) on public.site_settings to anon;
+
+-- =============================================================================
+-- Membership automation (Stripe -> website -> emails)
+--
+-- * public.members: everyone who bought a membership or a 10-hour pack online.
+--   Admin-only (never readable by visitors).
+-- * public.member_code_settings: the one member discount code (used in
+--   YourGolfBooking), its expiry date and the YGB sign-up link. Admin-only.
+-- * Functions below are called by the website server only. Like the inquiry
+--   form, they require the FORM_SECRET stored in private.app_config.
+-- =============================================================================
+
+create table if not exists public.members (
+  id                     uuid primary key default gen_random_uuid(),
+  kind                   text not null default 'membership' check (kind in ('membership', 'pack')),
+  name                   text,
+  email                  text not null,
+  phone                  text,
+  golfer_name            text,
+  plan                   text,
+  status                 text not null default 'active',   -- active, ending, past_due, canceled, purchased
+  stripe_customer_id     text,
+  stripe_subscription_id text unique,
+  stripe_checkout_id     text unique,
+  renews_on              date,
+  setup_email_sent       boolean not null default false,
+  code_due_at            timestamptz,                       -- when the first code email may go out
+  code_sent              text,                              -- the last code emailed to this member
+  code_sent_at           timestamptz,
+  added_to_ygb           boolean not null default false,    -- staff tick once they're set up in YGB
+  notes                  text,
+  created_at             timestamptz not null default now(),
+  updated_at             timestamptz not null default now()
+);
+create index if not exists members_created_idx on public.members (created_at desc);
+
+alter table public.members enable row level security;
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'members' and policyname = 'Admins manage') then
+    create policy "Admins manage" on public.members for all to authenticated
+      using (public.is_admin()) with check (public.is_admin());
+  end if;
+end $$;
+grant select, insert, update, delete on public.members to authenticated;
+
+create table if not exists public.member_code_settings (
+  id             int primary key default 1 check (id = 1),
+  code           text,
+  valid_until    date,
+  ygb_signup_url text,
+  updated_at     timestamptz not null default now()
+);
+alter table public.member_code_settings enable row level security;
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'member_code_settings' and policyname = 'Admins manage') then
+    create policy "Admins manage" on public.member_code_settings for all to authenticated
+      using (public.is_admin()) with check (public.is_admin());
+  end if;
+end $$;
+grant select, insert, update on public.member_code_settings to authenticated;
+
+insert into public.member_code_settings (id, ygb_signup_url)
+select 1, s.booking_url from public.site_settings s where s.id = 1
+on conflict (id) do nothing;
+insert into public.member_code_settings (id) values (1) on conflict (id) do nothing;
+
+-- Shared secret check (same secret as the website forms).
+create or replace function private.require_form_secret(p_secret text)
+returns void
+language plpgsql
+security definer
+set search_path = private
+as $$
+begin
+  if p_secret is null or p_secret is distinct from (select value from private.app_config where key = 'form_secret') then
+    raise exception 'Not allowed' using errcode = '42501';
+  end if;
+end;
+$$;
+revoke all on function private.require_form_secret(text) from public;
+
+-- A completed Stripe checkout. Safe to call twice for the same checkout
+-- (Stripe retries): the second call returns the existing record.
+create or replace function public.member_record_checkout(
+  p_secret          text,
+  p_checkout_id     text,
+  p_kind            text,
+  p_name            text,
+  p_email           text,
+  p_phone           text default null,
+  p_golfer_name     text default null,
+  p_plan            text default null,
+  p_customer_id     text default null,
+  p_subscription_id text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_row    public.members;
+  v_new    boolean := false;
+  v_cfg    public.member_code_settings;
+  v_notify text;
+begin
+  perform private.require_form_secret(p_secret);
+
+  select * into v_row from public.members where stripe_checkout_id = p_checkout_id;
+  if not found then
+    insert into public.members (
+      kind, name, email, phone, golfer_name, plan, status,
+      stripe_customer_id, stripe_subscription_id, stripe_checkout_id, code_due_at
+    ) values (
+      case when p_kind = 'pack' then 'pack' else 'membership' end,
+      nullif(trim(p_name), ''), lower(trim(p_email)), nullif(trim(p_phone), ''), nullif(trim(p_golfer_name), ''),
+      nullif(trim(p_plan), ''),
+      case when p_kind = 'pack' then 'purchased' else 'active' end,
+      p_customer_id, p_subscription_id, p_checkout_id,
+      case when p_kind = 'pack' then null else now() + interval '24 hours' end
+    )
+    returning * into v_row;
+    v_new := true;
+  end if;
+
+  select * into v_cfg from public.member_code_settings where id = 1;
+  select inquiry_email into v_notify from public.site_settings where id = 1;
+
+  return json_build_object(
+    'id', v_row.id,
+    'is_new', v_new,
+    'setup_email_sent', v_row.setup_email_sent,
+    'code_sent', v_row.code_sent,
+    'code', nullif(trim(v_cfg.code), ''),
+    'valid_until', v_cfg.valid_until,
+    'ygb_signup_url', v_cfg.ygb_signup_url,
+    'notify_email', v_notify
+  );
+end;
+$$;
+
+create or replace function public.member_mark_setup_sent(p_secret text, p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  perform private.require_form_secret(p_secret);
+  update public.members set setup_email_sent = true, updated_at = now() where id = p_id;
+end;
+$$;
+
+create or replace function public.member_mark_code_sent(p_secret text, p_id uuid, p_code text, p_at timestamptz default now())
+returns void
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  perform private.require_form_secret(p_secret);
+  update public.members set code_sent = p_code, code_sent_at = p_at, updated_at = now() where id = p_id;
+end;
+$$;
+
+-- Keeps a membership's status in step with Stripe (renewals, failed payments,
+-- cancellations, plan switches). Returns the old and new status so the website
+-- can tell the owner about cancellations.
+create or replace function public.member_sync_subscription(
+  p_secret          text,
+  p_subscription_id text,
+  p_status          text,
+  p_plan            text default null,
+  p_renews_on       date default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_old    public.members;
+  v_new    public.members;
+  v_notify text;
+begin
+  perform private.require_form_secret(p_secret);
+
+  select * into v_old from public.members where stripe_subscription_id = p_subscription_id;
+  if not found then
+    return json_build_object('found', false);
+  end if;
+
+  update public.members
+     set status    = p_status,
+         plan      = coalesce(nullif(trim(p_plan), ''), plan),
+         renews_on = coalesce(p_renews_on, renews_on),
+         updated_at = now()
+   where id = v_old.id
+  returning * into v_new;
+
+  select inquiry_email into v_notify from public.site_settings where id = 1;
+
+  return json_build_object(
+    'found', true,
+    'id', v_new.id,
+    'name', v_new.name,
+    'email', v_new.email,
+    'phone', v_new.phone,
+    'plan', v_new.plan,
+    'old_status', v_old.status,
+    'new_status', v_new.status,
+    'renews_on', v_new.renews_on,
+    'notify_email', v_notify
+  );
+end;
+$$;
+
+-- Members who should be emailed the current code now: active (or ending but
+-- still paid up), past their first-day wait, and not yet sent this code.
+create or replace function public.member_code_queue(p_secret text)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_cfg public.member_code_settings;
+begin
+  perform private.require_form_secret(p_secret);
+  select * into v_cfg from public.member_code_settings where id = 1;
+
+  return json_build_object(
+    'code', nullif(trim(v_cfg.code), ''),
+    'valid_until', v_cfg.valid_until,
+    'ygb_signup_url', v_cfg.ygb_signup_url,
+    'members', coalesce((
+      select json_agg(json_build_object('id', m.id, 'name', m.name, 'email', m.email, 'plan', m.plan) order by m.created_at)
+        from public.members m
+       where nullif(trim(v_cfg.code), '') is not null
+         and m.kind = 'membership'
+         and m.status in ('active', 'ending')
+         and (m.code_due_at is null or m.code_due_at <= now())
+         and m.code_sent is distinct from trim(v_cfg.code)
+    ), '[]'::json)
+  );
+end;
+$$;
+
+revoke all on function public.member_record_checkout(text, text, text, text, text, text, text, text, text, text) from public;
+grant execute on function public.member_record_checkout(text, text, text, text, text, text, text, text, text, text) to anon, authenticated;
+revoke all on function public.member_mark_setup_sent(text, uuid) from public;
+grant execute on function public.member_mark_setup_sent(text, uuid) to anon, authenticated;
+revoke all on function public.member_mark_code_sent(text, uuid, text, timestamptz) from public;
+grant execute on function public.member_mark_code_sent(text, uuid, text, timestamptz) to anon, authenticated;
+revoke all on function public.member_sync_subscription(text, text, text, text, date) from public;
+grant execute on function public.member_sync_subscription(text, text, text, text, date) to anon, authenticated;
+revoke all on function public.member_code_queue(text) from public;
+grant execute on function public.member_code_queue(text) to anon, authenticated;
