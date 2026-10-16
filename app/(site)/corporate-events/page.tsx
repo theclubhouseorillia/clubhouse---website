@@ -28,7 +28,7 @@ const OCCASIONS = [
 const REASONS: { title: string; body: string }[] = [
   {
     title: "Fun for every skill level",
-    body: "Simulator golf is easy to pick up, so first-timers and low handicappers can play side by side. Rental clubs for left-handed, right-handed and women's golfers are on hand, so nobody needs to bring a thing.",
+    body: "Simulator golf is easy to pick up, so first-timers and low handicappers can play side by side. Rental clubs for left-handed, right-handed, women's and junior golfers are on hand, so nobody needs to bring a thing.",
   },
   {
     title: "Friendly competition built in",
