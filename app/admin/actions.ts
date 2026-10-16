@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
+import { emailMemberCodeIfReady } from "@/lib/members";
 import { getResource } from "@/lib/resources";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateRecord } from "@/lib/validate";
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
 const STORAGE_PREFIX = "/storage/v1/object/public/media/";
 
@@ -57,9 +58,20 @@ export async function saveRecord(
     if (error) return { ok: false, error: friendly(error.message) };
   }
 
+  // Members: a newly entered personal code is emailed to the member right away.
+  let message: string | undefined;
+  if (def.key === "members" && id) {
+    try {
+      message = await emailMemberCodeIfReady(supabase, id);
+    } catch (err) {
+      console.error("[admin] member code email failed:", err instanceof Error ? err.message : err);
+      message = "Saved, but the code email didn't send. It will be retried tomorrow morning.";
+    }
+  }
+
   refreshSite();
   revalidatePath(`/admin/${def.key}`);
-  return { ok: true };
+  return { ok: true, ...(message ? { message } : {}) };
 }
 
 export async function deleteRecord(resourceKey: string, id: string): Promise<ActionResult> {

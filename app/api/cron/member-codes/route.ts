@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { sendDueMemberCodes } from "@/lib/members";
+import { runDailyMemberJob } from "@/lib/members";
 
-// Runs every morning (see vercel.json). Emails the current member code to new
-// members whose first day has passed, and to every active member when the code
-// is changed in Admin. Vercel sends "Authorization: Bearer <CRON_SECRET>".
+// Runs every morning (see vercel.json). Emails any personal member codes that
+// haven't gone out yet and reminds the owner about members still waiting for a
+// code. Vercel sends "Authorization: Bearer <CRON_SECRET>".
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Not allowed" }, { status: 401 });
   }
   try {
-    const result = await sendDueMemberCodes();
+    const result = await runDailyMemberJob();
     return NextResponse.json({ ok: true, ...result }, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
     console.error("[cron] member codes failed:", err instanceof Error ? err.message : err);

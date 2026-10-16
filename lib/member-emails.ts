@@ -134,7 +134,7 @@ export function welcomeEmail(input: {
   const step2 =
     kind === "pack"
       ? step(2, "We'll set up your hours", "Once your account is ready, our team will add your 10 Open Bay hours and let you know.")
-      : step(2, "Watch for your member code", "Tomorrow we'll email you your member code. You'll enter it at checkout whenever you book an Open Bay. It's good for one month, and we'll email it again each time your membership renews.");
+      : step(2, "Watch for your member code", "We'll set up a member code just for you and email it within 24 hours. You'll enter it at checkout whenever you book an Open Bay. Each code is good for one month, and when your membership renews we'll send you a new one.");
   const step3 =
     kind === "pack"
       ? step(3, "Book and play", "Open Bays fit up to 8 players. Reservations are subject to availability.")
@@ -169,7 +169,7 @@ export function welcomeEmail(input: {
     "",
     kind === "pack"
       ? "2. We'll set up your hours\n   Once your account is ready, our team will add your 10 Open Bay hours and let you know."
-      : "2. Watch for your member code\n   Tomorrow we'll email you your member code. You'll enter it at checkout whenever you book an Open Bay. It's good for one month, and we'll email it again each time your membership renews.",
+      : "2. Watch for your member code\n   We'll set up a member code just for you and email it within 24 hours. You'll enter it at checkout whenever you book an Open Bay. Each code is good for one month, and when your membership renews we'll send you a new one.",
     "",
     kind === "pack"
       ? "3. Book and play\n   Open Bays fit up to 8 players. Reservations are subject to availability."
@@ -185,7 +185,7 @@ export function welcomeEmail(input: {
   return { subject, html: layout(b, "Create your free booking account to start booking.", heading, inner), text };
 }
 
-/** The member discount code, sent a day after joining and whenever the code changes. */
+/** A member's personal code, sent when the owner enters it in Admin (and each month after renewal). */
 export function codeEmail(input: {
   business: EmailBusiness;
   name: string | null;
@@ -213,15 +213,15 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
 
   const inner =
     para(`Hi ${esc(hi)},`) +
-    para("Here's your member code for booking Open Bays at The Clubhouse:") +
+    para("Here's your personal member code for booking Open Bays at The Clubhouse:") +
     codeBox +
     `<table role="presentation" cellpadding="0" cellspacing="0" width="100%">${steps}</table>` +
-    para("Your code is good for one month. Each time your membership renews, we'll email it to you again with the new date. Please keep it to yourself; it's for members only.");
+    para("This code is just for you and is good for one month. When your membership renews, we'll email you a new code. Please don't share it.");
 
   const text = [
     `Hi ${hi},`,
     "",
-    "Here's your member code for booking Open Bays at The Clubhouse:",
+    "Here's your personal member code for booking Open Bays at The Clubhouse:",
     "",
     `    ${code}`,
     until ? `    Valid until ${until}` : "",
@@ -230,7 +230,7 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
     `2. Pick your Open Bay time${days ? ` (${days})` : ""}, up to 2 hours a day.`,
     "3. Enter your code at checkout.",
     "",
-    "Your code is good for one month. Each time your membership renews, we'll email it to you again with the new date. Please keep it to yourself; it's for members only.",
+    "This code is just for you and is good for one month. When your membership renews, we'll email you a new code. Please don't share it.",
     "",
     textFooter(b),
   ]
@@ -259,7 +259,6 @@ export function ownerNewPurchaseEmail(input: {
   phone: string | null;
   golferName: string | null;
   plan: string | null;
-  code: string | null;
   validUntil: string | null;
   stripeUrl: string | null;
 }): BuiltEmail {
@@ -278,10 +277,9 @@ export function ownerNewPurchaseEmail(input: {
         ]
       : [
           `They've been emailed a link to create their YourGolfBooking account with ${input.email}.`,
-          input.code
-            ? `Their member code (${input.code}${until ? `, valid until ${until}` : ""}) goes out automatically tomorrow.`
-            : "No member code is set yet. Add one in Admin → Member discount code and they'll get it automatically.",
-          "Once they're set up in YGB, tick “Set up in YGB” for them in Admin → Members.",
+          `Create a member code for them in YGB${until ? `, valid until ${until}` : ""}, with ${usesHint(plan)}.`,
+          "Type the code into their “Member code” box in Admin → Members & pack buyers and save. They're emailed it right away (we told them to expect it within 24 hours).",
+          "Tick “Set up in YGB” for them once everything's ready.",
         ];
 
   const rows: [string, string | null][] = [
@@ -309,6 +307,82 @@ export function ownerNewPurchaseEmail(input: {
   ].join("\n");
 
   return { subject, html: layout(b, subject, kind === "pack" ? "New 10-hour pack sale" : "New membership", inner, true), text };
+}
+
+/** Suggested YGB use limit for a plan (2 hours a day). */
+export function usesHint(plan: string | null | undefined): string {
+  const days = planDays(plan);
+  if (days === "Monday to Friday") return "a use limit of 46 (2 hours a day, at most 23 weekdays a month)";
+  return "a use limit of 62 (2 hours a day for a 31-day month)";
+}
+
+function ownerList(items: string[]): string {
+  return `<ol style="margin:0 0 18px;padding-left:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.ink}">${items
+    .map((t) => `<li style="margin-bottom:6px">${esc(t)}</li>`)
+    .join("")}</ol>`;
+}
+
+/** A membership renewed: the owner needs to create next month's code. */
+export function ownerRenewalEmail(input: {
+  business: EmailBusiness;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  plan: string | null;
+  validUntil: string | null;
+}): BuiltEmail {
+  const { business: b } = input;
+  const who = input.name || input.email || "A member";
+  const plan = input.plan || "membership";
+  const until = longDate(input.validUntil);
+  const subject = `New code needed: ${who}'s membership renewed`;
+  const todo = [
+    `Create next month's member code for ${who} in YGB${until ? `, valid until ${until}` : ""}, with ${usesHint(plan)}.`,
+    "Type it into their “Member code” box in Admin → Members & pack buyers and save. They're emailed it right away.",
+  ];
+  const rows: [string, string | null][] = [
+    ["Plan", plan],
+    ["Name", input.name],
+    ["Email", input.email],
+    ["Phone", input.phone],
+  ];
+  const inner = para(esc(`${who}'s ${plan} just renewed, so last month's code has finished.`)) + ownerTable(rows) + ownerList(todo);
+  const text = [
+    `${who}'s ${plan} just renewed, so last month's code has finished.`,
+    "",
+    ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`),
+    "",
+    ...todo.map((t, i) => `${i + 1}. ${t}`),
+  ].join("\n");
+  return { subject, html: layout(b, subject, "A member needs next month's code", inner, true), text };
+}
+
+/** Daily nudge: memberships still waiting for their code. */
+export function ownerWaitingEmail(input: {
+  business: EmailBusiness;
+  members: { name: string | null; email: string; plan: string | null; validUntil: string | null }[];
+}): BuiltEmail {
+  const { business: b, members } = input;
+  const n = members.length;
+  const subject = `${n} member${n === 1 ? " is" : "s are"} waiting for a code`;
+  const lines = members.map((m) => {
+    const until = longDate(m.validUntil);
+    return `${m.name || m.email} (${m.plan || "membership"}, ${m.email})${until ? `: code valid until ${until}` : ""}`;
+  });
+  const inner =
+    para("These members don't have a member code yet. Create each one in YGB, then type it into their “Member code” box in Admin → Members & pack buyers. They're emailed it as soon as you save.") +
+    `<ul style="margin:0 0 18px;padding-left:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.ink}">${lines
+      .map((l) => `<li style="margin-bottom:6px">${esc(l)}</li>`)
+      .join("")}</ul>` +
+    para(esc(`Use limits: 62 for Weekday/Weekend members, 46 for Weekday members (2 hours a day).`));
+  const text = [
+    "These members don't have a member code yet. Create each one in YGB, then type it into their “Member code” box in Admin → Members & pack buyers. They're emailed it as soon as you save.",
+    "",
+    ...lines.map((l) => `- ${l}`),
+    "",
+    "Use limits: 62 for Weekday/Weekend members, 46 for Weekday members (2 hours a day).",
+  ].join("\n");
+  return { subject, html: layout(b, subject, "Members waiting for a code", inner, true), text };
 }
 
 /** Tells the owner when a membership is cancelled, ends, or a payment fails. */

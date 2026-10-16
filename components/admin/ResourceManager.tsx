@@ -197,7 +197,7 @@ export function ResourceManager({
       const res = await saveRecord(def.key, def.singleton ? "1" : editing.id, payload);
       if (res.ok) {
         if (!def.singleton) setEditing(null);
-        setNotice(`${def.singular} saved. The website is updated.`);
+        setNotice(res.message ?? `${def.singular} saved. The website is updated.`);
         router.refresh();
       } else {
         setError(res.error);

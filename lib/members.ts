@@ -1,11 +1,14 @@
 import "server-only";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSettings } from "./data";
 import { fromWithName, sendEmail } from "./email";
 import { real, telHref, TIMEZONE } from "./format";
 import {
   codeEmail,
   ownerNewPurchaseEmail,
+  ownerRenewalEmail,
   ownerStatusEmail,
+  ownerWaitingEmail,
   welcomeEmail,
   type EmailBusiness,
 } from "./member-emails";
@@ -13,11 +16,13 @@ import { getPublicClient } from "./supabase/public";
 
 // Handles Stripe events for memberships and 10-hour packs:
 //  - checkout.session.completed -> save the buyer, email them a YourGolfBooking
-//    sign-up link, schedule the member code for 24 hours later, tell the owner.
+//    sign-up link, and tell the owner to create their personal member code.
 //  - customer.subscription.updated/deleted -> keep status in step, tell the
 //    owner about cancellations and failed payments.
-//  - invoice.paid (monthly renewal) -> email the member their code again, good
-//    until their next renewal date.
+//  - invoice.paid (monthly renewal) -> last month's code is finished; remind
+//    the owner to create the next one.
+// Each member has their own code: the owner types it into Admin → Members,
+// and it's emailed straight away (emailMemberCodeIfReady), or by the daily job.
 // Database access goes through secret-protected functions (FORM_SECRET).
 
 /** Stripe product IDs -> plan names (live and sandbox), for plan switches. */
@@ -216,7 +221,6 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
         phone,
         golferName,
         plan,
-        code: saved.code,
         validUntil,
         stripeUrl: stripeCustomerUrl(session.customer, event.livemode),
       });
@@ -227,33 +231,6 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
         idempotencyKey: `owner-new-${session.id}`,
       });
       if (!ownerSent.ok) console.error("[members] owner email failed:", ownerSent.error);
-    }
-  }
-
-  // 2. Member code, scheduled for 24 hours from now. If no code is set yet (or
-  //    scheduling fails), the daily job sends it once one is available.
-  if (kind === "membership" && saved.code && !saved.code_sent) {
-    const at = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const msg = codeEmail({
-      business: ctx.business,
-      name,
-      plan,
-      code: saved.code,
-      validUntil,
-      bookingUrl: ctx.business.bookingUrl,
-    });
-    const scheduled = await sendEmail({
-      to: email,
-      ...msg,
-      from: ctx.from,
-      replyTo: ctx.replyTo,
-      scheduledAt: at.toISOString(),
-      idempotencyKey: `code-first-${session.id}`,
-    });
-    if (scheduled.ok) {
-      await rpc("member_mark_code_sent", { p_id: saved.id, p_code: saved.code, p_at: at.toISOString() });
-    } else {
-      console.error("[members] scheduling the code email failed (the daily job will retry):", scheduled.error);
     }
   }
 }
@@ -335,13 +312,14 @@ interface RenewalResult {
   id?: string;
   name?: string | null;
   email?: string | null;
+  phone?: string | null;
   plan?: string | null;
   status?: string;
   renews_on?: string | null;
-  code?: string | null;
+  notify_email?: string | null;
 }
 
-/** A membership renewed: email the member their code again with the new month's date. */
+/** A membership renewed: last month's code is finished, so remind the owner to create the next one. */
 async function handleInvoicePaid(inv: Invoice): Promise<void> {
   if (inv.billing_reason !== "subscription_cycle") return;
   const line = inv.lines?.data?.[0];
@@ -357,26 +335,24 @@ async function handleInvoicePaid(inv: Invoice): Promise<void> {
     p_subscription_id: subscriptionId,
     p_renews_on: isoDate(line?.period?.end ?? null),
   });
-  if (!renewal.found || !renewal.id || !renewal.email || !renewal.code || renewal.status !== "active") return;
+  if (!renewal.found || renewal.status !== "active" || !renewal.notify_email) return;
 
   const ctx = await emailContext();
-  const msg = codeEmail({
+  const msg = ownerRenewalEmail({
     business: ctx.business,
     name: renewal.name ?? null,
+    email: renewal.email ?? null,
+    phone: renewal.phone ?? null,
     plan: renewal.plan ?? null,
-    code: renewal.code,
     validUntil: renewal.renews_on ?? null,
-    bookingUrl: ctx.business.bookingUrl,
   });
   const sent = await sendEmail({
-    to: renewal.email,
+    to: renewal.notify_email,
     ...msg,
-    from: ctx.from,
-    replyTo: ctx.replyTo,
-    idempotencyKey: `code-renew-${inv.id}`,
+    ...(renewal.email ? { replyTo: renewal.email } : {}),
+    idempotencyKey: `renewal-${inv.id}`,
   });
-  if (!sent.ok) throw new Error(`Renewal code email failed: ${sent.error}`);
-  await rpc("member_mark_code_sent", { p_id: renewal.id, p_code: renewal.code });
+  if (!sent.ok) console.error("[members] renewal reminder failed:", sent.error);
 }
 
 /** Routes a verified Stripe event. Unknown event types are ignored. */
@@ -400,35 +376,38 @@ export async function handleStripeEvent(event: StripeEvent): Promise<void> {
   }
 }
 
+interface MemberRef {
+  id: string;
+  name: string | null;
+  email: string;
+  plan: string | null;
+  renews_on: string | null;
+  created_at: string | null;
+}
+
 interface CodeQueue {
-  code: string | null;
-  members: {
-    id: string;
-    name: string | null;
-    email: string;
-    plan: string | null;
-    renews_on: string | null;
-    created_at: string | null;
-  }[];
+  notify_email: string | null;
+  to_send: (MemberRef & { code: string })[];
+  waiting: MemberRef[];
 }
 
 /**
- * Emails the current member code to every active member who hasn't had it yet
- * (new members after their first day, and everyone when the code changes).
+ * Runs every morning: emails any personal codes that haven't gone out yet
+ * (e.g. entered directly in the database), and reminds the owner about
+ * members still waiting for a code.
  */
-export async function sendDueMemberCodes(): Promise<{ sent: number; failed: number; code: boolean }> {
+export async function runDailyMemberJob(): Promise<{ sent: number; failed: number; waiting: number }> {
   const queue = await rpc<CodeQueue>("member_code_queue", {});
-  if (!queue.code || queue.members.length === 0) return { sent: 0, failed: 0, code: !!queue.code };
-
   const ctx = await emailContext();
   let sent = 0;
   let failed = 0;
-  for (const m of queue.members) {
+
+  for (const m of queue.to_send) {
     const msg = codeEmail({
       business: ctx.business,
       name: m.name,
       plan: m.plan,
-      code: queue.code,
+      code: m.code,
       validUntil: memberValidUntil(m.renews_on, m.created_at),
       bookingUrl: ctx.business.bookingUrl,
     });
@@ -437,15 +416,92 @@ export async function sendDueMemberCodes(): Promise<{ sent: number; failed: numb
       ...msg,
       from: ctx.from,
       replyTo: ctx.replyTo,
-      idempotencyKey: `code-${m.id}-${queue.code}`,
+      idempotencyKey: `code-${m.id}-${m.code}-${memberValidUntil(m.renews_on, m.created_at) ?? ""}`,
     });
     if (res.ok) {
-      await rpc("member_mark_code_sent", { p_id: m.id, p_code: queue.code });
+      await rpc("member_mark_code_sent", { p_id: m.id, p_code: m.code });
       sent++;
     } else {
       console.error("[members] code email failed:", res.error);
       failed++;
     }
   }
-  return { sent, failed, code: true };
+
+  if (queue.waiting.length > 0 && queue.notify_email) {
+    const msg = ownerWaitingEmail({
+      business: ctx.business,
+      members: queue.waiting.map((m) => ({
+        name: m.name,
+        email: m.email,
+        plan: m.plan,
+        validUntil: memberValidUntil(m.renews_on, m.created_at),
+      })),
+    });
+    const res = await sendEmail({ to: queue.notify_email, ...msg });
+    if (!res.ok) console.error("[members] waiting reminder failed:", res.error);
+  }
+
+  return { sent, failed, waiting: queue.waiting.length };
+}
+
+interface MemberRow {
+  id: string;
+  kind: string;
+  name: string | null;
+  email: string;
+  plan: string | null;
+  status: string;
+  member_code: string | null;
+  code_sent: string | null;
+  needs_new_code: boolean;
+  renews_on: string | null;
+  created_at: string | null;
+}
+
+/**
+ * Called after the owner saves a member in Admin (with their signed-in admin
+ * client): if the member has a new code that hasn't been emailed for this
+ * period, email it now. Returns a short message for the Admin screen.
+ */
+export async function emailMemberCodeIfReady(client: SupabaseClient, id: string): Promise<string | undefined> {
+  const { data, error } = await client
+    .from("members")
+    .select("id, kind, name, email, plan, status, member_code, code_sent, needs_new_code, renews_on, created_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  const m = data as MemberRow;
+  const code = m.member_code?.trim();
+  if (!code || m.kind !== "membership") return undefined;
+  if (!m.needs_new_code && code === m.code_sent) return undefined;
+  if (m.status !== "active" && m.status !== "ending") {
+    return "Saved. The code wasn't emailed because this membership isn't active.";
+  }
+
+  const ctx = await emailContext();
+  const validUntil = memberValidUntil(m.renews_on, m.created_at);
+  const msg = codeEmail({
+    business: ctx.business,
+    name: m.name,
+    plan: m.plan,
+    code,
+    validUntil,
+    bookingUrl: ctx.business.bookingUrl,
+  });
+  const res = await sendEmail({
+    to: m.email,
+    ...msg,
+    from: ctx.from,
+    replyTo: ctx.replyTo,
+    idempotencyKey: `code-${m.id}-${code}-${validUntil ?? ""}`,
+  });
+  if (!res.ok) {
+    console.error("[members] code email failed:", res.error);
+    return "Saved, but the code email didn't send. It will be retried tomorrow morning.";
+  }
+  await client
+    .from("members")
+    .update({ code_sent: code, code_sent_at: new Date().toISOString(), needs_new_code: false, updated_at: new Date().toISOString() })
+    .eq("id", m.id);
+  return `Saved. ${code} was emailed to ${m.email}.`;
 }

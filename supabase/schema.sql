@@ -1145,3 +1145,108 @@ $$;
 
 revoke all on function public.member_record_renewal(text, text, date) from public;
 grant execute on function public.member_record_renewal(text, text, date) to anon, authenticated;
+
+-- Personal member codes: each member has their own code (entered by the owner
+-- in Admin → Members & pack buyers and emailed straight away). A renewal clears
+-- the code and flags that next month's code is needed.
+alter table public.members add column if not exists member_code text;
+alter table public.members add column if not exists needs_new_code boolean not null default true;
+
+create or replace function public.member_code_queue(p_secret text)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_notify text;
+begin
+  perform private.require_form_secret(p_secret);
+  select inquiry_email into v_notify from public.site_settings where id = 1;
+
+  return json_build_object(
+    'notify_email', v_notify,
+    'to_send', coalesce((
+      select json_agg(json_build_object(
+               'id', m.id, 'name', m.name, 'email', m.email, 'plan', m.plan,
+               'code', trim(m.member_code), 'renews_on', m.renews_on, 'created_at', m.created_at
+             ) order by m.created_at)
+        from public.members m
+       where m.kind = 'membership'
+         and m.status in ('active', 'ending')
+         and nullif(trim(m.member_code), '') is not null
+         and (m.needs_new_code or trim(m.member_code) is distinct from m.code_sent)
+    ), '[]'::json),
+    'waiting', coalesce((
+      select json_agg(json_build_object(
+               'id', m.id, 'name', m.name, 'email', m.email, 'plan', m.plan,
+               'renews_on', m.renews_on, 'created_at', m.created_at
+             ) order by m.created_at)
+        from public.members m
+       where m.kind = 'membership'
+         and m.status = 'active'
+         and nullif(trim(m.member_code), '') is null
+         and m.created_at < now() - interval '12 hours'
+    ), '[]'::json)
+  );
+end;
+$$;
+
+create or replace function public.member_mark_code_sent(p_secret text, p_id uuid, p_code text, p_at timestamptz default now())
+returns void
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  perform private.require_form_secret(p_secret);
+  update public.members
+     set code_sent = p_code, code_sent_at = p_at, needs_new_code = false, updated_at = now()
+   where id = p_id;
+end;
+$$;
+
+create or replace function public.member_record_renewal(
+  p_secret          text,
+  p_subscription_id text,
+  p_renews_on       date
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_row    public.members;
+  v_notify text;
+begin
+  perform private.require_form_secret(p_secret);
+
+  update public.members
+     set renews_on = coalesce(p_renews_on, renews_on),
+         status = case when status = 'past_due' then 'active' else status end,
+         member_code = null,
+         needs_new_code = true,
+         updated_at = now()
+   where stripe_subscription_id = p_subscription_id
+     and kind = 'membership'
+  returning * into v_row;
+
+  if not found then
+    return json_build_object('found', false);
+  end if;
+
+  select inquiry_email into v_notify from public.site_settings where id = 1;
+  return json_build_object(
+    'found', true,
+    'id', v_row.id,
+    'name', v_row.name,
+    'email', v_row.email,
+    'phone', v_row.phone,
+    'plan', v_row.plan,
+    'status', v_row.status,
+    'renews_on', v_row.renews_on,
+    'notify_email', v_notify
+  );
+end;
+$$;

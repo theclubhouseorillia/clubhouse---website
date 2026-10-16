@@ -73,9 +73,9 @@ export default async function MembershipsPage() {
       email: { from: business, subject: "Welcome to The Clubhouse! Set up your booking account" },
     },
     {
-      when: "24 hours later",
-      title: "Your member code",
-      body: "Your member code arrives the next day. It's good for one month from the day you bought your membership.",
+      when: "Within 24 hours",
+      title: "Your personal member code",
+      body: "We set up a code just for you and email it within 24 hours. It's good for one month from the day you bought your membership.",
       email: { from: business, subject: "Your Clubhouse member code" },
     },
     {
@@ -103,8 +103,8 @@ export default async function MembershipsPage() {
     },
     {
       when: "Every month",
-      title: "Your code, renewed",
-      body: "Each time your membership renews, we email your member code again with its new date. Need to update your card or cancel? Use “Manage my membership” any time.",
+      title: "A new code each month",
+      body: "Each time your membership renews, we email you a new member code for the month ahead. Need to update your card or cancel? Use “Manage my membership” any time.",
       email: { from: business, subject: "Your Clubhouse member code" },
     },
   ];
