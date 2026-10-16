@@ -7,6 +7,7 @@ import { EventCard } from "@/components/site/EventCard";
 import { GameRow } from "@/components/site/GameList";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
+import { GiftCardFeature } from "@/components/site/GiftCardFeature";
 import { InstagramStrip } from "@/components/site/InstagramStrip";
 import { MembershipFeature } from "@/components/site/MembershipFeature";
 import { OpenToday } from "@/components/site/OpenToday";
@@ -104,7 +105,8 @@ export default async function HomePage() {
   const slogan = settings.show_slogan ? settings.slogan?.trim() || null : null;
   // The weather card takes the third spot in the "What's on" row when the forecast is available.
   const upcoming = homepageEvents(events, weather ? 2 : 3);
-  // Membership plans with a flyer (Admin → Memberships & hour packs → Homepage flyer) are featured below the events.
+  // Membership plans with a flyer (Admin → Memberships & hour packs → Homepage flyer) are featured below the events,
+  // with gift cards beside them on the right.
   const flyerPlans = membershipPlans.filter((p) => real(p.flyer_url));
   const heroPhotos = photos.hero_photos.length
     ? photos.hero_photos
@@ -255,13 +257,18 @@ export default async function HomePage() {
               </Reveal>
             )}
           </div>
-          {flyerPlans.length > 0 && (
-            <div className="mt-6 flex flex-col gap-6">
-              {flyerPlans.map((plan) => (
-                <Reveal key={plan.id}>
+          {(flyerPlans.length > 0 || giftCards.enabled) && (
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              {flyerPlans.map((plan, i) => (
+                <Reveal key={plan.id} delay={i * 90}>
                   <MembershipFeature plan={plan} />
                 </Reveal>
               ))}
+              {giftCards.enabled && (
+                <Reveal delay={flyerPlans.length * 90}>
+                  <GiftCardFeature giftCards={giftCards} />
+                </Reveal>
+              )}
             </div>
           )}
         </div>
