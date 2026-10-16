@@ -396,6 +396,63 @@ export function ownerWaitingEmail(input: {
  * their mind (the Stripe portal lets them renew until the paid month ends) and
  * an invitation to rejoin.
  */
+/**
+ * Sent when someone joins the email list from the website footer. Includes the
+ * business's mailing address and how to unsubscribe (CASL).
+ */
+export function newsletterWelcomeEmail(input: {
+  business: EmailBusiness;
+  firstName: string | null;
+  address: string | null;
+}): BuiltEmail {
+  const { business: b } = input;
+  const hi = firstName(input.firstName);
+  const subject = hi === "there" ? `You're on the list at ${b.name}` : `You're on the list, ${hi}`;
+  const links: [string, string][] = [
+    ["Book a bay", b.bookingUrl],
+    ["See what's on", `${b.siteUrl}/events`],
+    ["Memberships", `${b.siteUrl}/memberships`],
+    ["Gift cards", `${b.siteUrl}/gift-cards`],
+  ];
+  const linkList = links
+    .map(
+      ([label, href]) =>
+        `<li style="margin:0 0 6px"><a href="${esc(href)}" style="color:${C.forest};font-weight:bold">${esc(label)}</a></li>`,
+    )
+    .join("");
+  const legal = `You're getting this because you signed up at ${b.siteUrl.replace(/^https?:\/\//, "")}. Don't want these emails? Reply with “unsubscribe” and we'll take you off the list.`;
+
+  const inner =
+    para(`Hi ${esc(hi)},`) +
+    para(
+      `Thanks for joining our email list. We'll keep you posted on leagues, events, specials and offers at ${esc(b.name)}, and we promise not to flood your inbox.`,
+    ) +
+    para("While you're here:") +
+    `<ul style="margin:0 0 16px;padding:0 0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.ink}">${linkList}</ul>` +
+    button(b.bookingUrl, "Book a bay") +
+    `<p style="margin:18px 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.muted}">${esc(legal)}${
+      input.address ? `<br>${esc(b.name)}, ${esc(input.address)}` : ""
+    }</p>`;
+
+  const text = [
+    `Hi ${hi},`,
+    "",
+    `Thanks for joining our email list. We'll keep you posted on leagues, events, specials and offers at ${b.name}, and we promise not to flood your inbox.`,
+    "",
+    "While you're here:",
+    ...links.map(([label, href]) => `- ${label}: ${href}`),
+    "",
+    legal,
+    input.address ? `${b.name}, ${input.address}` : "",
+    "",
+    textFooter(b),
+  ]
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
+
+  return { subject, html: layout(b, "Thanks for signing up. Here's what to expect.", "You're on the list", inner), text };
+}
+
 export function goodbyeEmail(input: {
   business: EmailBusiness;
   name: string | null;

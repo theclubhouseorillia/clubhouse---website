@@ -1284,3 +1284,98 @@ grant execute on function public.members_sheet(text) to anon, authenticated;
 -- Homepage flyer for a membership plan: plans with a flyer are featured in
 -- "What's happening at The Clubhouse" on the homepage.
 alter table public.membership_plans add column if not exists flyer_url text;
+
+-- =============================================================================
+-- Email newsletter sign-ups (the "Stay in the loop" box in the website footer).
+-- Written only by the website server (FORM_SECRET); readable only by admins.
+-- consent_text keeps the exact wording each person agreed to (CASL record).
+-- =============================================================================
+create table if not exists public.newsletter_signups (
+  id            uuid primary key default gen_random_uuid(),
+  email         text not null,
+  first_name    text,
+  source        text,
+  consent_text  text not null,
+  ip_hash       text,
+  welcome_sent  boolean not null default false,
+  added_to_list boolean not null default false,
+  unsubscribed  boolean not null default false,
+  notes         text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create unique index if not exists newsletter_signups_email_key on public.newsletter_signups (lower(email));
+create index if not exists newsletter_signups_ip_idx on public.newsletter_signups (ip_hash, updated_at);
+create index if not exists newsletter_signups_created_idx on public.newsletter_signups (created_at desc);
+
+alter table public.newsletter_signups enable row level security;
+drop policy if exists "Admins manage" on public.newsletter_signups;
+create policy "Admins manage" on public.newsletter_signups
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+revoke all on public.newsletter_signups from anon;
+grant select, update, delete on public.newsletter_signups to authenticated;
+
+-- Saves a sign-up (or refreshes an existing one, e.g. someone re-subscribing).
+-- Rate limit: 5 per visitor per 10 minutes.
+create or replace function public.newsletter_subscribe(
+  p_secret       text,
+  p_email        text,
+  p_first_name   text default null,
+  p_source       text default null,
+  p_consent_text text default null,
+  p_ip_hash      text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_recent int;
+  v_id     uuid;
+  v_new    boolean;
+  v_sent   boolean;
+begin
+  perform private.require_form_secret(p_secret);
+
+  if p_ip_hash is not null then
+    select count(*) into v_recent
+    from public.newsletter_signups
+    where ip_hash = p_ip_hash and updated_at > now() - interval '10 minutes';
+    if v_recent >= 5 then
+      return json_build_object('status', 'rate_limited');
+    end if;
+  end if;
+
+  insert into public.newsletter_signups (email, first_name, source, consent_text, ip_hash)
+  values (lower(trim(p_email)), nullif(trim(p_first_name), ''), nullif(trim(p_source), ''),
+          coalesce(nullif(trim(p_consent_text), ''), 'Signed up on the website'), p_ip_hash)
+  on conflict ((lower(email))) do update
+    set first_name   = coalesce(excluded.first_name, public.newsletter_signups.first_name),
+        source       = coalesce(excluded.source, public.newsletter_signups.source),
+        consent_text = excluded.consent_text,
+        ip_hash      = excluded.ip_hash,
+        unsubscribed = false,
+        updated_at   = now()
+  returning id, (xmax = 0), welcome_sent into v_id, v_new, v_sent;
+
+  return json_build_object('status', 'ok', 'id', v_id, 'is_new', v_new, 'welcome_sent', v_sent);
+end;
+$$;
+
+create or replace function public.newsletter_mark_welcomed(p_secret text, p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  perform private.require_form_secret(p_secret);
+  update public.newsletter_signups set welcome_sent = true where id = p_id;
+end;
+$$;
+
+revoke all on function public.newsletter_subscribe(text, text, text, text, text, text) from public;
+grant execute on function public.newsletter_subscribe(text, text, text, text, text, text) to anon, authenticated;
+revoke all on function public.newsletter_mark_welcomed(text, uuid) from public;
+grant execute on function public.newsletter_mark_welcomed(text, uuid) to anon, authenticated;

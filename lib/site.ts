@@ -80,6 +80,7 @@ export const NAV_LINKS: readonly NavLink[] = [
   { href: "/contact", label: "Contact", short: "Contact", desktop: true },
   { href: "/#owners", label: "Meet the Owners", short: "The Owners", desktop: true },
   { href: "/sports", label: "Watch the Game", short: "Sports", desktop: false },
+  { href: "/corporate-events", label: "Corporate Events & Team Building", short: "Corporate", desktop: false },
   { href: "/courses", label: "Courses You Can Play", short: "Courses", desktop: false },
   { href: "/memberships", label: "Memberships & Hour Packs", short: "Memberships", desktop: false },
   { href: "/gift-cards", label: "Gift Cards", short: "Gift Cards", desktop: false },

@@ -78,6 +78,8 @@ export interface ResourceDef {
   allowCreate?: boolean;
   allowDelete?: boolean;
   touchUpdatedAt?: boolean;
+  /** A download button in the page header (e.g. a spreadsheet export). */
+  download?: { href: string; label: string };
 }
 
 const sortOrder: FieldDef = {
@@ -1069,6 +1071,53 @@ export const RESOURCES: ResourceDef[] = [
       { name: "message", label: "Message", type: "textarea", readOnly: true, wide: true },
       { name: "email_sent", label: "Email notification sent", type: "boolean", readOnly: true, short: "Emailed" },
       { name: "handled", label: "Mark as handled", type: "boolean", default: false },
+    ],
+  },
+  {
+    key: "newsletter",
+    table: "newsletter_signups",
+    title: "Email sign-ups",
+    singular: "Sign-up",
+    description:
+      "People who joined your email list with the “Stay in the loop” box at the bottom of every page. Each one gets a welcome email automatically. Before you send a newsletter, click “Download for Resend” and import the file into your email list, then mark them “On email list”.",
+    group: "Inbox",
+    allowCreate: false,
+    orderBy: [{ column: "created_at", ascending: false }],
+    titleField: "email",
+    summaryFields: ["first_name", "created_at", "source"],
+    toggleField: "added_to_list",
+    toggleOn: "On email list",
+    toggleOff: "To add",
+    download: { href: "/admin/newsletter-export", label: "Download for Resend" },
+    fields: [
+      { name: "created_at", label: "Signed up", type: "datetime", readOnly: true, short: "Signed up" },
+      { name: "email", label: "Email", type: "email", readOnly: true },
+      { name: "first_name", label: "First name", type: "text", readOnly: true, short: "" },
+      { name: "source", label: "Signed up on page", type: "text", readOnly: true, short: "Page" },
+      {
+        name: "consent_text",
+        label: "What they agreed to",
+        type: "textarea",
+        readOnly: true,
+        wide: true,
+        help: "The exact wording of the box they ticked. Keep this as your record of consent.",
+      },
+      { name: "welcome_sent", label: "Welcome email sent", type: "boolean", readOnly: true },
+      {
+        name: "added_to_list",
+        label: "On email list",
+        type: "boolean",
+        default: false,
+        help: "Tick once you've imported them into your email list in Resend.",
+      },
+      {
+        name: "unsubscribed",
+        label: "Unsubscribed",
+        type: "boolean",
+        default: false,
+        help: "Tick if they ask to stop getting emails. They're left out of the download.",
+      },
+      { name: "notes", label: "Notes", type: "textarea", max: 2000, wide: true },
     ],
   },
 ];

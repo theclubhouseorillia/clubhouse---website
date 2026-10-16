@@ -37,6 +37,8 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
   };
 
   const kind = formData.get("kind") === "event" ? "event" : "contact";
+  // Corporate events page inquiries are private event inquiries, labelled so they stand out.
+  const corporate = kind === "event" && formData.get("source") === "corporate";
 
   // 1. Spam traps. Bots that fill the hidden field get a fake "success".
   if (str(formData, "company_website", 200)) return success;
@@ -105,7 +107,7 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
       p_preferred_date: kind === "event" && preferredDate ? preferredDate : null,
       p_guest_count: guestCount,
       p_package: kind === "event" && pkg ? pkg : null,
-      p_message: message || null,
+      p_message: corporate ? `[Corporate event] ${message}`.trim() : message || null,
       p_ip_hash: ipHash,
     });
     if (error) {
@@ -126,7 +128,7 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
   let emailed = false;
   if (recipient) {
     const rows: [string, string][] = [
-      ["Type", kind === "event" ? "Private event inquiry" : "Contact message"],
+      ["Type", corporate ? "Corporate event / team building inquiry" : kind === "event" ? "Private event inquiry" : "Contact message"],
       ["Name", name],
       ["Email", email],
       ["Phone", phone || "Not provided"],
@@ -138,8 +140,11 @@ export async function submitInquiry(prev: InquiryState, formData: FormData): Pro
     }
     rows.push(["Message", message || "—"]);
 
-    const subject =
-      kind === "event" ? `New private event inquiry from ${name}` : `New website message from ${name}`;
+    const subject = corporate
+      ? `New corporate event inquiry from ${name}`
+      : kind === "event"
+        ? `New private event inquiry from ${name}`
+        : `New website message from ${name}`;
     const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#111">
 <h2 style="margin:0 0 16px">${escapeHtml(subject)}</h2>
 <table cellpadding="8" style="border-collapse:collapse">${rows

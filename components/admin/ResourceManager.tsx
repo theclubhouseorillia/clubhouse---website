@@ -252,6 +252,11 @@ export function ResourceManager({
             + Add {def.singular.toLowerCase()}
           </button>
         )}
+        {def.download && (
+          <a href={def.download.href} className="btn btn-outline min-h-11 shrink-0" download>
+            {def.download.label}
+          </a>
+        )}
       </header>
 
       {loadError && (

@@ -106,7 +106,8 @@ function formatPhone(raw: string | null | undefined): string | null {
   return ten.length === 10 ? `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}` : v;
 }
 
-async function emailContext() {
+/** Business details and sender address for customer emails. */
+export async function emailContext() {
   const s = await getSettings();
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || real(s.website_url) || "https://theclubhouseorillia.ca").replace(/\/+$/, "");
   const bookingUrl = real(s.booking_url) ?? `${siteUrl}/contact`;

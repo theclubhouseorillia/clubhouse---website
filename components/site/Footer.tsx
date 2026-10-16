@@ -4,6 +4,7 @@ import { real, telHref } from "@/lib/format";
 import { groupHours } from "@/lib/hours";
 import { addressLines, directionsUrl, navLinks, socialLinks, type NavVisibility } from "@/lib/site";
 import type { HoursRow, Settings } from "@/lib/types";
+import { NewsletterSignup } from "./NewsletterSignup";
 
 export function Footer({
   settings,
@@ -23,6 +24,7 @@ export function Footer({
 
   return (
     <footer className="border-t border-line bg-coal pb-24 md:pb-0">
+      <NewsletterSignup businessName={settings.business_name} />
       <div className="container-site grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:py-20">
         <div className="flex flex-col gap-5">
           <p className="font-display text-3xl font-semibold uppercase tracking-[0.06em] text-cream">{settings.business_name}</p>

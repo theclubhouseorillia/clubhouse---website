@@ -48,9 +48,14 @@ function Field({
 export function InquiryForm({
   kind,
   packages = [],
+  source,
+  messagePlaceholder,
 }: {
   kind: "event" | "contact";
   packages?: string[];
+  /** Which page sent it (e.g. "corporate"), shown in the notification email. */
+  source?: string;
+  messagePlaceholder?: string;
 }) {
   const [state, formAction, pending] = useActionState(submitInquiry, initialState);
   const [startedAt, setStartedAt] = useState("");
@@ -87,6 +92,7 @@ export function InquiryForm({
   return (
     <form ref={formRef} onSubmit={onSubmit} noValidate className="relative flex flex-col gap-5">
       <input type="hidden" name="kind" value={kind} />
+      {source && <input type="hidden" name="source" value={source} />}
       <input type="hidden" name="started_at" value={startedAt} />
       {/* Honeypot: hidden from people, irresistible to bots. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
@@ -190,7 +196,9 @@ export function InquiryForm({
           maxLength={4000}
           required={kind === "contact"}
           className="field resize-y"
-          placeholder={kind === "event" ? "Occasion, timing, food and drink needs, anything else we should know" : ""}
+          placeholder={
+            messagePlaceholder ?? (kind === "event" ? "Occasion, timing, food and drink needs, anything else we should know" : "")
+          }
           aria-invalid={invalid("message")}
           aria-describedby={describe("message")}
         />

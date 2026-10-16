@@ -17,11 +17,12 @@ A fast, mobile-friendly website with a password-protected admin dashboard. Once 
 | Winter League (`/league`) | League details, season and schedule, pricing options and a "Sign up now" button (your online sign-up link, or an email if no link is set). Can be switched off in the dashboard |
 | Events (`/events`) | Weekly nights, upcoming one-off events and past events. Past events move to the bottom automatically |
 | Private Events (`/private-events`) | Packages and an inquiry form (name, email, phone, date, guests, package, details) |
+| Corporate Events (`/corporate-events`) | Team-building, holiday parties and client nights: why it works for work groups, the group packages (kids' parties left out), a "book your date early" note, gift cards for staff, and a quote form. Its inquiries arrive labelled "Corporate event" |
 | Food & Drink (`/menu`) | Menu by category with prices, descriptions and optional photos |
 | Gallery (`/gallery`) | Photo grid with category filters and a full-screen viewer (swipe, arrow keys, Esc) |
 | Contact (`/contact`) | Address, click-to-call, hours, Google Map, contact form, social links |
 
-On every page: a rotating **announcement banner** at the very top (with arrows), a sticky menu, and a **Book a Simulator** bar pinned to the bottom of phone screens.
+On every page: a rotating **announcement banner** at the very top (with arrows), a sticky menu, a **Book a Simulator** bar pinned to the bottom of phone screens, and a **"Stay in the loop" email sign-up box** at the top of the footer.
 
 **Admin dashboard (`/admin`)**
 
@@ -54,6 +55,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Weekly hours, plus holiday and special hours
 - Photo gallery uploads
 - Inbox of every form submission (also emailed to you)
+- Email sign-ups (Admin → **Email sign-ups**): everyone who joins your list from the footer box, with the exact consent wording they ticked (CASL record). Each gets a welcome email automatically (with your address and how to unsubscribe). **Download for Resend** gives a CSV (email, first name) to import into your Resend contact list before a newsletter; people marked Unsubscribed are left out. The website's Resend key is send-only, so sign-ups aren't added to Resend automatically. Note: Resend's free plan holds up to 1,000 marketing contacts
 - A setup checklist on the Overview page
 
 **Under the hood:** secure logins, a real database with row-level security, photo uploads that are automatically resized, form validation, spam protection (hidden honeypot field, timing check, rate limiting, optional Cloudflare Turnstile), SEO metadata, a sitemap, structured data for Google, accessibility features and error handling.
@@ -167,6 +169,7 @@ Bookmark `/admin`. There's deliberately no admin link on the public website.
 - **Booking buttons:** every *Book a Simulator* button uses the booking link in Business settings. If it's empty, the buttons call your phone number.
 - **Hours:** edit your regular week under *Weekly hours*. Add holidays under *Holiday & special hours*; they show automatically until the date passes.
 - **Inquiries:** everything from the website forms is saved here, even if an email fails. Mark items as handled to keep track.
+- **Email sign-ups:** before each newsletter, download the sign-ups, import them into your Resend list, then tick *On email list*. If someone replies "unsubscribe", tick *Unsubscribed* here and unsubscribe them in Resend too.
 
 ---
 

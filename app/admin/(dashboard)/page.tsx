@@ -13,7 +13,7 @@ export default async function AdminOverview() {
   const { supabase } = await requireAdmin();
   const today = todayISO();
 
-  const [settingsRes, announcementsRes, eventsRes, newInquiriesRes, recentRes, galleryRes, placeholderMenuRes, homepageRes] =
+  const [settingsRes, announcementsRes, eventsRes, newInquiriesRes, recentRes, galleryRes, placeholderMenuRes, homepageRes, signupsRes] =
     await Promise.all([
       supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),
       supabase.from("announcements").select("id", { count: "exact", head: true }).eq("enabled", true),
@@ -27,6 +27,11 @@ export default async function AdminOverview() {
       supabase.from("gallery_images").select("id", { count: "exact", head: true }),
       supabase.from("menu_settings").select("pdf_url").eq("id", 1).maybeSingle(),
       supabase.from("homepage_photos").select("hero_photos").eq("id", 1).maybeSingle(),
+      supabase
+        .from("newsletter_signups")
+        .select("id", { count: "exact", head: true })
+        .eq("added_to_list", false)
+        .eq("unsubscribed", false),
     ]);
 
   const s = (settingsRes.data ?? {}) as Record<string, unknown>;
@@ -75,7 +80,7 @@ export default async function AdminOverview() {
     { label: "New inquiries", value: newInquiriesRes.count ?? 0, href: "/admin/inquiries" },
     { label: "Upcoming & weekly events", value: eventsRes.count ?? 0, href: "/admin/events" },
     { label: "Announcements on", value: announcementsRes.count ?? 0, href: "/admin/announcements" },
-    { label: "Gallery photos", value: galleryRes.count ?? 0, href: "/admin/gallery" },
+    { label: "Email sign-ups to add", value: signupsRes.count ?? 0, href: "/admin/newsletter" },
   ];
 
   const recent = (recentRes.data ?? []) as { id: string; kind: string; name: string; created_at: string; handled: boolean }[];

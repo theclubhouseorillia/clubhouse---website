@@ -69,6 +69,12 @@ export default async function PrivateEventsPage() {
             ))}
           </div>
           {real(settings.packages_note) && <p className="mt-8 text-sm text-mist">{settings.packages_note}</p>}
+          <p className="mt-6 text-mist">
+            Planning a holiday party, team outing or client night?{" "}
+            <Link href="/corporate-events" className="link-gold">
+              See corporate events & team building
+            </Link>
+          </p>
         </div>
       </section>
 
