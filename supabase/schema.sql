@@ -1280,3 +1280,7 @@ revoke all on function public.members_sheet(text) from public;
 grant execute on function public.members_sheet(text) to anon, authenticated;
 -- (member_sync_subscription also sets canceled_on when a membership is cancelled
 -- and clears it if the member resumes; see the latest definition in the database.)
+
+-- Homepage flyer for a membership plan: plans with a flyer are featured in
+-- "What's happening at The Clubhouse" on the homepage.
+alter table public.membership_plans add column if not exists flyer_url text;

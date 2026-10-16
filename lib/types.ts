@@ -97,6 +97,8 @@ export interface EventPackage {
   /** Memberships only: online checkout link (e.g. a Stripe Payment Link) and its button text. */
   buy_url?: string | null;
   buy_label?: string | null;
+  /** Memberships only: optional flyer, which also features the plan in "What's happening" on the homepage. */
+  flyer_url?: string | null;
 }
 
 export interface MenuItem {

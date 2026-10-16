@@ -8,6 +8,7 @@ import { GameRow } from "@/components/site/GameList";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { HoursList } from "@/components/site/HoursList";
 import { InstagramStrip } from "@/components/site/InstagramStrip";
+import { MembershipFeature } from "@/components/site/MembershipFeature";
 import { OpenToday } from "@/components/site/OpenToday";
 import { PackageCard } from "@/components/site/PackageCard";
 import { PhotoSlot } from "@/components/site/PhotoSlot";
@@ -103,6 +104,8 @@ export default async function HomePage() {
   const slogan = settings.show_slogan ? settings.slogan?.trim() || null : null;
   // The weather card takes the third spot in the "What's on" row when the forecast is available.
   const upcoming = homepageEvents(events, weather ? 2 : 3);
+  // Membership plans with a flyer (Admin → Memberships & hour packs → Homepage flyer) are featured below the events.
+  const flyerPlans = membershipPlans.filter((p) => real(p.flyer_url));
   const heroPhotos = photos.hero_photos.length
     ? photos.hero_photos
     : settings.hero_image_url
@@ -252,6 +255,15 @@ export default async function HomePage() {
               </Reveal>
             )}
           </div>
+          {flyerPlans.length > 0 && (
+            <div className="mt-6 flex flex-col gap-6">
+              {flyerPlans.map((plan) => (
+                <Reveal key={plan.id}>
+                  <MembershipFeature plan={plan} />
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

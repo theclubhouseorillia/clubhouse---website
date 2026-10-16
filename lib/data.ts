@@ -435,7 +435,7 @@ export const getMembershipPlans = cache(async (): Promise<EventPackage[]> => {
   const rows = await safeQuery<EventPackage[]>("membership plans", DEFAULT_MEMBERSHIP_PLANS, (sb) =>
     sb
       .from("membership_plans")
-      .select("id, name, price_label, price_note, description, features, featured, sort_order, buy_url, buy_label")
+      .select("id, name, price_label, price_note, description, features, featured, sort_order, buy_url, buy_label, flyer_url")
       .order("sort_order"),
   );
   return readyPackages(rows).map((p) => ({
