@@ -3,6 +3,7 @@
 // generated from these definitions, so adding a field here is all it takes.
 
 import { GALLERY_CATEGORIES } from "./defaults";
+import { SEASONS } from "./seasons";
 
 export type FieldType =
   | "text"
@@ -488,6 +489,57 @@ export const RESOURCES: ResourceDef[] = [
       sortOrder,
       { name: "starts_at", label: "Start showing (optional)", type: "datetime", short: "From", help: "Uses your device's time zone." },
       { name: "ends_at", label: "Stop showing (optional)", type: "datetime", after: "starts_at", short: "Until" },
+    ],
+  },
+  {
+    key: "seasonal",
+    table: "seasonal_settings",
+    title: "Seasonal decorations",
+    singular: "Seasonal decorations",
+    description: `Falling leaves, snow, bats, confetti and a garland under the menu bar that change with the calendar. Automatic schedule: ${SEASONS.map(
+      (s) => `${s.label.replace(/ \(.*\)$/, "")} ${s.when}`,
+    ).join("; ")}. Pick a theme below to show it now (handy for a preview), or switch them off.`,
+    group: "Website",
+    singleton: true,
+    allowCreate: false,
+    allowDelete: false,
+    touchUpdatedAt: true,
+    orderBy: [{ column: "id" }],
+    titleField: "mode",
+    fields: [
+      {
+        name: "mode",
+        label: "Decorations",
+        type: "select",
+        required: true,
+        default: "auto",
+        wide: true,
+        options: [
+          { value: "auto", label: "Automatic (changes with the calendar)" },
+          { value: "off", label: "Off" },
+          ...SEASONS.map((s) => ({ value: s.key, label: `Always show: ${s.label}` })),
+        ],
+        help: "Automatic is the set-and-forget option. Showing one theme always overrides the calendar until you switch back.",
+      },
+      {
+        name: "amount",
+        label: "How much",
+        type: "select",
+        required: true,
+        default: "normal",
+        options: [
+          { value: "light", label: "A few (subtle)" },
+          { value: "normal", label: "Normal" },
+          { value: "lots", label: "Lots" },
+        ],
+      },
+      {
+        name: "show_on_phones",
+        label: "Show on phones",
+        type: "boolean",
+        default: true,
+        help: "Phones always get fewer pieces than computers.",
+      },
     ],
   },
   {

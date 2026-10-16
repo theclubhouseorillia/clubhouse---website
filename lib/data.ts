@@ -28,6 +28,7 @@ import {
   DEFAULT_SETTINGS,
 } from "./defaults";
 import { hasPlaceholderText, todayISO } from "./format";
+import { normalizeSeasonalSettings, type SeasonalSettings } from "./seasons";
 import type {
   Announcement,
   BayType,
@@ -361,6 +362,14 @@ export const getGiftCards = cache(async (): Promise<GiftCards> => {
     buy_url: /^https:\/\/\S+$/i.test(row.buy_url?.trim() ?? "") ? (row.buy_url as string).trim() : null,
     qr_image_url: row.qr_image_url || null,
   };
+});
+
+/** Seasonal decorations setting (Admin → Seasonal decorations). */
+export const getSeasonalSettings = cache(async (): Promise<SeasonalSettings> => {
+  const row = await safeQuery<Partial<Record<keyof SeasonalSettings, unknown>> | null>("seasonal decorations", null, (sb) =>
+    sb.from("seasonal_settings").select("mode, amount, show_on_phones").eq("id", 1).maybeSingle(),
+  );
+  return normalizeSeasonalSettings(row);
 });
 
 /** All FAQs, including ones whose answer is still a [placeholder]. */

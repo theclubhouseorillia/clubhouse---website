@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon, PhoneIcon } from "@/components/icons";
+import type { SeasonalSettings } from "@/lib/seasons";
 import { navLinks, type LinkTarget, type NavVisibility } from "@/lib/site";
+import { SeasonalGarland } from "./SeasonalDecor";
 import { SmartLink } from "./SmartLink";
 
 export function Header({
@@ -15,6 +17,7 @@ export function Header({
   phoneLabel,
   nav,
   giftCardHref = null,
+  seasonal = null,
 }: {
   businessName: string;
   logoUrl: string | null;
@@ -24,6 +27,8 @@ export function Header({
   nav: NavVisibility;
   /** Online gift card shop (or the Gift Cards page); null hides the button. */
   giftCardHref?: string | null;
+  /** Seasonal decorations: a garland hangs under the menu bar. */
+  seasonal?: SeasonalSettings | null;
 }) {
   const pathname = usePathname();
   const links = navLinks(nav);
@@ -118,6 +123,8 @@ export function Header({
           </button>
         </div>
       </div>
+
+      {seasonal && <SeasonalGarland settings={seasonal} hidden={open} />}
 
       <div
         id="mobile-menu"

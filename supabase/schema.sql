@@ -1379,3 +1379,26 @@ revoke all on function public.newsletter_subscribe(text, text, text, text, text,
 grant execute on function public.newsletter_subscribe(text, text, text, text, text, text) to anon, authenticated;
 revoke all on function public.newsletter_mark_welcomed(text, uuid) from public;
 grant execute on function public.newsletter_mark_welcomed(text, uuid) to anon, authenticated;
+
+-- =============================================================================
+-- Seasonal decorations (one row): falling leaves, snow, bats, confetti and a
+-- garland under the menu bar. "auto" follows the calendar (see lib/seasons.ts).
+-- =============================================================================
+create table if not exists public.seasonal_settings (
+  id             int primary key default 1 check (id = 1),
+  mode           text not null default 'auto'
+                 check (mode in ('auto','off','fall','halloween','christmas','newyear','winter','valentines','stpatricks','easter','canadaday')),
+  amount         text not null default 'normal' check (amount in ('light','normal','lots')),
+  show_on_phones boolean not null default true,
+  updated_at     timestamptz not null default now()
+);
+insert into public.seasonal_settings (id) values (1) on conflict (id) do nothing;
+
+alter table public.seasonal_settings enable row level security;
+drop policy if exists "Public read" on public.seasonal_settings;
+create policy "Public read" on public.seasonal_settings for select to anon, authenticated using (true);
+drop policy if exists "Admins manage" on public.seasonal_settings;
+create policy "Admins manage" on public.seasonal_settings
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.seasonal_settings to anon, authenticated;
+grant insert, update on public.seasonal_settings to authenticated;

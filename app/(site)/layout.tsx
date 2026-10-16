@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { BusinessJsonLd } from "@/components/site/JsonLd";
 import { MobileBookBar } from "@/components/site/MobileBookBar";
+import { SeasonalDecor } from "@/components/site/SeasonalDecor";
 import {
   getAnnouncements,
   getCourses,
@@ -15,6 +16,7 @@ import {
   getLeagueSettings,
   getMembershipPlans,
   getOwnersSection,
+  getSeasonalSettings,
   getSettings,
   getSportsGames,
 } from "@/lib/data";
@@ -26,7 +28,7 @@ import { bookingLink, type NavVisibility } from "@/lib/site";
 export const revalidate = 300;
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
-  const [settings, announcements, hours, league, photos, owners, giftCards, faqs, games, courses, plans] = await Promise.all([
+  const [settings, announcements, hours, league, photos, owners, giftCards, faqs, games, courses, plans, seasonal] = await Promise.all([
     getSettings(),
     getAnnouncements(),
     getHours(),
@@ -38,6 +40,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
     getSportsGames(),
     getCourses(),
     getMembershipPlans(),
+    getSeasonalSettings(),
   ]);
   const nav: NavVisibility = {
     league: league.enabled,
@@ -68,12 +71,15 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         phoneLabel={real(settings.phone)}
         nav={nav}
         giftCardHref={giftCards.enabled ? (giftCards.buy_url ?? "/gift-cards") : null}
+        seasonal={seasonal}
       />
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>
       <Footer settings={settings} hours={hours} nav={nav} />
       <MobileBookBar booking={booking} phoneHref={phoneHref} />
+      {/* Falling leaves, snow, bats… by season (Admin → Seasonal decorations). */}
+      <SeasonalDecor settings={seasonal} />
       <BusinessJsonLd settings={settings} hours={hours} image={photos.hero_photos[0] ?? null} />
       {/* Anonymous visitor stats (Vercel Web Analytics: no cookies). Public pages only, not the dashboard. */}
       <Analytics />
