@@ -42,6 +42,7 @@ On every page: a rotating **announcement banner** at the very top (with arrows),
 - Instagram strip on the homepage: paste a free Behold.so JSON feed link in Admin → Settings → “Instagram feed link (Behold)”
 - Simulator pricing and bay descriptions
 - Winter golf league page: step-by-step “How to sign up & pay”, details, pricing and the sign-up link (or email)
+- League sign-up through Stripe: “Sign up now” opens a Stripe Payment Link ($500 + HST per team; collects team name, teammate and preferred Monday time; stops after 16 teams). Its metadata `website_kind=league` routes the payment in `/api/stripe/webhook` to `handleLeagueCheckout` (`lib/members.ts`): the team is saved to Admin → **League teams**, emailed the TrackMan join link (Admin → Winter league → “TrackMan join link”, never shown to visitors), and you're emailed “New league team (3 of 16)”. Test-mode payments are saved marked Test. Turn off the entry fee in TrackMan so nobody pays twice
 - Pool table: photos, hourly price and its own booking button
 - Meet the Owners: your story, one group photo and each owner's name and title, at the bottom of the homepage
 - Google reviews: your star rating, the reviews you pick, and "Leave us a review" / "Read all reviews on Google" buttons

@@ -315,6 +315,142 @@ export function ownerNewPurchaseEmail(input: {
   return { subject, html: layout(b, subject, kind === "pack" ? "New 10-hour pack sale" : "New membership", inner, true), text };
 }
 
+// ---------------------------------------------------------------------------
+// League registration (paid through a Stripe Payment Link)
+// ---------------------------------------------------------------------------
+
+export interface LeagueTeam {
+  title: string;
+  season: string | null;
+  teamName: string;
+  captainName: string | null;
+  email: string;
+  phone: string | null;
+  teammate: string | null;
+  preferredTime: string | null;
+  amountPaid: number | null;
+}
+
+function money(n: number | null): string | null {
+  return n === null ? null : `$${n.toFixed(2)}`;
+}
+
+/** Sent right after a team pays: their TrackMan link and how to join the league. */
+export function leagueJoinEmail(input: { business: EmailBusiness; team: LeagueTeam; joinUrl: string | null }): BuiltEmail {
+  const { business: b, team, joinUrl } = input;
+  const hi = firstName(team.captainName);
+  const subject = `You're in the league! Here's your link to join`;
+  const paid = money(team.amountPaid);
+  const mate = team.teammate?.trim() || null;
+
+  const summary = ownerTable([
+    ["Team", team.teamName],
+    ["Players", [team.captainName, mate].filter(Boolean).join(" & ") || null],
+    ["Preferred time", team.preferredTime],
+    ["Season", team.season],
+    ["Paid", paid ? `${paid} (including HST)` : null],
+  ]);
+
+  const joinStep = joinUrl
+    ? `On your phone, tap the button below. It opens our league in the Trackman Golf app.${button(joinUrl, "Join the league in TrackMan")}`
+    : "We'll email you the link to our league in the Trackman Golf app shortly.";
+
+  const steps =
+    step(1, "Get the Trackman Golf app", "Download the free Trackman Golf app from the App Store or Google Play. Sign in, or create your free Trackman account.") +
+    step(2, "Open our league link", joinStep) +
+    step(3, "Tap “Join”", "Tap Join to enter this season. Your league fee is already paid, so there's nothing to pay in the app.") +
+    step(
+      4,
+      mate ? `Send this email to ${mate}` : "Send this email to your teammate",
+      "Forward this email so your teammate can join with their own Trackman account too.",
+    );
+
+  const inner =
+    para(`Hi ${esc(hi)},`) +
+    para(
+      `Thanks for registering for <strong>${esc(team.title)}</strong>. Your payment is confirmed, and your receipt is on its way from Stripe. Here's your team:`,
+    ) +
+    summary +
+    para("<strong>One more step:</strong> join the league in the Trackman Golf app so your scores count.") +
+    `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:6px 0 4px">${steps}</table>` +
+    para(
+      "We'll let you know your Monday session before the season starts. Please arrive 15 minutes before your tee time, and sign in to your Trackman account on the simulator when you play so your league rounds count.",
+    );
+
+  const text = [
+    `Hi ${hi},`,
+    "",
+    `Thanks for registering for ${team.title}. Your payment is confirmed, and your receipt is on its way from Stripe.`,
+    "",
+    `Team: ${team.teamName}`,
+    `Players: ${[team.captainName, mate].filter(Boolean).join(" & ")}`,
+    team.preferredTime ? `Preferred time: ${team.preferredTime}` : "",
+    team.season ? `Season: ${team.season}` : "",
+    paid ? `Paid: ${paid} (including HST)` : "",
+    "",
+    "One more step: join the league in the Trackman Golf app so your scores count.",
+    "1. Download the free Trackman Golf app from the App Store or Google Play. Sign in, or create your free Trackman account.",
+    joinUrl ? `2. On your phone, open our league link: ${joinUrl}` : "2. We'll email you the link to our league in the Trackman Golf app shortly.",
+    "3. Tap Join. Your league fee is already paid, so there's nothing to pay in the app.",
+    `4. Forward this email to ${mate ?? "your teammate"} so they can join with their own Trackman account too.`,
+    "",
+    "We'll let you know your Monday session before the season starts. Please arrive 15 minutes before your tee time, and sign in to your Trackman account on the simulator when you play so your league rounds count.",
+    "",
+    textFooter(b),
+  ]
+    .filter((l, i, a) => !(l === "" && a[i - 1] === ""))
+    .join("\n");
+
+  return { subject, html: layout(b, "Your league fee is paid. Join the league in the Trackman Golf app.", "You're in the league!", inner), text };
+}
+
+/** Tells the owner a team registered and paid for the league. */
+export function ownerLeagueEmail(input: {
+  business: EmailBusiness;
+  team: LeagueTeam;
+  teamCount: number;
+  maxTeams: number;
+  joinEmailed: boolean;
+  isTest: boolean;
+  stripeUrl: string | null;
+}): BuiltEmail {
+  const { business: b, team } = input;
+  const subject = `${input.isTest ? "[TEST] " : ""}New league team: ${team.teamName} (${input.teamCount} of ${input.maxTeams})`;
+  const rows: [string, string | null][] = [
+    ["Team", team.teamName],
+    ["Captain", team.captainName],
+    ["Email", team.email],
+    ["Phone", team.phone],
+    ["Teammate", team.teammate],
+    ["Preferred time", team.preferredTime],
+    ["Paid", money(team.amountPaid) ? `${money(team.amountPaid)} (including HST)` : null],
+    ["Teams so far", `${input.teamCount} of ${input.maxTeams}`],
+  ];
+  const todo = [
+    input.joinEmailed
+      ? "They've been emailed your TrackMan league link and told to forward it to their teammate."
+      : "The TrackMan link email didn't go out. Check the TrackMan join link in Admin → Winter league, then send it to them yourself.",
+    "Check they've joined your league in TrackMan, then tick “Joined in TrackMan” for them in Admin → League teams.",
+    "Assign their Monday session and let them know before the season starts.",
+  ];
+  const inner =
+    (input.isTest ? para("<strong>This was a test payment, not a real registration.</strong>") : "") +
+    ownerTable(rows) +
+    `<ol style="margin:0 0 18px;padding-left:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.ink}">${todo
+      .map((t) => `<li style="margin-bottom:6px">${esc(t)}</li>`)
+      .join("")}</ol>` +
+    (input.stripeUrl ? para(`<a href="${esc(input.stripeUrl)}" style="color:${C.forest}">View this customer in Stripe</a>`) : "");
+  const text = [
+    subject,
+    "",
+    ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`),
+    "",
+    ...todo.map((t, i) => `${i + 1}. ${t}`),
+    input.stripeUrl ? `\nStripe: ${input.stripeUrl}` : "",
+  ].join("\n");
+  return { subject, html: layout(b, subject, "New league team", inner, true), text };
+}
+
 /** The YGB use limit to set on each member's monthly code. */
 export function usesHint(plan: string | null | undefined): string {
   void plan;

@@ -6,6 +6,8 @@ import { real, telHref, TIMEZONE } from "./format";
 import {
   codeEmail,
   goodbyeEmail,
+  leagueJoinEmail,
+  ownerLeagueEmail,
   ownerNewPurchaseEmail,
   ownerRenewalEmail,
   ownerStatusEmail,
@@ -58,11 +60,30 @@ interface CheckoutSession {
   mode?: string;
   status?: string;
   payment_status?: string;
+  livemode?: boolean;
+  amount_total?: number | null;
   customer?: string | null;
   subscription?: string | null;
   metadata?: Record<string, string> | null;
   customer_details?: { email?: string | null; name?: string | null; phone?: string | null } | null;
-  custom_fields?: { key?: string; text?: { value?: string | null } | null }[] | null;
+  custom_fields?:
+    | {
+        key?: string;
+        text?: { value?: string | null } | null;
+        dropdown?: { value?: string | null; options?: { label?: string; value?: string }[] | null } | null;
+      }[]
+    | null;
+}
+
+/** A checkout custom field's answer: typed text, or the label of the dropdown option picked. */
+function customField(session: CheckoutSession, key: string): string | null {
+  const field = session.custom_fields?.find((f) => f.key === key);
+  if (!field) return null;
+  const text = field.text?.value?.trim();
+  if (text) return text;
+  const picked = field.dropdown?.value;
+  if (!picked) return null;
+  return field.dropdown?.options?.find((o) => o.value === picked)?.label?.trim() || picked;
 }
 
 interface Subscription {
@@ -159,6 +180,10 @@ interface CheckoutResult {
 
 async function handleCheckout(session: CheckoutSession, event: StripeEvent): Promise<void> {
   if (session.status && session.status !== "complete") return;
+  if (session.metadata?.website_kind === "league") {
+    await handleLeagueCheckout(session, event);
+    return;
+  }
   const kind: "membership" | "pack" = session.mode === "subscription" ? "membership" : "pack";
   if (kind === "pack" && session.payment_status && session.payment_status !== "paid") return;
 
@@ -169,7 +194,7 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
   }
   const name = session.customer_details?.name?.trim() || null;
   const phone = session.customer_details?.phone?.trim() || null;
-  const golferName = session.custom_fields?.find((f) => f.key === "golfername")?.text?.value?.trim() || null;
+  const golferName = customField(session, "golfername");
   const plan = planName(session.metadata?.website_plan) ?? (kind === "pack" ? "10-Hour Open Bay Pack" : "Membership");
 
   const saved = await rpc<CheckoutResult>("member_record_checkout", {
@@ -224,6 +249,97 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
       if (!ownerSent.ok) console.error("[members] owner email failed:", ownerSent.error);
     }
   }
+}
+
+interface LeagueCheckoutResult {
+  id: string;
+  is_new: boolean;
+  join_email_sent: boolean;
+  join_url: string | null;
+  title: string | null;
+  season: string | null;
+  max_teams: number | null;
+  team_count: number;
+  notify_email: string | null;
+}
+
+/**
+ * A team paid the league fee (Stripe Payment Link with metadata website_kind=league):
+ * save them to Admin → League teams, email them the TrackMan join link, and tell the owner.
+ */
+async function handleLeagueCheckout(session: CheckoutSession, event: StripeEvent): Promise<void> {
+  if (session.payment_status && session.payment_status !== "paid") return;
+  const email = session.customer_details?.email?.trim();
+  if (!email) {
+    console.warn("[league] checkout without an email, skipped:", session.id);
+    return;
+  }
+  const captainName = session.customer_details?.name?.trim() || null;
+  const phone = session.customer_details?.phone?.trim() || null;
+  const teamName = customField(session, "teamname");
+  const teammate = customField(session, "teammate");
+  const preferredTime = customField(session, "session");
+  const amountPaid = typeof session.amount_total === "number" ? session.amount_total / 100 : null;
+  const isTest = !event.livemode;
+
+  const saved = await rpc<LeagueCheckoutResult>("league_record_checkout", {
+    p_checkout_id: session.id,
+    p_is_test: isTest,
+    p_team_name: teamName,
+    p_captain_name: captainName,
+    p_email: email,
+    p_phone: phone,
+    p_teammate: teammate,
+    p_preferred_time: preferredTime,
+    p_amount_paid: amountPaid,
+  });
+  if (saved.join_email_sent) return;
+
+  const ctx = await emailContext();
+  const team = {
+    title: real(saved.title) ?? "our league",
+    season: real(saved.season),
+    teamName: teamName || `Team ${captainName ?? email}`,
+    captainName,
+    email,
+    phone,
+    teammate,
+    preferredTime,
+    amountPaid,
+  };
+  const joinUrl = /^https?:\/\//i.test(saved.join_url ?? "") ? (saved.join_url as string) : null;
+
+  const welcome = leagueJoinEmail({ business: ctx.business, team, joinUrl });
+  const sent = await sendEmail({
+    to: email,
+    ...welcome,
+    from: ctx.from,
+    replyTo: ctx.replyTo,
+    idempotencyKey: `league-join-${session.id}`,
+  });
+  if (sent.ok) await rpc("league_mark_join_sent", { p_id: saved.id });
+  else console.error("[league] join email failed:", sent.error);
+
+  if (saved.is_new && saved.notify_email) {
+    const owner = ownerLeagueEmail({
+      business: ctx.business,
+      team,
+      teamCount: saved.team_count,
+      maxTeams: saved.max_teams ?? 16,
+      joinEmailed: sent.ok,
+      isTest,
+      stripeUrl: stripeCustomerUrl(session.customer, event.livemode),
+    });
+    const ownerSent = await sendEmail({
+      to: saved.notify_email,
+      ...owner,
+      replyTo: email,
+      idempotencyKey: `owner-league-${session.id}`,
+    });
+    if (!ownerSent.ok) console.error("[league] owner email failed:", ownerSent.error);
+  }
+  // Let Stripe retry if the team's email didn't go out.
+  if (!sent.ok) throw new Error(`League join email failed: ${sent.error}`);
 }
 
 interface SyncResult {

@@ -223,7 +223,12 @@ export const getGallery = cache(async (): Promise<GalleryImage[]> => {
 
 export const getLeagueSettings = cache(async (): Promise<LeagueSettings> => {
   const row = await safeQuery<Partial<LeagueSettings> | null>("league settings", null, (sb) =>
-    sb.from("league_settings").select("*").eq("id", 1).maybeSingle(),
+    // Every column except trackman_join_url, which only paid teams are emailed (visitors can't read it).
+    sb
+      .from("league_settings")
+      .select("id, enabled, title, intro, season, schedule, highlights, email, email_subject, note, signup_url, details, max_teams")
+      .eq("id", 1)
+      .maybeSingle(),
   );
   if (!row) return DEFAULT_LEAGUE_SETTINGS;
   return {

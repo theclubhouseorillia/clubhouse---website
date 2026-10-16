@@ -1402,3 +1402,119 @@ create policy "Admins manage" on public.seasonal_settings
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 grant select on public.seasonal_settings to anon, authenticated;
 grant insert, update on public.seasonal_settings to authenticated;
+
+-- =============================================================================
+-- League registration through Stripe: teams pay on the website (Payment Link
+-- with metadata website_kind=league), then get emailed the TrackMan join link.
+-- =============================================================================
+alter table public.league_settings add column if not exists trackman_join_url text;
+alter table public.league_settings add column if not exists max_teams int not null default 16;
+
+create table if not exists public.league_registrations (
+  id                 uuid primary key default gen_random_uuid(),
+  stripe_checkout_id text unique,
+  is_test            boolean not null default false,
+  season             text,
+  team_name          text not null,
+  captain_name       text not null,
+  email              text,
+  phone              text,
+  teammate_name      text,
+  preferred_time     text,
+  amount_paid        numeric(10,2),
+  join_email_sent    boolean not null default false,
+  joined_trackman    boolean not null default false,
+  notes              text,
+  created_at         timestamptz not null default now()
+);
+create index if not exists league_registrations_created_idx on public.league_registrations (created_at desc);
+
+alter table public.league_registrations enable row level security;
+drop policy if exists "Admins manage" on public.league_registrations;
+create policy "Admins manage" on public.league_registrations
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+revoke all on public.league_registrations from anon;
+grant select, insert, update, delete on public.league_registrations to authenticated;
+
+-- A paid league checkout. Safe to call twice for the same checkout (Stripe retries).
+create or replace function public.league_record_checkout(
+  p_secret         text,
+  p_checkout_id    text,
+  p_is_test        boolean,
+  p_team_name      text,
+  p_captain_name   text,
+  p_email          text,
+  p_phone          text default null,
+  p_teammate       text default null,
+  p_preferred_time text default null,
+  p_amount_paid    numeric default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_row    public.league_registrations;
+  v_new    boolean := false;
+  v_league public.league_settings;
+  v_notify text;
+begin
+  perform private.require_form_secret(p_secret);
+  select * into v_league from public.league_settings where id = 1;
+
+  select * into v_row from public.league_registrations where stripe_checkout_id = p_checkout_id;
+  if not found then
+    insert into public.league_registrations (
+      stripe_checkout_id, is_test, season, team_name, captain_name, email, phone, teammate_name, preferred_time, amount_paid
+    ) values (
+      p_checkout_id, coalesce(p_is_test, false), v_league.season,
+      coalesce(nullif(trim(p_team_name), ''), 'Team ' || coalesce(nullif(trim(p_captain_name), ''), 'unnamed')),
+      coalesce(nullif(trim(p_captain_name), ''), lower(trim(p_email))),
+      lower(trim(p_email)), nullif(trim(p_phone), ''), nullif(trim(p_teammate), ''), nullif(trim(p_preferred_time), ''),
+      p_amount_paid
+    )
+    returning * into v_row;
+    v_new := true;
+  end if;
+
+  select inquiry_email into v_notify from public.site_settings where id = 1;
+  return json_build_object(
+    'id', v_row.id,
+    'is_new', v_new,
+    'join_email_sent', v_row.join_email_sent,
+    'join_url', v_league.trackman_join_url,
+    'title', v_league.title,
+    'season', v_league.season,
+    'schedule', v_league.schedule,
+    'max_teams', v_league.max_teams,
+    'team_count', (select count(*) from public.league_registrations where is_test = v_row.is_test),
+    'notify_email', v_notify
+  );
+end;
+$$;
+
+create or replace function public.league_mark_join_sent(p_secret text, p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  perform private.require_form_secret(p_secret);
+  update public.league_registrations set join_email_sent = true where id = p_id;
+end;
+$$;
+
+revoke all on function public.league_record_checkout(text, text, boolean, text, text, text, text, text, text, numeric) from public;
+grant execute on function public.league_record_checkout(text, text, boolean, text, text, text, text, text, text, numeric) to anon, authenticated;
+revoke all on function public.league_mark_join_sent(text, uuid) from public;
+grant execute on function public.league_mark_join_sent(text, uuid) to anon, authenticated;
+
+-- Visitors may read every league column except the TrackMan join link, which is
+-- only emailed to teams after they pay.
+revoke select on public.league_settings from anon;
+grant select (
+  id, enabled, title, intro, season, schedule, highlights, email, email_subject, note,
+  updated_at, signup_url, details, max_teams
+) on public.league_settings to anon;
