@@ -29,7 +29,7 @@ import { getPublicClient } from "./supabase/public";
 const PLAN_BY_PRODUCT: Record<string, string> = {
   prod_VRtLBWQfhbQw6l: "10-Hour Open Bay Pack",
   prod_VRtLeWCn4vGxVg: "Weekday Membership",
-  prod_VRtLUfbG7DGIQ1: "Weekday/Weekend Membership",
+  prod_VRtLUfbG7DGIQ1: "Monthly Membership",
   prod_VRra79eqqMWMWq: "10-Hour Open Bay Pack",
   prod_VRraDVyostwFmG: "Weekday Membership",
   prod_VRraksY0YQmdpt: "Weekday/Weekend Membership",

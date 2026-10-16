@@ -975,7 +975,7 @@ export const RESOURCES: ResourceDef[] = [
     title: "Members & pack buyers",
     singular: "Member",
     description:
-      "Everyone who bought a membership or a 10-hour pack online, added automatically after checkout. To give a member their code: create it in YourGolfBooking (valid until their renewal date; 62 uses for Weekday/Weekend, 46 for Weekday), type it into “Member code” and save. They're emailed it right away. When a membership renews, the code box clears and you'll get an email to make the next one.",
+      "Everyone who bought a membership or a 10-hour pack online, added automatically after checkout. To give a member their code: create it in YourGolfBooking (valid until their renewal date, 60 uses), type it into “Member code” and save. They're emailed it right away. When a membership renews, the code box clears and you'll get an email to make the next one.",
     group: "Inbox",
     allowCreate: false,
     orderBy: [{ column: "created_at", ascending: false }],

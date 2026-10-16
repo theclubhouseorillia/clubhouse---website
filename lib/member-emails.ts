@@ -48,11 +48,10 @@ export function longDate(iso: string | null | undefined): string | null {
 }
 
 /** Which days a plan covers, in words. */
-export function planDays(plan: string | null | undefined): string | null {
+export function planDays(plan: string | null | undefined): string {
   const p = (plan ?? "").toLowerCase();
-  if (p.includes("weekend") || p.includes("7-day") || p.includes("7 day")) return "any day of the week";
-  if (p.includes("weekday")) return "Monday to Friday";
-  return null;
+  if (p.includes("weekday") && !p.includes("weekend")) return "Monday to Friday";
+  return "any day of the week";
 }
 
 function button(href: string, label: string): string {
@@ -134,14 +133,14 @@ export function welcomeEmail(input: {
   const step2 =
     kind === "pack"
       ? step(2, "We'll set up your hours", "Once your account is ready, our team will add your 10 Open Bay hours and let you know.")
-      : step(2, "Watch for your member code", "We'll set up a member code just for you and email it within 24 hours. You'll enter it at checkout whenever you book an Open Bay. Each code is good for one month, and when your membership renews we'll send you a new one.");
+      : step(2, "Watch for your member code", "We'll set up a member code just for you and email it within 24 hours. You'll enter it at checkout whenever you book a bay. Each code is good for one month, and when your membership renews we'll send you a new one.");
   const step3 =
     kind === "pack"
       ? step(3, "Book and play", "Open Bays fit up to 8 players. Reservations are subject to availability.")
       : step(
           3,
           "Book and play",
-          `Your membership includes unlimited Open Bay play${days ? ` ${esc(days)}` : ""}, up to 2 hours a day, for one golfer. Reservations are subject to availability.`,
+          `Your membership includes unlimited play in any of our simulator bays, ${esc(days)}, up to 2 hours a day, for one golfer. Reservations are subject to availability.`,
         );
 
   const portal =
@@ -169,11 +168,11 @@ export function welcomeEmail(input: {
     "",
     kind === "pack"
       ? "2. We'll set up your hours\n   Once your account is ready, our team will add your 10 Open Bay hours and let you know."
-      : "2. Watch for your member code\n   We'll set up a member code just for you and email it within 24 hours. You'll enter it at checkout whenever you book an Open Bay. Each code is good for one month, and when your membership renews we'll send you a new one.",
+      : "2. Watch for your member code\n   We'll set up a member code just for you and email it within 24 hours. You'll enter it at checkout whenever you book a bay. Each code is good for one month, and when your membership renews we'll send you a new one.",
     "",
     kind === "pack"
       ? "3. Book and play\n   Open Bays fit up to 8 players. Reservations are subject to availability."
-      : `3. Book and play\n   Your membership includes unlimited Open Bay play${days ? ` ${days}` : ""}, up to 2 hours a day, for one golfer. Reservations are subject to availability.`,
+      : `3. Book and play\n   Your membership includes unlimited play in any of our simulator bays, ${days}, up to 2 hours a day, for one golfer. Reservations are subject to availability.`,
     "",
     kind === "membership" && b.portalUrl ? `Need to update your card or cancel later? ${b.portalUrl}` : "",
     "",
@@ -207,13 +206,13 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
 </td></tr></table>`;
 
   const steps =
-    step(1, "Sign in on our booking page", `Use the account you created with YourGolfBooking.${button(bookingUrl, "Book an Open Bay")}`) +
-    step(2, "Pick your Open Bay time", `Book${days ? ` ${esc(days)}` : ""}, up to 2 hours a day.`) +
+    step(1, "Sign in on our booking page", `Use the account you created with YourGolfBooking.${button(bookingUrl, "Book a bay")}`) +
+    step(2, "Pick your bay and time", `Choose any bay, ${esc(days)}, up to 2 hours a day.`) +
     step(3, "Enter your code at checkout", "Your member discount is applied to the booking.");
 
   const inner =
     para(`Hi ${esc(hi)},`) +
-    para("Here's your personal member code for booking Open Bays at The Clubhouse:") +
+    para("Here's your personal member code for booking bays at The Clubhouse:") +
     codeBox +
     `<table role="presentation" cellpadding="0" cellspacing="0" width="100%">${steps}</table>` +
     para("This code is just for you and is good for one month. When your membership renews, we'll email you a new code. Please don't share it.");
@@ -221,13 +220,13 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
   const text = [
     `Hi ${hi},`,
     "",
-    "Here's your personal member code for booking Open Bays at The Clubhouse:",
+    "Here's your personal member code for booking bays at The Clubhouse:",
     "",
     `    ${code}`,
     until ? `    Valid until ${until}` : "",
     "",
     `1. Sign in on our booking page: ${bookingUrl}`,
-    `2. Pick your Open Bay time${days ? ` (${days})` : ""}, up to 2 hours a day.`,
+    `2. Choose any bay, ${days}, up to 2 hours a day.`,
     "3. Enter your code at checkout.",
     "",
     "This code is just for you and is good for one month. When your membership renews, we'll email you a new code. Please don't share it.",
@@ -309,11 +308,10 @@ export function ownerNewPurchaseEmail(input: {
   return { subject, html: layout(b, subject, kind === "pack" ? "New 10-hour pack sale" : "New membership", inner, true), text };
 }
 
-/** Suggested YGB use limit for a plan (2 hours a day). */
+/** The YGB use limit to set on each member's monthly code. */
 export function usesHint(plan: string | null | undefined): string {
-  const days = planDays(plan);
-  if (days === "Monday to Friday") return "a use limit of 46 (2 hours a day, at most 23 weekdays a month)";
-  return "a use limit of 62 (2 hours a day for a 31-day month)";
+  void plan;
+  return "a use limit of 60";
 }
 
 function ownerList(items: string[]): string {
@@ -374,13 +372,13 @@ export function ownerWaitingEmail(input: {
     `<ul style="margin:0 0 18px;padding-left:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.ink}">${lines
       .map((l) => `<li style="margin-bottom:6px">${esc(l)}</li>`)
       .join("")}</ul>` +
-    para(esc(`Use limits: 62 for Weekday/Weekend members, 46 for Weekday members (2 hours a day).`));
+    para(esc("Each code: valid for one month, with a use limit of 60."));
   const text = [
     "These members don't have a member code yet. Create each one in YGB, then type it into their “Member code” box in Admin → Members & pack buyers. They're emailed it as soon as you save.",
     "",
     ...lines.map((l) => `- ${l}`),
     "",
-    "Use limits: 62 for Weekday/Weekend members, 46 for Weekday members (2 hours a day).",
+    "Each code: valid for one month, with a use limit of 60.",
   ].join("\n");
   return { subject, html: layout(b, subject, "Members waiting for a code", inner, true), text };
 }

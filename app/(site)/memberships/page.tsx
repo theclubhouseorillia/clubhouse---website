@@ -7,7 +7,6 @@ import { Reveal } from "@/components/site/Reveal";
 import { PageHeader, SectionHeading } from "@/components/site/SectionHeading";
 import { getMembershipPlans, getSettings } from "@/lib/data";
 import { real, telHref } from "@/lib/format";
-import { planDays } from "@/lib/member-emails";
 
 interface ExpectStep {
   when: string;
@@ -54,10 +53,6 @@ export default async function MembershipsPage() {
   const portal = settings.membership_portal_url;
   const business = real(settings.business_name) ?? "The Clubhouse Bar & Golf Sim";
   const bookingUrl = real(settings.booking_url);
-  const memberDays = plans
-    .filter((p) => /month/i.test(`${p.price_note ?? ""} ${p.price_label}`))
-    .map((p) => ({ name: p.name, days: planDays(p.name) }))
-    .filter((p): p is { name: string; days: string } => !!p.days);
 
   const expectSteps: ExpectStep[] = [
     {
@@ -80,19 +75,10 @@ export default async function MembershipsPage() {
     },
     {
       when: "Whenever you play",
-      title: "Book an Open Bay",
-      body: "Sign in on our booking page, pick an Open Bay time, up to 2 hours a day, and enter your member code at checkout.",
+      title: "Book a bay",
+      body: "Sign in on our booking page, pick any bay and time, any day of the week, up to 2 hours a day, and enter your member code at checkout.",
       extra: (
         <>
-          {memberDays.length > 0 && (
-            <ul className="flex flex-col gap-1 text-sm text-mist">
-              {memberDays.map((p) => (
-                <li key={p.name}>
-                  <span className="text-cream">{p.name}:</span> {p.days}
-                </li>
-              ))}
-            </ul>
-          )}
           {bookingUrl && (
             <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="link-gold mt-1 w-fit text-sm uppercase tracking-[0.14em]">
               Open the booking page
