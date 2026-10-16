@@ -5,6 +5,7 @@ import { fromWithName, sendEmail } from "./email";
 import { real, telHref, TIMEZONE } from "./format";
 import {
   codeEmail,
+  goodbyeEmail,
   ownerNewPurchaseEmail,
   ownerRenewalEmail,
   ownerStatusEmail,
@@ -19,7 +20,8 @@ import { getPublicClient } from "./supabase/public";
 //  - checkout.session.completed -> save the buyer, email them a YourGolfBooking
 //    sign-up link, and tell the owner to create their personal member code.
 //  - customer.subscription.updated/deleted -> keep status in step, tell the
-//    owner about cancellations and failed payments.
+//    owner about cancellations and failed payments, and send members who
+//    cancel a "sorry to see you go" email.
 //  - invoice.paid (monthly renewal) -> last month's code is finished; remind
 //    the owner to create the next one.
 // Each member has their own code: the owner types it into Admin → Members,
@@ -260,9 +262,33 @@ async function handleSubscription(sub: Subscription, deleted: boolean, event: St
 
   const notifyStatus = result.new_status;
   if (notifyStatus !== "ending" && notifyStatus !== "canceled" && notifyStatus !== "past_due") return;
-  if (!result.notify_email) return;
 
   const ctx = await emailContext();
+
+  // The member chose to leave: send them a "sorry to see you go" note. That's when they cancel
+  // (ending), or when an active membership is cancelled outright. Not after failed payments, and
+  // not a second time when an already-cancelled membership reaches its end date.
+  const memberLeft = notifyStatus === "ending" || (notifyStatus === "canceled" && result.old_status === "active");
+  let memberEmailed = false;
+  if (memberLeft && result.email) {
+    const bye = goodbyeEmail({
+      business: ctx.business,
+      name: result.name ?? null,
+      plan: result.plan ?? null,
+      activeUntil: notifyStatus === "ending" ? (result.renews_on ?? null) : null,
+    });
+    const byeSent = await sendEmail({
+      to: result.email,
+      ...bye,
+      from: ctx.from,
+      replyTo: ctx.replyTo,
+      idempotencyKey: `goodbye-${event.id}`,
+    });
+    memberEmailed = byeSent.ok;
+    if (!byeSent.ok) console.error("[members] goodbye email failed:", byeSent.error);
+  }
+
+  if (!result.notify_email) return;
   const msg = ownerStatusEmail({
     business: ctx.business,
     status: notifyStatus,
@@ -271,6 +297,7 @@ async function handleSubscription(sub: Subscription, deleted: boolean, event: St
     phone: result.phone ?? null,
     plan: result.plan ?? null,
     renewsOn: result.renews_on ?? null,
+    memberEmailed,
   });
   const sent = await sendEmail({
     to: result.notify_email,

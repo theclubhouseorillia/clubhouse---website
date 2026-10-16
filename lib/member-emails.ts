@@ -391,6 +391,70 @@ export function ownerWaitingEmail(input: {
 }
 
 /** Tells the owner when a membership is cancelled, ends, or a payment fails. */
+/**
+ * To the member when they cancel: thanks, when access ends, a way to change
+ * their mind (the Stripe portal lets them renew until the paid month ends) and
+ * an invitation to rejoin.
+ */
+export function goodbyeEmail(input: {
+  business: EmailBusiness;
+  name: string | null;
+  plan: string | null;
+  /** Last day of the month they've paid for; null if it has already ended. */
+  activeUntil: string | null;
+}): BuiltEmail {
+  const { business: b } = input;
+  const hi = firstName(input.name);
+  const plan = input.plan || "membership";
+  const until = longDate(input.activeUntil);
+  const rejoinUrl = `${b.siteUrl}/memberships`;
+  const subject = `Sorry to see you go, ${hi === "there" ? "friend" : hi}`;
+
+  const statusLine = until
+    ? `We've cancelled your ${plan}, as you asked. It stays active until <strong>${esc(until)}</strong>, so keep booking with your member code until then. You won't be charged again.`
+    : `Your ${plan} has ended, and you won't be charged again.`;
+  const statusText = until
+    ? `We've cancelled your ${plan}, as you asked. It stays active until ${until}, so keep booking with your member code until then. You won't be charged again.`
+    : `Your ${plan} has ended, and you won't be charged again.`;
+  const changedMind =
+    until && b.portalUrl
+      ? para(
+          `<strong>Changed your mind?</strong> You can keep your membership going by <a href="${esc(b.portalUrl)}" style="color:${C.forest}">signing in to manage your membership</a> any time before ${esc(until)}.`,
+        )
+      : "";
+
+  const inner =
+    para(`Hi ${esc(hi)},`) +
+    para("We're sorry to see you go, and thank you for being a member of The Clubhouse. It was great having you around.") +
+    para(statusLine) +
+    changedMind +
+    para(
+      "We hope to see you back soon. Whenever you're ready to swing again, you can rejoin online in a couple of minutes. And you're always welcome to drop in for a bay, a bite, or to catch the game on our big screens.",
+    ) +
+    button(rejoinUrl, "Rejoin the club") +
+    `<div style="height:10px"></div>`;
+
+  const text = [
+    `Hi ${hi},`,
+    "",
+    "We're sorry to see you go, and thank you for being a member of The Clubhouse. It was great having you around.",
+    "",
+    statusText,
+    until && b.portalUrl ? `\nChanged your mind? You can keep your membership going by signing in before ${until}: ${b.portalUrl}` : "",
+    "",
+    "We hope to see you back soon. Whenever you're ready to swing again, you can rejoin online in a couple of minutes:",
+    rejoinUrl,
+    "",
+    "And you're always welcome to drop in for a bay, a bite, or to catch the game on our big screens.",
+    "",
+    textFooter(b),
+  ]
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
+
+  return { subject, html: layout(b, subject, "Sorry to see you go", inner), text };
+}
+
 export function ownerStatusEmail(input: {
   business: EmailBusiness;
   status: "ending" | "canceled" | "past_due";
@@ -399,6 +463,8 @@ export function ownerStatusEmail(input: {
   phone: string | null;
   plan: string | null;
   renewsOn: string | null;
+  /** True when the member was also sent the "sorry to see you go" email. */
+  memberEmailed?: boolean;
 }): BuiltEmail {
   const { business: b, status } = input;
   const who = input.name || input.email || "A member";
@@ -429,7 +495,21 @@ export function ownerStatusEmail(input: {
     ["Phone", input.phone],
   ];
   const sheetNote = "Your membership spreadsheet (Admin → Membership spreadsheet) has been updated automatically.";
-  const inner = para(esc(copy.body)) + ownerTable(rows) + para(`<span style="color:${C.muted}">${esc(sheetNote)}</span>`);
-  const text = [copy.body, "", ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), "", sheetNote].join("\n");
+  const goodbyeNote = input.memberEmailed
+    ? "We've emailed them a “sorry to see you go” note with a link to rejoin."
+    : null;
+  const inner =
+    para(esc(copy.body)) +
+    ownerTable(rows) +
+    (goodbyeNote ? para(esc(goodbyeNote)) : "") +
+    para(`<span style="color:${C.muted}">${esc(sheetNote)}</span>`);
+  const text = [
+    copy.body,
+    "",
+    ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`),
+    "",
+    ...(goodbyeNote ? [goodbyeNote, ""] : []),
+    sheetNote,
+  ].join("\n");
   return { subject: copy.subject, html: layout(b, copy.subject, copy.heading, inner, true), text };
 }
