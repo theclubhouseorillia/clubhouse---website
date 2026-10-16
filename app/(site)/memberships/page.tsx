@@ -26,7 +26,7 @@ export default async function MembershipsPage() {
     : mailHref
       ? { href: mailHref, label: "Email to buy" }
       : { href: "/contact", label: "Contact us" };
-  // Plans with a Stripe Payment Link go straight to checkout; the rest keep "Call to buy".
+  // Plans with an online link (e.g. YourGolfBooking) go straight to checkout; the rest keep "Call to buy".
   const sellsOnline = plans.some((p) => p.buy_url);
   const hasMonthly = plans.some((p) => p.buy_url && /month/i.test(`${p.price_note ?? ""} ${p.price_label}`));
   const portal = settings.membership_portal_url;
@@ -64,9 +64,8 @@ export default async function MembershipsPage() {
           )}
           {sellsOnline && (
             <p className="mt-10 max-w-3xl text-sm leading-relaxed text-mist">
-              Secure online checkout by Stripe. Prices are plus HST.
-              {hasMonthly &&
-                " Memberships renew monthly until you cancel, and you can cancel anytime online. Your membership stays active until the end of the month you've paid for."}
+              Prices are plus HST.
+              {hasMonthly && " Memberships are billed monthly."}
               {portal && (
                 <>
                   {" "}
@@ -89,7 +88,7 @@ export default async function MembershipsPage() {
               id="buy-title"
               eyebrow="How to buy"
               title="Buy online in minutes"
-              intro="Choose a plan above and pay securely online. Your receipt arrives by email right away, and we'll be in touch to get you set up. Prefer to talk to us? Call, email or ask at the bar."
+              intro="Choose a plan above and buy it online in a few minutes. Prefer to talk to us? Call, email or ask at the bar."
             />
           ) : (
             <SectionHeading
