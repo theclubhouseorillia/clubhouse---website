@@ -32,6 +32,7 @@ import {
   getPackages,
   getPoolTable,
   getRates,
+  getMembershipPlans,
   getRentalClubs,
   getReviews,
   getReviewsSection,
@@ -71,6 +72,7 @@ export default async function HomePage() {
     games,
     courses,
     rentalClubs,
+    membershipPlans,
   ] = await Promise.all([
     getSettings(),
     getBayTypes(),
@@ -92,6 +94,7 @@ export default async function HomePage() {
     getSportsGames(),
     getCourses(),
     getRentalClubs(),
+    getMembershipPlans(),
   ]);
   const instagram = await getInstagramPosts(settings.instagram_feed_url);
 
@@ -184,6 +187,11 @@ export default async function HomePage() {
                     Buy a Gift Card
                   </Link>
                 ))}
+              {membershipPlans.length > 0 && (
+                <Link href="/memberships" className="btn btn-outline">
+                  Buy a Membership
+                </Link>
+              )}
             </div>
             <div className="flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm text-mist">
               <OpenToday hours={hours} special={special} />
