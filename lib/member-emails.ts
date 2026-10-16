@@ -428,7 +428,8 @@ export function ownerStatusEmail(input: {
     ["Email", input.email],
     ["Phone", input.phone],
   ];
-  const inner = para(esc(copy.body)) + ownerTable(rows);
-  const text = [copy.body, "", ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`)].join("\n");
+  const sheetNote = "Your membership spreadsheet (Admin → Membership spreadsheet) has been updated automatically.";
+  const inner = para(esc(copy.body)) + ownerTable(rows) + para(`<span style="color:${C.muted}">${esc(sheetNote)}</span>`);
+  const text = [copy.body, "", ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), "", sheetNote].join("\n");
   return { subject: copy.subject, html: layout(b, copy.subject, copy.heading, inner, true), text };
 }

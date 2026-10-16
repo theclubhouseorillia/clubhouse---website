@@ -12,6 +12,7 @@ import {
   welcomeEmail,
   type EmailBusiness,
 } from "./member-emails";
+import { oneMonthAfter } from "./member-sheet";
 import { getPublicClient } from "./supabase/public";
 
 // Handles Stripe events for memberships and 10-hour packs:
@@ -128,19 +129,6 @@ function isoDate(unix: number | null | undefined): string | null {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(
     new Date(unix * 1000),
   );
-}
-
-/** One calendar month after `from`, in Toronto time ("YYYY-MM-DD"), e.g. Jan 31 -> Feb 28. */
-function oneMonthAfter(from: Date): string {
-  const [y, m, d] = new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" })
-    .format(from)
-    .split("-")
-    .map(Number);
-  const month = m === 12 ? 1 : m + 1;
-  const year = m === 12 ? y + 1 : y;
-  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const day = Math.min(d, lastDay);
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 /** A member's code is good until their next renewal: one month from purchase, then one month from each renewal. */

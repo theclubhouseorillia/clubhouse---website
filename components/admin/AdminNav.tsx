@@ -19,6 +19,15 @@ function NavLinks({ pathname }: { pathname: string }) {
             Overview
           </Link>
         </li>
+        <li>
+          <Link
+            href="/admin/membership-sheet"
+            className={linkClass(pathname === "/admin/membership-sheet")}
+            aria-current={pathname === "/admin/membership-sheet" ? "page" : undefined}
+          >
+            Membership spreadsheet
+          </Link>
+        </li>
       </ul>
       {RESOURCE_GROUPS.map((group) => (
         <div key={group}>

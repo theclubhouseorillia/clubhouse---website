@@ -1250,3 +1250,33 @@ begin
   );
 end;
 $$;
+
+-- Membership spreadsheet: when a membership was cancelled, and the rows for
+-- the private Google Sheets link (real memberships only).
+alter table public.members add column if not exists canceled_on date;
+
+create or replace function public.members_sheet(p_secret text)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  perform private.require_form_secret(p_secret);
+  return coalesce((
+    select json_agg(json_build_object(
+             'name', m.name, 'email', m.email, 'phone', m.phone, 'golfer_name', m.golfer_name,
+             'plan', m.plan, 'status', m.status, 'created_at', m.created_at,
+             'member_code', m.member_code, 'renews_on', m.renews_on, 'canceled_on', m.canceled_on,
+             'added_to_ygb', m.added_to_ygb
+           ) order by m.created_at desc)
+      from public.members m
+     where m.kind = 'membership'
+       and coalesce(m.stripe_checkout_id, '') not like 'cs_test_%'
+  ), '[]'::json);
+end;
+$$;
+revoke all on function public.members_sheet(text) from public;
+grant execute on function public.members_sheet(text) to anon, authenticated;
+-- (member_sync_subscription also sets canceled_on when a membership is cancelled
+-- and clears it if the member resumes; see the latest definition in the database.)
