@@ -76,7 +76,7 @@ export default async function MembershipsPage() {
     {
       when: "Whenever you play",
       title: "Book a bay",
-      body: "Sign in on our booking page, pick any bay and time, any day of the week, up to 2 hours a day, and enter your member code at checkout.",
+      body: `Sign in on our booking page, pick any bay and time, any day of the week, up to 2 hours a day, and enter your member code at checkout. Booking longer than 2 hours? Any time beyond 2 hours is charged at our regular hourly rate. Call us${phone ? ` at ${phone}` : ""} to let us know and you'll save 20% on every hour booked beyond 2 hours.`,
       extra: (
         <>
           {bookingUrl && (
@@ -129,8 +129,26 @@ export default async function MembershipsPage() {
           {sellsOnline && (
             <p className="mt-10 max-w-3xl text-sm leading-relaxed text-mist">
               Secure online checkout by Stripe. Prices are plus HST.
-              {hasMonthly &&
-                " Memberships renew monthly until you cancel, and you can cancel anytime online. Your membership stays active until the end of the month you've paid for."}
+              {hasMonthly && (
+                <>
+                  {" "}
+                  Memberships renew monthly until you cancel, and you can cancel anytime online. Your membership stays
+                  active until the end of the month you&apos;ve paid for. Memberships cover up to 2 hours of play per day:
+                  any time booked beyond 2 hours is charged at our regular hourly rate.{" "}
+                  {phone && tel ? (
+                    <>
+                      Call us at{" "}
+                      <a href={tel} className="link-gold">
+                        {phone}
+                      </a>{" "}
+                      to let us know
+                    </>
+                  ) : (
+                    "Call us to let us know"
+                  )}{" "}
+                  and you&apos;ll save 20% on every hour booked beyond 2 hours.
+                </>
+              )}
               {portal && (
                 <>
                   {" "}

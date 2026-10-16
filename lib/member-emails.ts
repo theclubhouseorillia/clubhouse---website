@@ -54,6 +54,13 @@ export function planDays(plan: string | null | undefined): string {
   return "any day of the week";
 }
 
+/** The 2-hour rule for members, with the call-ahead discount. */
+export function overtimeNote(phoneDisplay: string | null): string {
+  return `Booking longer than 2 hours? Any time beyond 2 hours is charged at our regular hourly rate. Call us${
+    phoneDisplay ? ` at ${phoneDisplay}` : ""
+  } to let us know and you'll save 20% on every hour booked beyond 2 hours.`;
+}
+
 function button(href: string, label: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px 0 6px"><tr><td style="background:${C.green};border-radius:4px"><a href="${esc(href)}" style="display:inline-block;padding:13px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:${C.forest};text-decoration:none">${esc(label)}</a></td></tr></table>`;
 }
@@ -140,7 +147,7 @@ export function welcomeEmail(input: {
       : step(
           3,
           "Book and play",
-          `Your membership includes unlimited play in any of our simulator bays, ${esc(days)}, up to 2 hours a day, for one golfer. Reservations are subject to availability.`,
+          `Your membership includes unlimited play in any of our simulator bays, ${esc(days)}, up to 2 hours a day, for one golfer. Reservations are subject to availability.<br><span style="color:${C.muted}">${esc(overtimeNote(b.phoneDisplay))}</span>`,
         );
 
   const portal =
@@ -172,7 +179,7 @@ export function welcomeEmail(input: {
     "",
     kind === "pack"
       ? "3. Book and play\n   Open Bays fit up to 8 players. Reservations are subject to availability."
-      : `3. Book and play\n   Your membership includes unlimited play in any of our simulator bays, ${days}, up to 2 hours a day, for one golfer. Reservations are subject to availability.`,
+      : `3. Book and play\n   Your membership includes unlimited play in any of our simulator bays, ${days}, up to 2 hours a day, for one golfer. Reservations are subject to availability.\n   ${overtimeNote(b.phoneDisplay)}`,
     "",
     kind === "membership" && b.portalUrl ? `Need to update your card or cancel later? ${b.portalUrl}` : "",
     "",
@@ -207,7 +214,7 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
 
   const steps =
     step(1, "Sign in on our booking page", `Use the account you created with YourGolfBooking.${button(bookingUrl, "Book a bay")}`) +
-    step(2, "Pick your bay and time", `Choose any bay, ${esc(days)}, up to 2 hours a day.`) +
+    step(2, "Pick your bay and time", `Choose any bay, ${esc(days)}, up to 2 hours a day.<br><span style="color:${C.muted}">${esc(overtimeNote(b.phoneDisplay))}</span>`) +
     step(3, "Enter your code at checkout", "Your member discount is applied to the booking.");
 
   const inner =
@@ -226,7 +233,7 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
     until ? `    Valid until ${until}` : "",
     "",
     `1. Sign in on our booking page: ${bookingUrl}`,
-    `2. Choose any bay, ${days}, up to 2 hours a day.`,
+    `2. Choose any bay, ${days}, up to 2 hours a day. ${overtimeNote(b.phoneDisplay)}`,
     "3. Enter your code at checkout.",
     "",
     "This code is just for you and is good for one month. When your membership renews, we'll email you a new code. Please don't share it.",
