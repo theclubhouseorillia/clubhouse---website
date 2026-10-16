@@ -43,10 +43,9 @@ const GOLD = "#e2c47f";
 const THEMES: Record<SeasonKey, Theme> = {
   fall: {
     mix: [
-      { kind: "maple", motion: "fall", colors: FALL, weight: 0.55, size: [24, 38], dur: [11, 19] },
-      { kind: "leaf", motion: "fall", colors: FALL, weight: 0.45, size: [18, 30], dur: [10, 17] },
+      { kind: "maple", motion: "fall", colors: FALL, weight: 0.55, size: [18, 28], dur: [12, 20], opacity: [0.6, 0.85] },
+      { kind: "leaf", motion: "fall", colors: FALL, weight: 0.45, size: [14, 22], dur: [11, 18], opacity: [0.6, 0.85] },
     ],
-    countScale: 1.15,
     garland: { type: "leaves", colors: FALL },
   },
   halloween: {
@@ -111,7 +110,8 @@ const THEMES: Record<SeasonKey, Theme> = {
   },
 };
 
-const BASE_COUNT: Record<SeasonAmount, number> = { light: 10, normal: 18, lots: 30 };
+const BASE_COUNT: Record<SeasonAmount, number> = { light: 5, normal: 10, lots: 18 };
+const FADE_MS = 1600;
 
 function vars(v: Record<string, string | number>): CSSProperties {
   return v as unknown as CSSProperties;
@@ -402,9 +402,28 @@ export function SeasonalDecor({ settings }: { settings: SeasonalSettings }) {
     };
   }, [env, settings.amount]);
 
-  if (!content) return null;
+  // Play for a while after the page loads, then fade out (0 = keep going).
+  const [phase, setPhase] = useState<"on" | "fading" | "off">("on");
+  const seconds = settings.duration_seconds;
+  useEffect(() => {
+    if (!content || seconds <= 0) return;
+    setPhase("on");
+    const fade = window.setTimeout(() => setPhase("fading"), seconds * 1000);
+    const off = window.setTimeout(() => setPhase("off"), seconds * 1000 + FADE_MS);
+    return () => {
+      window.clearTimeout(fade);
+      window.clearTimeout(off);
+    };
+  }, [content, seconds]);
+
+  if (!content || phase === "off") return null;
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-30 overflow-hidden" data-season={env?.season}>
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-30 overflow-hidden transition-opacity ease-out"
+      style={{ opacity: phase === "fading" ? 0 : 1, transitionDuration: `${FADE_MS}ms` }}
+      data-season={env?.season}
+    >
       {content.bursts.map((b) => (
         <BurstView key={`b${b.id}`} b={b} />
       ))}

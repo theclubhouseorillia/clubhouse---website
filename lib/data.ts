@@ -372,7 +372,7 @@ export const getGiftCards = cache(async (): Promise<GiftCards> => {
 /** Seasonal decorations setting (Admin → Seasonal decorations). */
 export const getSeasonalSettings = cache(async (): Promise<SeasonalSettings> => {
   const row = await safeQuery<Partial<Record<keyof SeasonalSettings, unknown>> | null>("seasonal decorations", null, (sb) =>
-    sb.from("seasonal_settings").select("mode, amount, show_on_phones").eq("id", 1).maybeSingle(),
+    sb.from("seasonal_settings").select("mode, amount, show_on_phones, duration_seconds").eq("id", 1).maybeSingle(),
   );
   return normalizeSeasonalSettings(row);
 });

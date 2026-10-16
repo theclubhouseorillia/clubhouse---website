@@ -540,6 +540,16 @@ export const RESOURCES: ResourceDef[] = [
         default: true,
         help: "Phones always get fewer pieces than computers.",
       },
+      {
+        name: "duration_seconds",
+        label: "Stop after (seconds)",
+        type: "number",
+        integer: true,
+        min: 0,
+        max: 3600,
+        default: 15,
+        help: "The falling pieces play for this long after a page opens, then fade away. The garland under the menu bar stays. 0 keeps them going.",
+      },
     ],
   },
   {

@@ -19,9 +19,16 @@ export interface SeasonalSettings {
   mode: SeasonMode;
   amount: SeasonAmount;
   show_on_phones: boolean;
+  /** How long the falling pieces play after a page loads before fading out; 0 = keep going. */
+  duration_seconds: number;
 }
 
-export const DEFAULT_SEASONAL_SETTINGS: SeasonalSettings = { mode: "auto", amount: "normal", show_on_phones: true };
+export const DEFAULT_SEASONAL_SETTINGS: SeasonalSettings = {
+  mode: "auto",
+  amount: "normal",
+  show_on_phones: true,
+  duration_seconds: 15,
+};
 
 /** Every theme, in calendar order, with when it shows automatically. */
 export const SEASONS: { key: SeasonKey; label: string; when: string }[] = [
@@ -46,7 +53,9 @@ export function normalizeSeasonalSettings(row: Partial<Record<keyof SeasonalSett
   if (!row) return DEFAULT_SEASONAL_SETTINGS;
   const mode = row.mode === "auto" || row.mode === "off" || isSeasonKey(row.mode) ? row.mode : "auto";
   const amount = row.amount === "light" || row.amount === "lots" ? row.amount : "normal";
-  return { mode, amount, show_on_phones: row.show_on_phones !== false };
+  const secs = Number(row.duration_seconds);
+  const duration_seconds = Number.isFinite(secs) && secs >= 0 ? Math.min(Math.round(secs), 3600) : 15;
+  return { mode, amount, show_on_phones: row.show_on_phones !== false, duration_seconds };
 }
 
 /** Easter Sunday (Gregorian calendar), as month (1–12) and day. */

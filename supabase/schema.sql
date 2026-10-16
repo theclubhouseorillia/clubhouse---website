@@ -1518,3 +1518,7 @@ grant select (
   id, enabled, title, intro, season, schedule, highlights, email, email_subject, note,
   updated_at, signup_url, details, max_teams
 ) on public.league_settings to anon;
+
+-- Seasonal pieces play for this many seconds after a page opens, then fade (0 = keep going).
+alter table public.seasonal_settings add column if not exists duration_seconds int not null default 15
+  check (duration_seconds between 0 and 3600);
