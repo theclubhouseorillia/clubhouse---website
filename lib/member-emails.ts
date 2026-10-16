@@ -134,7 +134,7 @@ export function welcomeEmail(input: {
   const step2 =
     kind === "pack"
       ? step(2, "We'll set up your hours", "Once your account is ready, our team will add your 10 Open Bay hours and let you know.")
-      : step(2, "Watch for your member code", "Tomorrow we'll email you your member code. You'll enter it at checkout whenever you book an Open Bay.");
+      : step(2, "Watch for your member code", "Tomorrow we'll email you your member code. You'll enter it at checkout whenever you book an Open Bay. It's good for one month, and we'll email it again each time your membership renews.");
   const step3 =
     kind === "pack"
       ? step(3, "Book and play", "Open Bays fit up to 8 players. Reservations are subject to availability.")
@@ -169,7 +169,7 @@ export function welcomeEmail(input: {
     "",
     kind === "pack"
       ? "2. We'll set up your hours\n   Once your account is ready, our team will add your 10 Open Bay hours and let you know."
-      : "2. Watch for your member code\n   Tomorrow we'll email you your member code. You'll enter it at checkout whenever you book an Open Bay.",
+      : "2. Watch for your member code\n   Tomorrow we'll email you your member code. You'll enter it at checkout whenever you book an Open Bay. It's good for one month, and we'll email it again each time your membership renews.",
     "",
     kind === "pack"
       ? "3. Book and play\n   Open Bays fit up to 8 players. Reservations are subject to availability."
@@ -216,7 +216,7 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
     para("Here's your member code for booking Open Bays at The Clubhouse:") +
     codeBox +
     `<table role="presentation" cellpadding="0" cellspacing="0" width="100%">${steps}</table>` +
-    para("We'll email you a new code each month while your membership is active. Please keep it to yourself; it's for members only.");
+    para("Your code is good for one month. Each time your membership renews, we'll email it to you again with the new date. Please keep it to yourself; it's for members only.");
 
   const text = [
     `Hi ${hi},`,
@@ -230,7 +230,7 @@ ${until ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;col
     `2. Pick your Open Bay time${days ? ` (${days})` : ""}, up to 2 hours a day.`,
     "3. Enter your code at checkout.",
     "",
-    "We'll email you a new code each month while your membership is active. Please keep it to yourself; it's for members only.",
+    "Your code is good for one month. Each time your membership renews, we'll email it to you again with the new date. Please keep it to yourself; it's for members only.",
     "",
     textFooter(b),
   ]

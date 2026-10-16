@@ -1066,3 +1066,82 @@ revoke all on function public.member_sync_subscription(text, text, text, text, d
 grant execute on function public.member_sync_subscription(text, text, text, text, date) to anon, authenticated;
 revoke all on function public.member_code_queue(text) from public;
 grant execute on function public.member_code_queue(text) to anon, authenticated;
+
+-- Member codes are good until each member's next renewal (one month from
+-- purchase, then one month from each renewal). The queue returns each
+-- member's dates, and renewals are recorded so the code can be re-sent.
+create or replace function public.member_code_queue(p_secret text)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_cfg public.member_code_settings;
+begin
+  perform private.require_form_secret(p_secret);
+  select * into v_cfg from public.member_code_settings where id = 1;
+
+  return json_build_object(
+    'code', nullif(trim(v_cfg.code), ''),
+    'ygb_signup_url', v_cfg.ygb_signup_url,
+    'members', coalesce((
+      select json_agg(json_build_object(
+               'id', m.id, 'name', m.name, 'email', m.email, 'plan', m.plan,
+               'renews_on', m.renews_on, 'created_at', m.created_at
+             ) order by m.created_at)
+        from public.members m
+       where nullif(trim(v_cfg.code), '') is not null
+         and m.kind = 'membership'
+         and m.status in ('active', 'ending')
+         and (m.code_due_at is null or m.code_due_at <= now())
+         and m.code_sent is distinct from trim(v_cfg.code)
+    ), '[]'::json)
+  );
+end;
+$$;
+
+create or replace function public.member_record_renewal(
+  p_secret          text,
+  p_subscription_id text,
+  p_renews_on       date
+)
+returns json
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_row public.members;
+  v_cfg public.member_code_settings;
+begin
+  perform private.require_form_secret(p_secret);
+
+  update public.members
+     set renews_on = coalesce(p_renews_on, renews_on),
+         status = case when status = 'past_due' then 'active' else status end,
+         updated_at = now()
+   where stripe_subscription_id = p_subscription_id
+     and kind = 'membership'
+  returning * into v_row;
+
+  if not found then
+    return json_build_object('found', false);
+  end if;
+
+  select * into v_cfg from public.member_code_settings where id = 1;
+  return json_build_object(
+    'found', true,
+    'id', v_row.id,
+    'name', v_row.name,
+    'email', v_row.email,
+    'plan', v_row.plan,
+    'status', v_row.status,
+    'renews_on', v_row.renews_on,
+    'code', nullif(trim(v_cfg.code), '')
+  );
+end;
+$$;
+
+revoke all on function public.member_record_renewal(text, text, date) from public;
+grant execute on function public.member_record_renewal(text, text, date) to anon, authenticated;

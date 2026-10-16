@@ -16,6 +16,8 @@ import { getPublicClient } from "./supabase/public";
 //    sign-up link, schedule the member code for 24 hours later, tell the owner.
 //  - customer.subscription.updated/deleted -> keep status in step, tell the
 //    owner about cancellations and failed payments.
+//  - invoice.paid (monthly renewal) -> email the member their code again, good
+//    until their next renewal date.
 // Database access goes through secret-protected functions (FORM_SECRET).
 
 /** Stripe product IDs -> plan names (live and sandbox), for plan switches. */
@@ -123,6 +125,26 @@ function isoDate(unix: number | null | undefined): string | null {
   );
 }
 
+/** One calendar month after `from`, in Toronto time ("YYYY-MM-DD"), e.g. Jan 31 -> Feb 28. */
+function oneMonthAfter(from: Date): string {
+  const [y, m, d] = new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" })
+    .format(from)
+    .split("-")
+    .map(Number);
+  const month = m === 12 ? 1 : m + 1;
+  const year = m === 12 ? y + 1 : y;
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const day = Math.min(d, lastDay);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** A member's code is good until their next renewal: one month from purchase, then one month from each renewal. */
+function memberValidUntil(renewsOn: string | null | undefined, createdAt: string | null | undefined): string | null {
+  if (renewsOn) return renewsOn.slice(0, 10);
+  if (createdAt) return oneMonthAfter(new Date(createdAt));
+  return null;
+}
+
 function stripeCustomerUrl(customer: string | null | undefined, live: boolean): string | null {
   if (!customer) return null;
   return `https://dashboard.stripe.com/${live ? "" : "test/"}customers/${customer}`;
@@ -168,6 +190,8 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
 
   const ctx = await emailContext();
   const signupUrl = real(saved.ygb_signup_url) ?? ctx.business.bookingUrl;
+  // The member's code is good for one month from today (then renewed monthly).
+  const validUntil = kind === "membership" ? oneMonthAfter(new Date()) : null;
 
   // 1. Welcome email with the YourGolfBooking sign-up link (once).
   if (!saved.setup_email_sent) {
@@ -193,7 +217,7 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
         golferName,
         plan,
         code: saved.code,
-        validUntil: saved.valid_until,
+        validUntil,
         stripeUrl: stripeCustomerUrl(session.customer, event.livemode),
       });
       const ownerSent = await sendEmail({
@@ -215,7 +239,7 @@ async function handleCheckout(session: CheckoutSession, event: StripeEvent): Pro
       name,
       plan,
       code: saved.code,
-      validUntil: saved.valid_until,
+      validUntil,
       bookingUrl: ctx.business.bookingUrl,
     });
     const scheduled = await sendEmail({
@@ -292,6 +316,69 @@ async function handleSubscription(sub: Subscription, deleted: boolean, event: St
   if (!sent.ok) console.error("[members] owner status email failed:", sent.error);
 }
 
+interface Invoice {
+  id: string;
+  billing_reason?: string | null;
+  subscription?: string | null;
+  parent?: { subscription_details?: { subscription?: string | null } | null } | null;
+  lines?: {
+    data?: {
+      subscription?: string | null;
+      period?: { end?: number | null } | null;
+      parent?: { subscription_item_details?: { subscription?: string | null } | null } | null;
+    }[];
+  } | null;
+}
+
+interface RenewalResult {
+  found: boolean;
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  plan?: string | null;
+  status?: string;
+  renews_on?: string | null;
+  code?: string | null;
+}
+
+/** A membership renewed: email the member their code again with the new month's date. */
+async function handleInvoicePaid(inv: Invoice): Promise<void> {
+  if (inv.billing_reason !== "subscription_cycle") return;
+  const line = inv.lines?.data?.[0];
+  const subscriptionId =
+    inv.subscription ??
+    inv.parent?.subscription_details?.subscription ??
+    line?.subscription ??
+    line?.parent?.subscription_item_details?.subscription ??
+    null;
+  if (!subscriptionId) return;
+
+  const renewal = await rpc<RenewalResult>("member_record_renewal", {
+    p_subscription_id: subscriptionId,
+    p_renews_on: isoDate(line?.period?.end ?? null),
+  });
+  if (!renewal.found || !renewal.id || !renewal.email || !renewal.code || renewal.status !== "active") return;
+
+  const ctx = await emailContext();
+  const msg = codeEmail({
+    business: ctx.business,
+    name: renewal.name ?? null,
+    plan: renewal.plan ?? null,
+    code: renewal.code,
+    validUntil: renewal.renews_on ?? null,
+    bookingUrl: ctx.business.bookingUrl,
+  });
+  const sent = await sendEmail({
+    to: renewal.email,
+    ...msg,
+    from: ctx.from,
+    replyTo: ctx.replyTo,
+    idempotencyKey: `code-renew-${inv.id}`,
+  });
+  if (!sent.ok) throw new Error(`Renewal code email failed: ${sent.error}`);
+  await rpc("member_mark_code_sent", { p_id: renewal.id, p_code: renewal.code });
+}
+
 /** Routes a verified Stripe event. Unknown event types are ignored. */
 export async function handleStripeEvent(event: StripeEvent): Promise<void> {
   const obj = event.data?.object ?? {};
@@ -305,6 +392,9 @@ export async function handleStripeEvent(event: StripeEvent): Promise<void> {
     case "customer.subscription.deleted":
       await handleSubscription(obj as unknown as Subscription, true, event);
       break;
+    case "invoice.paid":
+      await handleInvoicePaid(obj as unknown as Invoice);
+      break;
     default:
       break;
   }
@@ -312,8 +402,14 @@ export async function handleStripeEvent(event: StripeEvent): Promise<void> {
 
 interface CodeQueue {
   code: string | null;
-  valid_until: string | null;
-  members: { id: string; name: string | null; email: string; plan: string | null }[];
+  members: {
+    id: string;
+    name: string | null;
+    email: string;
+    plan: string | null;
+    renews_on: string | null;
+    created_at: string | null;
+  }[];
 }
 
 /**
@@ -333,7 +429,7 @@ export async function sendDueMemberCodes(): Promise<{ sent: number; failed: numb
       name: m.name,
       plan: m.plan,
       code: queue.code,
-      validUntil: queue.valid_until,
+      validUntil: memberValidUntil(m.renews_on, m.created_at),
       bookingUrl: ctx.business.bookingUrl,
     });
     const res = await sendEmail({

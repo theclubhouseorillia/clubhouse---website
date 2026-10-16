@@ -774,7 +774,7 @@ export const RESOURCES: ResourceDef[] = [
     title: "Member discount code",
     singular: "Member code",
     description:
-      "The one code every member uses when booking an Open Bay in YourGolfBooking. New members get it by email a day after they join. When you change it, every current member is emailed the new code the next morning (around 10 AM). Visitors can never see it.",
+      "The one code every member uses when booking an Open Bay in YourGolfBooking. New members get it by email a day after they join, good for one month from their purchase date. Each time a membership renews, that member is emailed the code again with the new date. If you change the code, every current member gets the new one the next morning (around 10 AM). Visitors can never see it.",
     group: "Golf",
     singleton: true,
     allowCreate: false,
@@ -791,7 +791,6 @@ export const RESOURCES: ResourceDef[] = [
         placeholder: "MEMBERNOV",
         help: "Create the code in YourGolfBooking first, then type it here exactly the same.",
       },
-      { name: "valid_until", label: "Valid until", type: "date", help: "Shown in the email so members know when to expect a new code." },
       {
         name: "ygb_signup_url",
         label: "YourGolfBooking sign-up link",
