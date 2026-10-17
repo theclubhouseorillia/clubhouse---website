@@ -147,7 +147,7 @@ export function welcomeEmail(input: {
       : step(
           3,
           "Book and play",
-          `Your membership includes unlimited play in any of our simulator bays, ${esc(days)}, up to 2 hours a day, for one golfer. Reservations are subject to availability.<br><span style="color:${C.muted}">${esc(overtimeNote(b.phoneDisplay))}</span>`,
+          `Your membership includes unlimited play in any of our simulator bays, ${esc(days)}, up to 2 hours a day. It's for one golfer and can't be shared, but you're always welcome to bring friends along to golf with you. Reservations are subject to availability.<br><span style="color:${C.muted}">${esc(overtimeNote(b.phoneDisplay))}</span>`,
         );
 
   const portal =
@@ -179,7 +179,7 @@ export function welcomeEmail(input: {
     "",
     kind === "pack"
       ? "3. Book and play\n   Open Bays fit up to 8 players. Reservations are subject to availability."
-      : `3. Book and play\n   Your membership includes unlimited play in any of our simulator bays, ${days}, up to 2 hours a day, for one golfer. Reservations are subject to availability.\n   ${overtimeNote(b.phoneDisplay)}`,
+      : `3. Book and play\n   Your membership includes unlimited play in any of our simulator bays, ${days}, up to 2 hours a day. It's for one golfer and can't be shared, but you're always welcome to bring friends along to golf with you. Reservations are subject to availability.\n   ${overtimeNote(b.phoneDisplay)}`,
     "",
     kind === "membership" && b.portalUrl ? `Need to update your card or cancel later? ${b.portalUrl}` : "",
     "",
