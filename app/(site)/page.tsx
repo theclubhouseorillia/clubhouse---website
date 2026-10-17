@@ -283,7 +283,7 @@ export default async function HomePage() {
                 id="sims-title"
                 eyebrow="Golf simulators"
                 title="Play the world's great courses, any season"
-                intro="Four premium simulator bays, from social open bays beside the lounge to a fully private room. Rental clubs are available for left-handed, right-handed and women's golfers, and youth sets for kids 4 to 12 are free."
+                intro="Four premium simulator bays, from social open bays beside the lounge to a fully private room. Rental clubs are available for left-handed, right-handed and women's golfers, and youth sets are available for kids 4 to 12."
               />
             </Reveal>
             <Reveal delay={100} className="lg:justify-self-end">

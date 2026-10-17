@@ -54,7 +54,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "Premium Bose sound and multiple large 4K TVs",
     "Premium pool table",
     "Karaoke nights, live DJs and live music",
-    "Rental clubs for left-handed, right-handed and women's golfers, plus free youth sets for kids 4 to 12",
+    "Rental clubs for left-handed, right-handed and women's golfers, plus youth sets for kids 4 to 12",
     "About 5,000 sq ft of entertainment space",
   ],
   packages_note: "Contact us for pricing and availability. We'll tailor a package to your group and date.",
@@ -143,7 +143,7 @@ export const DEFAULT_PACKAGES: EventPackage[] = [
       "Premium Bose sound system",
       "Televisions",
       "Complimentary soft drinks",
-      "Rental golf clubs, including left-handed, right-handed and women's sets, plus free youth sets",
+      "Rental golf clubs, including left-handed, right-handed, women's and youth sets",
     ],
     featured: true,
     sort_order: 2,
@@ -263,10 +263,10 @@ export const DEFAULT_RENTAL_CLUBS: RentalClubs = {
   enabled: true,
   title: "Rental Clubs",
   description:
-    "No clubs? No problem. We have rental sets ready for right-handed, left-handed and women’s golfers, and youth sets for kids 4 to 12 are free, so anyone can grab a bay and play.",
+    "No clubs? No problem. We have rental sets ready for right-handed, left-handed and women’s golfers, plus youth sets for kids 4 to 12, so anyone can grab a bay and play.",
   price_label: null,
   price_note: null,
-  features: ["Right-handed sets", "Left-handed sets", "Women’s sets", "Youth sets for kids 4 to 12: free"],
+  features: ["Right-handed sets", "Left-handed sets", "Women’s sets", "Youth sets for kids 4 to 12: $25 plus tax"],
   photos: [],
 };
 
