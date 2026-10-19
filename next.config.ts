@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
     // Linting is optional for this project; don't block deployments on it.
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [
+      {
+        // Short link printed on receipts and bay cards: opens the Google review box for the venue.
+        source: "/review",
+        destination: "https://search.google.com/local/writereview?placeid=ChIJ43879x-vKk0RYnAn8ontIOA",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
