@@ -1265,13 +1265,14 @@ begin
   perform private.require_form_secret(p_secret);
   return coalesce((
     select json_agg(json_build_object(
+             'kind', m.kind,
              'name', m.name, 'email', m.email, 'phone', m.phone, 'golfer_name', m.golfer_name,
              'plan', m.plan, 'status', m.status, 'created_at', m.created_at,
              'member_code', m.member_code, 'renews_on', m.renews_on, 'canceled_on', m.canceled_on,
              'added_to_ygb', m.added_to_ygb
            ) order by m.created_at desc)
       from public.members m
-     where m.kind = 'membership'
+     where m.kind in ('membership', 'pack')   -- memberships and 10-hour packs
        and coalesce(m.stripe_checkout_id, '') not like 'cs_test_%'
   ), '[]'::json);
 end;

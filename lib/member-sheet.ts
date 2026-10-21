@@ -1,5 +1,5 @@
-// Shapes member records into the membership spreadsheet (Admin page, Excel
-// download and the private Google Sheets link). No server-only imports.
+// Shapes member records into the membership & 10-hour pack spreadsheet (Admin
+// page, Excel download and the private Google Sheets link). No server-only imports.
 
 export const SHEET_TIMEZONE = "America/Toronto";
 
@@ -25,6 +25,7 @@ export function torontoDate(value: string | Date | null | undefined): string | n
 }
 
 export interface MemberSheetSource {
+  kind?: string | null;
   name: string | null;
   email: string;
   phone: string | null;
@@ -39,6 +40,7 @@ export interface MemberSheetSource {
 }
 
 export interface MemberSheetRow {
+  type: string;
   name: string;
   email: string;
   phone: string;
@@ -59,9 +61,15 @@ const STATUS_LABELS: Record<string, string> = {
   canceled: "Ended",
   past_due: "Payment failed",
   paused: "Paused",
+  purchased: "Purchased",
 };
 
+/** Columns every query for the sheet selects. */
+export const SHEET_SELECT =
+  "kind, name, email, phone, golfer_name, plan, status, created_at, member_code, renews_on, canceled_on, added_to_ygb";
+
 export const SHEET_COLUMNS: { key: keyof MemberSheetRow; label: string }[] = [
+  { key: "type", label: "Type" },
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
@@ -86,11 +94,30 @@ export function readablePhone(raw: string | null | undefined): string {
 
 export function toSheetRow(m: MemberSheetSource): MemberSheetRow {
   const orderedOn = torontoDate(m.created_at) ?? "";
+  if (m.kind === "pack") {
+    // A one-time purchase: no member code, renewal or cancellation.
+    return {
+      type: "10-hour pack",
+      name: m.name ?? "",
+      email: m.email,
+      phone: readablePhone(m.phone),
+      golfer: m.golfer_name ?? "",
+      plan: m.plan ?? "10-Hour Open Bay Pack",
+      status: STATUS_LABELS[m.status] ?? m.status,
+      orderedOn,
+      code: "",
+      codeValidUntil: "",
+      renewsOrEnds: "",
+      canceledOn: "",
+      setUpInYgb: m.added_to_ygb ? "Yes" : "No",
+    };
+  }
   const renews = m.renews_on ? m.renews_on.slice(0, 10) : "";
   const validUntil = renews || (m.created_at ? oneMonthAfter(new Date(m.created_at)) : "");
   const code = m.member_code?.trim() ?? "";
   const ended = m.status === "canceled";
   return {
+    type: "Membership",
     name: m.name ?? "",
     email: m.email,
     phone: readablePhone(m.phone),

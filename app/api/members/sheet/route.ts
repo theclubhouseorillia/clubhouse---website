@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { toCsv, toSheetRow, type MemberSheetSource } from "@/lib/member-sheet";
 import { getPublicClient } from "@/lib/supabase/public";
 
-// Private CSV of every membership, for an auto-updating Google Sheet
+// Private CSV of every membership and 10-hour pack, for an auto-updating Google Sheet
 // (=IMPORTDATA(...)) or Excel "From Web". Needs ?key=MEMBERS_SHEET_KEY; the
-// full link is shown only to admins on Admin → Membership spreadsheet.
+// full link is shown only to admins on Admin → Members & packs spreadsheet.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 

@@ -25,7 +25,7 @@ function NavLinks({ pathname }: { pathname: string }) {
             className={linkClass(pathname === "/admin/membership-sheet")}
             aria-current={pathname === "/admin/membership-sheet" ? "page" : undefined}
           >
-            Membership spreadsheet
+            Members &amp; packs spreadsheet
           </Link>
         </li>
       </ul>

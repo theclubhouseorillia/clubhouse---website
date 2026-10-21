@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { toCsv, toSheetRow, torontoDate, type MemberSheetSource } from "@/lib/member-sheet";
+import { SHEET_SELECT, toCsv, toSheetRow, torontoDate, type MemberSheetSource } from "@/lib/member-sheet";
 
-// "Download for Excel" on Admin → Membership spreadsheet (signed-in admins only).
+// "Download for Excel" on Admin → Members & packs spreadsheet (signed-in admins only).
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const { supabase } = await requireAdmin();
   const { data, error } = await supabase
     .from("members")
-    .select("name, email, phone, golfer_name, plan, status, created_at, member_code, renews_on, canceled_on, added_to_ygb")
-    .eq("kind", "membership")
+    .select(SHEET_SELECT)
     .not("stripe_checkout_id", "like", "cs_test_%")
     .order("created_at", { ascending: false });
   if (error) return new NextResponse(`Couldn't load members: ${error.message}`, { status: 500 });
@@ -20,7 +19,7 @@ export async function GET() {
   return new NextResponse(`﻿${toCsv(rows)}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="clubhouse-memberships-${torontoDate(new Date())}.csv"`,
+      "Content-Disposition": `attachment; filename="clubhouse-memberships-and-packs-${torontoDate(new Date())}.csv"`,
       "Cache-Control": "no-store",
     },
   });

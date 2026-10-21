@@ -687,7 +687,7 @@ export function ownerStatusEmail(input: {
     ["Email", input.email],
     ["Phone", input.phone],
   ];
-  const sheetNote = "Your membership spreadsheet (Admin → Membership spreadsheet) has been updated automatically.";
+  const sheetNote = "Your membership spreadsheet (Admin → Members & packs spreadsheet) has been updated automatically.";
   const goodbyeNote = input.memberEmailed
     ? "We've emailed them a “sorry to see you go” note with a link to rejoin."
     : null;
