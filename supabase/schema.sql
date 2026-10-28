@@ -1388,7 +1388,7 @@ grant execute on function public.newsletter_mark_welcomed(text, uuid) to anon, a
 create table if not exists public.seasonal_settings (
   id             int primary key default 1 check (id = 1),
   mode           text not null default 'auto'
-                 check (mode in ('auto','off','fall','halloween','christmas','newyear','winter','valentines','stpatricks','easter','canadaday')),
+                 check (mode in ('auto','off','fall','halloween','remembrance','christmas','christmaseve','boxingday','newyear','winter','valentines','stpatricks','easter','canadaday')),
   amount         text not null default 'normal' check (amount in ('light','normal','lots')),
   show_on_phones boolean not null default true,
   updated_at     timestamptz not null default now()
@@ -1523,3 +1523,8 @@ grant select (
 -- Seasonal pieces play for this many seconds after a page opens, then fade (0 = keep going).
 alter table public.seasonal_settings add column if not exists duration_seconds int not null default 15
   check (duration_seconds between 0 and 3600);
+
+-- Remembrance Day (Nov 1-11), Christmas Eve (Dec 24) and Boxing Day (Dec 26) themes.
+alter table public.seasonal_settings drop constraint if exists seasonal_settings_mode_check;
+alter table public.seasonal_settings add constraint seasonal_settings_mode_check
+  check (mode in ('auto','off','fall','halloween','remembrance','christmas','christmaseve','boxingday','newyear','winter','valentines','stpatricks','easter','canadaday'));

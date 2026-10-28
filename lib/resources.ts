@@ -496,7 +496,7 @@ export const RESOURCES: ResourceDef[] = [
     table: "seasonal_settings",
     title: "Seasonal decorations",
     singular: "Seasonal decorations",
-    description: `Falling leaves, snow, bats, confetti and a garland under the menu bar that change with the calendar. Automatic schedule: ${SEASONS.map(
+    description: `Falling leaves, snow, bats, poppies, confetti and a garland under the menu bar that change with the calendar. Automatic schedule: ${SEASONS.map(
       (s) => `${s.label.replace(/ \(.*\)$/, "")} ${s.when}`,
     ).join("; ")}. Pick a theme below to show it now (handy for a preview), or switch them off.`,
     group: "Website",

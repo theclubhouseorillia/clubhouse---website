@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import { activeSeason, type SeasonAmount, type SeasonKey, type SeasonalSettings } from "@/lib/seasons";
+import { activeSeason, isSeasonKey, type SeasonAmount, type SeasonKey, type SeasonalSettings } from "@/lib/seasons";
 
 // Seasonal decorations: falling leaves, snow, bats, confetti and so on, plus a
 // garland (lights, bunting, icicles) hanging under the menu bar. Everything is
@@ -9,7 +9,22 @@ import { activeSeason, type SeasonAmount, type SeasonKey, type SeasonalSettings 
 // behind the menu bar, ignores clicks, and stays still for anyone who has
 // "reduce motion" switched on.
 
-type Kind = "maple" | "leaf" | "flake" | "dot" | "bat" | "ghost" | "confetti" | "heart" | "shamrock" | "coin" | "blossom";
+type Kind =
+  | "maple"
+  | "leaf"
+  | "flake"
+  | "dot"
+  | "bat"
+  | "ghost"
+  | "confetti"
+  | "heart"
+  | "shamrock"
+  | "coin"
+  | "blossom"
+  | "poppy"
+  | "star"
+  | "sleigh"
+  | "gift";
 type Motion = "fall" | "rise" | "drift";
 
 interface Mix {
@@ -27,10 +42,15 @@ type Garland =
   | { type: "bunting"; colors: string[]; spiders?: boolean }
   | { type: "leaves"; colors: string[] }
   | { type: "icicles" }
-  | { type: "hearts"; colors: string[] };
+  | { type: "hearts"; colors: string[] }
+  | { type: "poppies" };
 
 interface Theme {
   mix: Mix[];
+  /** Pieces that always appear, on top of the random mix (e.g. one sleigh). */
+  always?: { mix: Mix; count: number }[];
+  /** A short message shown in the middle of the garland (stays after the pieces fade). */
+  message?: { text: string; short: string };
   bursts?: string[];
   countScale?: number;
   garland: Garland;
@@ -39,6 +59,7 @@ interface Theme {
 const FALL = ["#d9541e", "#e8892b", "#f2b134", "#b33a1f", "#a0522d"];
 const SNOW = ["#ffffff", "#eef6ff", "#dbeeff"];
 const GOLD = "#e2c47f";
+const POPPY = "#c8102e";
 
 const THEMES: Record<SeasonKey, Theme> = {
   fall: {
@@ -55,6 +76,32 @@ const THEMES: Record<SeasonKey, Theme> = {
       { kind: "maple", motion: "fall", colors: ["#e8892b", "#f28c28", "#d9541e"], weight: 0.4, size: [20, 32], dur: [11, 18] },
     ],
     garland: { type: "bunting", colors: ["#f28c28", "#7b3fa0", "#e8e0c8"], spiders: true },
+  },
+  remembrance: {
+    mix: [
+      { kind: "poppy", motion: "fall", colors: [POPPY, "#b30d26", "#d4213a"], weight: 1, size: [22, 34], dur: [16, 26], opacity: [0.8, 0.95] },
+    ],
+    countScale: 0.6,
+    garland: { type: "poppies" },
+    message: { text: "Lest We Forget · Remembrance Day, November 11", short: "Lest We Forget" },
+  },
+  christmaseve: {
+    mix: [
+      { kind: "dot", motion: "fall", colors: SNOW, weight: 0.5, size: [5, 11], dur: [9, 16], opacity: [0.6, 0.95] },
+      { kind: "flake", motion: "fall", colors: SNOW, weight: 0.3, size: [18, 28], dur: [12, 20], opacity: [0.75, 0.95] },
+      { kind: "star", motion: "fall", colors: [GOLD, "#f2d58a", "#fff3c4"], weight: 0.2, size: [14, 22], dur: [12, 20], opacity: [0.8, 1] },
+    ],
+    always: [{ mix: { kind: "sleigh", motion: "drift", colors: [GOLD], weight: 1, size: [150, 190], dur: [13, 17], opacity: [0.95, 1] }, count: 1 }],
+    countScale: 1.3,
+    garland: { type: "lights", colors: ["#ffd23f", "#ff4d4d", "#fff1c1", "#4fbf73", "#ffd23f", "#ff4d4d"] },
+  },
+  boxingday: {
+    mix: [
+      { kind: "gift", motion: "fall", colors: ["#c8102e", "#1f7a3a", "#2f6fbf", "#e2c47f", "#7b3fa0"], weight: 0.55, size: [20, 30], dur: [11, 18] },
+      { kind: "confetti", motion: "fall", colors: ["#c8102e", "#1f7a3a", GOLD, "#ffffff"], weight: 0.45, size: [11, 16], dur: [8, 13] },
+    ],
+    countScale: 1.2,
+    garland: { type: "bunting", colors: ["#c8102e", GOLD, "#1f7a3a", "#ffffff"] },
   },
   christmas: {
     mix: [
@@ -213,7 +260,70 @@ function Art({ kind, color }: { kind: Kind; color: string }) {
           <circle r="10" fill="#f2b134" />
         </svg>
       );
+    case "poppy":
+      return <PoppyArt color={color} />;
+    case "star":
+      return (
+        <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+          <polygon
+            points="50,4 61,37 96,37 68,58 78,92 50,72 22,92 32,58 4,37 39,37"
+            fill={color}
+            style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+          />
+        </svg>
+      );
+    case "sleigh":
+      return (
+        <svg viewBox="0 0 200 100" width="100%" height="100%" aria-hidden="true">
+          <g fill={color}>
+            {/* Sleigh and runner */}
+            <path d="M8 46 L18 46 C20 58 28 64 40 64 L62 64 C70 64 74 58 74 48 L80 48 C80 62 72 72 58 72 L36 72 C20 72 10 62 8 46 Z" />
+            <path d="M4 80 L72 80 C80 80 84 76 86 70 L90 70 C88 80 82 86 72 86 L4 86 Z" />
+            <rect x="22" y="70" width="4" height="12" />
+            <rect x="56" y="70" width="4" height="12" />
+            {/* Santa */}
+            <circle cx="40" cy="34" r="8" />
+            <path d="M30 46 C30 40 34 38 40 38 C46 38 50 40 50 46 Z" />
+            <path d="M34 28 L48 30 L56 20 L46 24 Z" />
+            {/* Reins */}
+            <path d="M74 52 L132 44" stroke={color} strokeWidth="1.5" fill="none" />
+          </g>
+          {/* Two reindeer */}
+          {[110, 156].map((x) => (
+            <g key={x} fill={color} stroke={color} strokeLinecap="round">
+              <ellipse cx={x} cy="48" rx="16" ry="7" stroke="none" />
+              <path d={`M${x - 12} 52 L${x - 18} 66 M${x - 8} 52 L${x - 4} 66 M${x + 8} 52 L${x + 2} 64 M${x + 12} 52 L${x + 20} 62`} strokeWidth="3" fill="none" />
+              <path d={`M${x + 12} 44 L${x + 20} 30`} strokeWidth="5" fill="none" />
+              <ellipse cx={x + 24} cy="28" rx="6" ry="4" stroke="none" />
+              <path d={`M${x + 20} 25 L${x + 16} 14 M${x + 18} 19 L${x + 12} 16 M${x + 22} 25 L${x + 24} 13 M${x + 23} 18 L${x + 28} 14`} strokeWidth="1.8" fill="none" />
+            </g>
+          ))}
+          <circle cx="182" cy="28" r="2.6" fill="#ff4d4d" />
+        </svg>
+      );
+    case "gift":
+      return (
+        <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+          <rect x="10" y="34" width="80" height="60" rx="4" fill={color} />
+          <rect x="4" y="24" width="92" height="16" rx="3" fill={color} />
+          <rect x="4" y="24" width="92" height="16" rx="3" fill="#000" opacity="0.12" />
+          <rect x="44" y="24" width="12" height="70" fill="#f4eedd" />
+          <path d="M50 24 C38 6 22 10 28 20 C32 26 42 25 50 24 Z M50 24 C62 6 78 10 72 20 C68 26 58 25 50 24 Z" fill="#f4eedd" />
+        </svg>
+      );
   }
+}
+
+/** A Remembrance poppy: four red petals and a black centre. */
+function PoppyArt({ color }: { color: string }) {
+  return (
+    <svg viewBox="-50 -50 100 100" width="100%" height="100%" aria-hidden="true">
+      {[0, 90, 180, 270].map((a) => (
+        <circle key={a} cx="0" cy="-19" r="24" fill={color} stroke="#8e0a20" strokeWidth="2" transform={`rotate(${a + 45})`} />
+      ))}
+      <circle r="11" fill="#141414" />
+    </svg>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -229,7 +339,9 @@ interface Env {
 function useSeasonEnv(settings: SeasonalSettings): Env | null {
   const [env, setEnv] = useState<Env | null>(null);
   useEffect(() => {
-    const season = activeSeason(settings.mode);
+    // "?season=remembrance" (any theme name) previews a theme without changing the setting.
+    const preview = new URLSearchParams(window.location.search).get("season");
+    const season = isSeasonKey(preview) ? preview : activeSeason(settings.mode);
     const phone = window.matchMedia("(max-width: 767px)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!season || (phone && !settings.show_on_phones)) {
@@ -299,7 +411,32 @@ function makePieces(theme: Theme, amount: SeasonAmount, phone: boolean): Piece[]
       flap: rand(0.16, 0.26),
     });
   }
+  for (const extra of theme.always ?? []) {
+    for (let i = 0; i < extra.count; i++) pieces.push(piece(pieces.length, extra.mix, phone));
+  }
   return pieces;
+}
+
+function piece(id: number, mix: Mix, phone: boolean): Piece {
+  const dur = rand(mix.dur[0], mix.dur[1]);
+  return {
+    id,
+    kind: mix.kind,
+    motion: mix.motion,
+    color: pick(mix.colors),
+    x: rand(0, 98),
+    y: rand(12, 40),
+    size: rand(mix.size[0], mix.size[1]) * (phone ? 0.7 : 1),
+    dur,
+    // Start the sleigh just off screen so it crosses while the pieces are showing.
+    delay: -rand(0, dur * 0.15),
+    sway: rand(10, 30),
+    swayDur: rand(2.4, 5),
+    spinDur: rand(3.5, 9),
+    opacity: mix.opacity ? rand(mix.opacity[0], mix.opacity[1]) : 0.95,
+    reverse: Math.random() < 0.5,
+    flap: rand(0.16, 0.26),
+  };
 }
 
 function makeBursts(colors: string[], phone: boolean): Burst[] {
@@ -334,9 +471,13 @@ function PieceView({ p }: { p: Piece }) {
       >
         <div className="season-bob h-full w-full" style={vars({ "--sway": `${p.sway / 2}px`, "--sway-dur": `${p.swayDur}s` })}>
           <div className="h-full w-full" style={p.reverse ? { transform: "scaleX(-1)" } : undefined}>
-            <div className="season-flap h-full w-full" style={vars({ "--flap": `${p.flap.toFixed(2)}s` })}>
-              {art}
-            </div>
+            {p.kind === "sleigh" ? (
+              art
+            ) : (
+              <div className="season-flap h-full w-full" style={vars({ "--flap": `${p.flap.toFixed(2)}s` })}>
+                {art}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -356,7 +497,7 @@ function PieceView({ p }: { p: Piece }) {
       })}
     >
       <div className="season-sway h-full w-full" style={vars({ "--sway": `${p.sway}px`, "--sway-dur": `${p.swayDur}s` })}>
-        {p.kind === "ghost" || p.kind === "heart" || p.kind === "dot" ? (
+        {p.kind === "ghost" || p.kind === "heart" || p.kind === "dot" || p.kind === "poppy" ? (
           <div className="h-full w-full">{art}</div>
         ) : (
           <div className={`${spins} flex h-full w-full items-center justify-center`} style={vars({ "--spin-dur": `${p.spinDur}s` })}>
@@ -540,6 +681,23 @@ function GarlandArt({ garland, phone }: { garland: Garland; phone: boolean }) {
           )}
         </Row>
       );
+    case "poppies":
+      return (
+        <Row unit={40} height={30}>
+          {(i) => (
+            <>
+              <path d="M0 3 Q20 9 40 3" stroke="#3d4a40" strokeWidth="1.2" fill="none" />
+              <line x1="20" y1="6" x2="20" y2="10" stroke="#3d4a40" strokeWidth="1" />
+              <g transform={`translate(20 18) scale(0.17) rotate(${(i % 3) * 20})`}>
+                {[0, 90, 180, 270].map((a) => (
+                  <circle key={a} cx="0" cy="-19" r="24" fill={POPPY} stroke="#8e0a20" strokeWidth="3" transform={`rotate(${a + 45})`} />
+                ))}
+                <circle r="11" fill="#141414" />
+              </g>
+            </>
+          )}
+        </Row>
+      );
     case "hearts":
       return (
         <Row unit={34} height={28}>
@@ -561,15 +719,22 @@ function GarlandArt({ garland, phone }: { garland: Garland; phone: boolean }) {
 export function SeasonalGarland({ settings, hidden = false }: { settings: SeasonalSettings; hidden?: boolean }) {
   const env = useSeasonEnv(settings);
   if (!env || hidden) return null;
-  const garland = THEMES[env.season].garland;
+  const { garland, message } = THEMES[env.season];
   const tall = garland.type === "bunting" && garland.spiders;
   return (
     <div
-      aria-hidden="true"
       className={`pointer-events-none absolute inset-x-0 top-full overflow-hidden ${tall ? "h-[150px]" : "h-8"}`}
       data-season-garland={env.season}
     >
-      <GarlandArt garland={garland} phone={env.phone} />
+      <div aria-hidden="true">
+        <GarlandArt garland={garland} phone={env.phone} />
+      </div>
+      {message && (
+        <p className="absolute left-1/2 top-[3px] m-0 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#c8102e]/70 bg-ink/90 px-4 py-[3px] text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-cream shadow-lg">
+          <span className="sm:hidden">{message.short}</span>
+          <span className="hidden sm:inline">{message.text}</span>
+        </p>
+      )}
     </div>
   );
 }

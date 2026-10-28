@@ -4,7 +4,10 @@
 export type SeasonKey =
   | "fall"
   | "halloween"
+  | "remembrance"
   | "christmas"
+  | "christmaseve"
+  | "boxingday"
   | "newyear"
   | "winter"
   | "valentines"
@@ -38,9 +41,12 @@ export const SEASONS: { key: SeasonKey; label: string; when: string }[] = [
   { key: "stpatricks", label: "St. Patrick's Day (shamrocks)", when: "Mar 11 – 17" },
   { key: "easter", label: "Easter (spring blossoms)", when: "the week before Easter to Easter Monday" },
   { key: "canadaday", label: "Canada Day (maple leaves & fireworks)", when: "Jun 24 – Jul 1" },
-  { key: "fall", label: "Fall (falling leaves)", when: "Sep 22 – Oct 23 and Nov 1 – 20" },
+  { key: "fall", label: "Fall (falling leaves)", when: "Sep 22 – Oct 23" },
   { key: "halloween", label: "Halloween (bats, ghosts & spiders)", when: "Oct 24 – 31" },
-  { key: "christmas", label: "Christmas (snow & twinkling lights)", when: "Nov 21 – Dec 26" },
+  { key: "remembrance", label: "Remembrance Day (poppies & Lest We Forget)", when: "Nov 1 – 11" },
+  { key: "christmas", label: "Christmas (snow & twinkling lights)", when: "Nov 12 – Dec 23 and Dec 25" },
+  { key: "christmaseve", label: "Christmas Eve (Santa's sleigh & stars)", when: "Dec 24" },
+  { key: "boxingday", label: "Boxing Day (gift boxes & confetti)", when: "Dec 26" },
 ];
 
 const KEYS = new Set<string>(SEASONS.map((s) => s.key));
@@ -89,8 +95,11 @@ export function seasonForDate(year: number, month: number, day: number): SeasonK
   if (md >= 103 && md <= 309) return "winter";
   if (md >= 624 && md <= 701) return "canadaday";
   if (md >= 1024 && md <= 1031) return "halloween";
-  if ((md >= 922 && md <= 1023) || (md >= 1101 && md <= 1120)) return "fall";
-  if (md >= 1121 && md <= 1226) return "christmas";
+  if (md >= 922 && md <= 1023) return "fall";
+  if (md >= 1101 && md <= 1111) return "remembrance";
+  if (md === 1224) return "christmaseve";
+  if (md === 1226) return "boxingday";
+  if (md >= 1112 && md <= 1225) return "christmas";
   return null;
 }
 
